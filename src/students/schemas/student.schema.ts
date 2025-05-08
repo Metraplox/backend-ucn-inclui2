@@ -16,11 +16,6 @@ export class Student {
 
   @Prop({ required: true, unique: true })
   email: string;
-
-  // Puedes agregar más propiedades según sea necesario
-  // Ejemplo:
-  // @Prop()
-  // major: string;
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);

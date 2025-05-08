@@ -11,18 +11,16 @@ export class StudentsService {
   constructor(@InjectModel(Student.name) private studentModel: Model<StudentDocument>) {}
 
   async create(createStudentDto: CreateStudentDto): Promise<Student> {
-    // Logs eliminados
     const createdStudent = new this.studentModel(createStudentDto);
     return createdStudent.save();
   }
 
   async findAll(): Promise<Student[]> {
-    // Logs eliminados
     return this.studentModel.find().exec(); // .exec() devuelve una Promise
   }
 
   async findOne(id: string): Promise<Student | null> {
-    // Validar que el ID sea un ObjectId válido de Mongo podría ser una mejora
+    // Validar que el ID sea un ObjectId válido de Mongo
     return this.studentModel.findById(id).exec();
   }
 

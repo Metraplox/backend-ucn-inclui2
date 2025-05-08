@@ -6,12 +6,13 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Configuración de Swagger
+  // Swagger
   const config = new DocumentBuilder()
-    .setTitle('UCN DGE API')
-    .setDescription('API para la gestión de estudiantes y otros módulos de la DGE.')
+    .setTitle('INCLUI2 API')
+    .setDescription('API para la gestión de estudiantes con necesidades')
     .setVersion('1.0')
     .addTag('students', 'Operaciones relacionadas con estudiantes') // Tag para agrupar endpoints
+    .addTag('adjustments', 'Operaciones relacionadas con ajustes') // Tag para agrupar endpoints
     // Puedes agregar más tags para otros módulos
     .build();
   const document = SwaggerModule.createDocument(app, config);

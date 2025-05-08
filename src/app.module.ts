@@ -9,7 +9,7 @@ import { AdjustmentsModule } from './adjustments/adjustments.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Hace que ConfigModule esté disponible globalmente
+      isGlobal: true,
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

@@ -16,7 +16,6 @@ export class StudentsController {
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
   @ApiBody({ type: CreateStudentDto }) // Describe el cuerpo esperado
   async create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
-    // Logs eliminados
     return this.studentsService.create(createStudentDto);
   }
 
