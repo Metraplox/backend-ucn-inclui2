@@ -44,4 +44,4 @@ export class User extends Document {
 export const UserSchema = SchemaFactory.createForClass(User);
 
 // Optimizaciones de índices si es necesario
-UserSchema.index({ email: 1 });
+// UserSchema.index({ email: 1 }); // Eliminado para evitar duplicación, unique:true en @Prop es suficiente
