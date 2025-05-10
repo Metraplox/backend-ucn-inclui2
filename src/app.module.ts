@@ -7,6 +7,8 @@ import { StudentsModule } from './students/students.module';
 import { AdjustmentsModule } from './adjustments/adjustments.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ConsentModule } from './consent/consent.module'; // <--- Añadido ConsentModule
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { ConsentModule } from './consent/consent.module'; // <--- Añadido Conse
     AdjustmentsModule,
     DocumentsModule,
     ConsentModule, // <--- Añadido ConsentModule aquí
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

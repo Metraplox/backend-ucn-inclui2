@@ -1,45 +1,43 @@
 import { Controller, Post, Body, Get, Param, Req, Ip, UseGuards, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
-import { Request } from 'express'; // Para obtener userAgent e IP
+import { Request as ExpressRequest } from 'express'; // Renombrado para evitar conflicto con @Req
 import { Types } from 'mongoose';
 
 import { ConsentService } from './consent.service';
 import { CreateConsentDto } from './dto/create-consent.dto';
 import { Consent } from './schemas/consent.schema';
-// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; // Asumiendo un AuthGuard
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/schemas/user.schema';
+import { UserPublicData } from '../users/interfaces/user-public-data.interface';
 
 @ApiTags('consents')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('consents')
-// @ApiBearerAuth() // Si se usa autenticación JWT globalmente o en este controlador
-// @UseGuards(JwtAuthGuard) // Proteger todas las rutas del controlador
 export class ConsentController {
   constructor(private readonly consentService: ConsentService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Otorgar o actualizar el consentimiento para un documento (estudiante autenticado)' })
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({ summary: 'Otorgar o actualizar el consentimiento para un documento (Solo Estudiantes)' })
   @ApiBody({ type: CreateConsentDto })
   @ApiResponse({ status: 201, description: 'Consentimiento registrado/actualizado exitosamente.', type: Consent })
   @ApiResponse({ status: 400, description: 'Datos inválidos.' })
-  @ApiResponse({ status: 401, description: 'No autenticado.' })
-  @ApiResponse({ status: 403, description: 'No autorizado para dar consentimiento sobre este documento.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido o ID de estudiante no coincide.' })
   @ApiResponse({ status: 404, description: 'Estudiante o Documento no encontrado.' })
   async giveOrUpdateConsent(
     @Body() createConsentDto: CreateConsentDto,
-    @Req() req: Request, // Para obtener el usuario autenticado y otros datos del request
-    @Ip() ipAddress: string, // NestJS puede inyectar la IP directamente
+    @Req() req: ExpressRequest & { user: UserPublicData },
+    @Ip() ipAddress: string,
   ): Promise<Consent> {
-    // Placeholder para el ID del estudiante autenticado.
-    // En una implementación real, esto vendría de req.user.id o similar, establecido por un AuthGuard.
-    // const authenticatedStudentId = req.user?.id; // o req.user?.studentId;
-    const authenticatedStudentId = 'placeholder-student-id'; // REEMPLAZAR CON LÓGICA DE AUTENTICACIÓN REAL
-
-    if (!authenticatedStudentId) {
-      throw new BadRequestException('No se pudo determinar el ID del estudiante autenticado.');
-    }
+    const authenticatedStudentUserId = req.user._id; // User._id del estudiante autenticado
     
     const userAgent = req.headers['user-agent'];
     return this.consentService.giveOrUpdateConsent(
-      authenticatedStudentId,
+      authenticatedStudentUserId.toString(), // Asegurar que es string
       createConsentDto,
       ipAddress,
       userAgent,
@@ -47,42 +45,35 @@ export class ConsentController {
   }
 
   @Get('document/:documentId')
-  @ApiOperation({ summary: 'Obtener el estado de consentimiento para un documento específico (estudiante autenticado)' })
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({ summary: 'Obtener el estado de consentimiento para un documento específico (Solo Estudiantes)' })
   @ApiParam({ name: 'documentId', description: 'ID del documento', type: String })
   @ApiResponse({ status: 200, description: 'Estado del consentimiento (puede ser nulo si no existe).', type: Consent })
   @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
-  @ApiResponse({ status: 401, description: 'No autenticado.' })
-  @ApiResponse({ status: 404, description: 'Estudiante o Documento no encontrado (si se valida existencia aquí).' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
   async getConsentForDocument(
     @Param('documentId') documentId: string,
-    @Req() req: Request, // Para obtener el usuario autenticado
+    @Req() req: ExpressRequest & { user: UserPublicData },
   ): Promise<Consent | null> {
-    // Placeholder para el ID del estudiante autenticado
-    // const authenticatedStudentId = req.user?.id;
-    const authenticatedStudentId = 'placeholder-student-id'; // REEMPLAZAR
+    const authenticatedStudentUserId = req.user._id;
 
-    if (!authenticatedStudentId) {
-      throw new BadRequestException('No se pudo determinar el ID del estudiante autenticado.');
-    }
     if (!Types.ObjectId.isValid(documentId)) {
       throw new BadRequestException('ID de documento inválido.');
     }
 
-    return this.consentService.getConsentForDocumentByStudent(authenticatedStudentId, documentId);
+    return this.consentService.getConsentForDocumentByStudent(authenticatedStudentUserId.toString(), documentId);
   }
 
-  @Get('student/my-consents') // Ruta para que un estudiante obtenga todos sus consentimientos
-  @ApiOperation({ summary: 'Obtener todos los consentimientos otorgados por el estudiante autenticado' })
+  @Get('student/my-consents')
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({ summary: 'Obtener todos los consentimientos otorgados por el estudiante autenticado (Solo Estudiantes)' })
   @ApiResponse({ status: 200, description: 'Lista de consentimientos.', type: [Consent] })
-  @ApiResponse({ status: 401, description: 'No autenticado.' })
-  async getMyConsents(@Req() req: Request): Promise<Consent[]> { // Corregido el nombre del método
-    // Placeholder para el ID del estudiante autenticado
-    // const authenticatedStudentId = req.user?.id;
-    const authenticatedStudentId = 'placeholder-student-id'; // REEMPLAZAR
-
-    if (!authenticatedStudentId) {
-      throw new BadRequestException('No se pudo determinar el ID del estudiante autenticado.');
-    }
-    return this.consentService.getConsentsByStudent(authenticatedStudentId);
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  async getMyConsents(@Req() req: ExpressRequest & { user: UserPublicData }): Promise<Consent[]> {
+    const authenticatedStudentUserId = req.user._id;
+    return this.consentService.getConsentsByStudent(authenticatedStudentUserId.toString());
   }
 }

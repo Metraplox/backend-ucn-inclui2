@@ -16,31 +16,41 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
-  NotFoundException, // <--- Añadido NotFoundException
+  NotFoundException,
+  UseGuards, // <--- Añadido UseGuards
+  Req, // <--- Añadido Req
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes } from '@nestjs/swagger';
-import { Response } from 'express';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
+import { Request, Response } from 'express'; // <--- Añadido Request
 import * as fs from 'fs';
 import * as path from 'path';
 import { Types } from 'mongoose';
 
 import { DocumentsService } from './documents.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/schemas/user.schema';
+import { UserPublicData } from '../users/interfaces/user-public-data.interface';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentMetadataDto } from './dto/update-document-metadata.dto';
 import { DocumentEntity } from './schemas/document.schema';
 
 // Configuración básica de almacenamiento (debería coincidir o ser gestionada centralmente con el servicio)
-const UPLOAD_LOCATION = process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads');
+const UPLOAD_LOCATION = process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads'); // TODO: Mover a ConfigService
 
 @ApiTags('documents')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file', { dest: UPLOAD_LOCATION })) // 'file' es el nombre del campo en el form-data
-  @ApiOperation({ summary: 'Subir un nuevo documento para un estudiante (personal)' })
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @UseInterceptors(FileInterceptor('file', { dest: UPLOAD_LOCATION }))
+  @ApiOperation({ summary: 'Subir un nuevo documento para un estudiante (Admin, Staff)' })
   @ApiConsumes('multipart/form-data') // Indicar que este endpoint consume form-data
   @ApiBody({
     description: 'Archivo a subir y metadatos del documento.',
@@ -63,26 +73,31 @@ export class DocumentsController {
   })
   @ApiResponse({ status: 201, description: 'Documento subido y metadatos guardados.', type: DocumentEntity })
   @ApiResponse({ status: 400, description: 'Datos inválidos o archivo faltante/incorrecto.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async uploadDocument(
-    // TODO: Se ha eliminado ParseFilePipe temporalmente debido a un error persistente de TypeScript:
-    // "Type 'boolean' is not assignable to type 'string[]'." en la línea de validadores.
-    // Esto significa que no hay validación de tamaño o tipo de archivo en este momento.
-    // Se debe investigar y reintroducir la validación de archivos.
-    @UploadedFile()
+    @UploadedFile(
+      // TODO: Reintroducir ParseFilePipe
+    )
     file: Express.Multer.File,
-    @Body() createDocumentDto: CreateDocumentDto, // NestJS mapeará los campos del form-data al DTO
+    @Body() createDocumentDto: CreateDocumentDto,
+    @Req() req: Request & { user: UserPublicData },
   ): Promise<DocumentEntity> {
-    // Asumimos que 'uploadedByStaffId' vendrá de la autenticación (ej. req.user.id)
-    // Por ahora, lo simularemos o dejaremos como un placeholder.
-    const uploadedByStaffId = 'staff-placeholder-id'; // Reemplazar con lógica de usuario autenticado
+    if (!file) {
+      throw new BadRequestException('Archivo no proporcionado.');
+    }
+    const uploadedByStaffId = req.user._id; // ID del usuario autenticado (Admin/Staff)
     return this.documentsService.uploadForStudentByStaff(file, createDocumentDto, uploadedByStaffId);
   }
 
   @Get('student/:studentId')
-  @ApiOperation({ summary: 'Obtener todos los documentos de un estudiante específico' })
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @ApiOperation({ summary: 'Obtener todos los documentos de un estudiante específico (Admin, Staff)' })
   @ApiParam({ name: 'studentId', description: 'ID del estudiante', type: String })
   @ApiResponse({ status: 200, description: 'Lista de documentos del estudiante.', type: [DocumentEntity] })
   @ApiResponse({ status: 400, description: 'ID de estudiante inválido.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async getDocumentsByStudent(@Param('studentId') studentId: string): Promise<DocumentEntity[]> {
     if (!Types.ObjectId.isValid(studentId)) {
       throw new BadRequestException('ID de estudiante inválido.');
@@ -91,42 +106,49 @@ export class DocumentsController {
   }
 
   @Get(':documentId/metadata')
-  @ApiOperation({ summary: 'Obtener los metadatos de un documento específico' })
+  @Roles(UserRole.ADMIN, UserRole.STAFF) // Estudiantes podrían tener acceso si el documento les pertenece
+  @ApiOperation({ summary: 'Obtener los metadatos de un documento específico (Admin, Staff)' })
   @ApiParam({ name: 'documentId', description: 'ID del documento', type: String })
   @ApiResponse({ status: 200, description: 'Metadatos del documento.', type: DocumentEntity })
   @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
   @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async getDocumentMetadata(@Param('documentId') documentId: string): Promise<DocumentEntity> {
      if (!Types.ObjectId.isValid(documentId)) {
       throw new BadRequestException('ID de documento inválido.');
     }
+    // TODO: Considerar si un estudiante puede ver metadatos de sus propios documentos.
     return this.documentsService.getDocumentById(documentId);
   }
 
   @Get(':documentId/download')
-  @ApiOperation({ summary: 'Descargar un archivo de documento específico' })
+  @Roles(UserRole.ADMIN, UserRole.STAFF) // Estudiantes podrían tener acceso si el documento les pertenece
+  @ApiOperation({ summary: 'Descargar un archivo de documento específico (Admin, Staff)' })
   @ApiParam({ name: 'documentId', description: 'ID del documento a descargar', type: String })
-  @ApiResponse({ status: 200, description: 'Archivo del documento.' }) // El tipo de contenido será el del archivo
+  @ApiResponse({ status: 200, description: 'Archivo del documento.' })
   @ApiResponse({ status: 404, description: 'Documento o archivo no encontrado.' })
   @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async downloadDocument(
     @Param('documentId') documentId: string,
     @Res({ passthrough: true }) res: Response,
+    // @Req() req: Request & { user: UserPublicData }, // Para verificar permisos si un estudiante descarga
   ): Promise<StreamableFile> {
      if (!Types.ObjectId.isValid(documentId)) {
       throw new BadRequestException('ID de documento inválido.');
     }
+    // TODO: Lógica de autorización para estudiantes si pueden descargar sus propios documentos.
+    // const documentOwnerId = await this.documentsService.getDocumentOwner(documentId);
+    // if (req.user.roles.includes(UserRole.STUDENT) && req.user.studentRelatedId !== documentOwnerId) {
+    //   throw new ForbiddenException('No tienes permiso para descargar este documento.');
+    // }
+
     const document = await this.documentsService.getDocumentFileDetails(documentId);
-    
-    // filePath en el schema debe ser la ruta absoluta al archivo o una ruta que Multer haya guardado
-    // y que sea accesible para fs.createReadStream.
-    // Asegúrate que UPLOAD_LOCATION y la forma en que se guardan las rutas sean consistentes.
-    // Si filePath es relativo al UPLOAD_LOCATION: const filePath = path.join(UPLOAD_LOCATION, document.storageFileName);
-    // Si filePath ya es absoluto: const filePath = document.filePath;
-    const filePath = document.filePath; // Asumiendo que filePath es la ruta completa y correcta.
+    const filePath = document.filePath;
 
     try {
-      // Verificar si el archivo existe antes de intentar leerlo
       await fs.promises.access(filePath, fs.constants.F_OK);
     } catch (error) {
       throw new NotFoundException(`Archivo físico no encontrado para el documento ID "${documentId}" en la ruta ${filePath}`);
@@ -141,12 +163,15 @@ export class DocumentsController {
   }
 
   @Patch(':documentId/metadata')
-  @ApiOperation({ summary: 'Actualizar los metadatos de un documento existente' })
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @ApiOperation({ summary: 'Actualizar los metadatos de un documento existente (Admin, Staff)' })
   @ApiParam({ name: 'documentId', description: 'ID del documento a actualizar', type: String })
   @ApiBody({ type: UpdateDocumentMetadataDto })
   @ApiResponse({ status: 200, description: 'Metadatos actualizados exitosamente.', type: DocumentEntity })
   @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
   @ApiResponse({ status: 400, description: 'ID de documento inválido o datos de entrada inválidos.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async updateMetadata(
     @Param('documentId') documentId: string,
     @Body() updateDto: UpdateDocumentMetadataDto,
@@ -158,12 +183,15 @@ export class DocumentsController {
   }
 
   @Delete(':documentId')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un documento (metadatos y archivo físico)' })
+  @ApiOperation({ summary: 'Eliminar un documento (metadatos y archivo físico) (Admin, Staff)' })
   @ApiParam({ name: 'documentId', description: 'ID del documento a eliminar', type: String })
   @ApiResponse({ status: 204, description: 'Documento eliminado exitosamente.' })
   @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
   @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async deleteDocument(@Param('documentId') documentId: string): Promise<void> {
      if (!Types.ObjectId.isValid(documentId)) {
       throw new BadRequestException('ID de documento inválido.');
@@ -172,9 +200,10 @@ export class DocumentsController {
   }
 
   // Endpoint para que los estudiantes suban sus propios documentos
-  @Post('student/upload') // Ruta podría ser '/me/documents/upload' o similar si se usa un prefijo de ruta para estudiantes
+  @Post('student/upload')
+  @Roles(UserRole.STUDENT)
   @UseInterceptors(FileInterceptor('file', { dest: UPLOAD_LOCATION }))
-  @ApiOperation({ summary: 'Subir un nuevo documento (estudiante autenticado)' })
+  @ApiOperation({ summary: 'Subir un nuevo documento (Solo Estudiantes Autenticados)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Archivo a subir y metadatos del documento. El studentId en el DTO debe coincidir con el del estudiante autenticado.',
@@ -182,42 +211,51 @@ export class DocumentsController {
       type: 'object',
       properties: {
         file: { type: 'string', format: 'binary', description: 'El archivo a subir.' },
-        studentId: { type: 'string', example: '60c72b2f9b1d8c001f8e4a3c', description: 'Debe ser el ID del estudiante autenticado.' },
-        category: { type: 'string', example: DocumentEntity.name }, // Usar DocumentCategory.INFORME_MEDICO
-        description: { type: 'string', example: 'Mi informe médico', required: false },
+        // studentId no es necesario si se toma del token, pero si se envía, debe coincidir.
+        studentId: { type: 'string', example: '60c72b2f9b1d8c001f8e4a3c', description: 'ID del estudiante (debe coincidir con el autenticado).' },
+        category: { type: 'string', example: 'CERTIFICADO_ALUMNO_REGULAR' },
+        description: { type: 'string', example: 'Mi certificado', required: false },
       },
       required: ['file', 'studentId', 'category'],
     },
   })
   @ApiResponse({ status: 201, description: 'Documento subido y metadatos guardados.', type: DocumentEntity })
   @ApiResponse({ status: 400, description: 'Datos inválidos, archivo faltante/incorrecto, o ID de estudiante no coincide.' })
-  @ApiResponse({ status: 401, description: 'No autenticado como estudiante.' }) // Asumiendo AuthGuard
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido o ID de estudiante no coincide.' })
   async uploadDocumentForStudent(
     @UploadedFile(
-      // TODO: Reintroducir ParseFilePipe con validadores cuando se resuelva el error de TS.
-      // new ParseFilePipe({ ... }) 
+      // TODO: Reintroducir ParseFilePipe
     )
     file: Express.Multer.File,
     @Body() createDocumentDto: CreateDocumentDto,
-    // @Req() req: Request // Para obtener req.user.id o req.user.studentId si se usa un AuthGuard
+    @Req() req: Request & { user: UserPublicData },
   ): Promise<DocumentEntity> {
-    // Placeholder para el ID del estudiante autenticado.
-    // En una implementación real, esto vendría de un AuthGuard (ej. req.user.studentId).
-    // Por ahora, para que funcione, el studentId del DTO se usará, pero se validará en el servicio.
-    const authenticatedStudentId = createDocumentDto.studentId; // ESTO ES UN PLACEHOLDER PELIGROSO SIN AUTENTICACIÓN REAL
-                                                              // El servicio valida que createDocumentDto.studentId === authenticatedStudentId
+    if (!file) {
+      throw new BadRequestException('Archivo no proporcionado.');
+    }
+    const authenticatedStudentUserId = req.user._id; // Este es el User._id
 
-    if (!authenticatedStudentId) {
-        throw new BadRequestException('No se pudo determinar el ID del estudiante autenticado. Implementar AuthGuard.');
+    // IMPORTANTE: Se asume que el User.studentId (o un campo similar que lo relacione con la entidad Student)
+    // está disponible o que el User._id es suficiente si el estudiante es directamente un User.
+    // Si User y Student son entidades separadas y un User (rol STUDENT) tiene un studentProfileId o similar,
+    // ese es el ID que se debe usar/validar aquí.
+    // Por ahora, asumimos que createDocumentDto.studentId se refiere al ID de la entidad Student.
+    // Y que el usuario autenticado (req.user) tiene una forma de relacionarse con ese Student ID.
+    // Para este ejemplo, vamos a asumir que el `req.user._id` (que es el `User._id`)
+    // es el mismo que el `studentId` que se espera para el documento si el rol es ESTUDIANTE.
+    // ESTA LÓGICA PUEDE NECESITAR AJUSTE BASADO EN EL MODELO DE DATOS EXACTO.
+
+    // Validación: El studentId en el DTO debe coincidir con el ID del usuario autenticado (si es un estudiante)
+    // O, si el studentId en el DTO es para identificar a qué estudiante pertenece el documento
+    // y el usuario autenticado es un estudiante, entonces el DTO.studentId DEBE ser el ID del estudiante autenticado.
+    if (createDocumentDto.studentId !== authenticatedStudentUserId.toString()) {
+        throw new BadRequestException(
+            `El studentId '${createDocumentDto.studentId}' proporcionado en el cuerpo no coincide con el ID del estudiante autenticado '${authenticatedStudentUserId.toString()}'.`
+        );
     }
     
-    // Aquí se podría añadir una validación para asegurar que el studentId del DTO
-    // es el mismo que el del usuario autenticado, si el DTO aún lo requiere.
-    // El servicio ya lo hace, pero una validación temprana aquí es buena.
-    // if (createDocumentDto.studentId !== authenticatedStudentId) {
-    //   throw new BadRequestException('El ID de estudiante en la solicitud no coincide con el usuario autenticado.');
-    // }
-
-    return this.documentsService.uploadForStudent(file, createDocumentDto, authenticatedStudentId);
+    // El servicio `uploadForStudent` debería usar el ID del usuario autenticado.
+    return this.documentsService.uploadForStudent(file, createDocumentDto, authenticatedStudentUserId.toString());
   }
 }
