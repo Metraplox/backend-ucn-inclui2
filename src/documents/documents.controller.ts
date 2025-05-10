@@ -66,9 +66,9 @@ export class DocumentsController {
         },
         studentId: { type: 'string', example: '60c72b2f9b1d8c001f8e4a3c' },
         category: { type: 'string', example: 'Informe Médico' },
-        description: { type: 'string', example: 'Informe detallado', required: false },
+        description: { type: 'string', example: 'Informe detallado' }, // 'required: false' eliminado
       },
-      required: ['file', 'studentId', 'category'],
+      required: ['file', 'studentId', 'category'], // 'description' es opcional, por lo que no se lista aquí
     },
   })
   @ApiResponse({ status: 201, description: 'Documento subido y metadatos guardados.', type: DocumentEntity })
@@ -214,9 +214,9 @@ export class DocumentsController {
         // studentId no es necesario si se toma del token, pero si se envía, debe coincidir.
         studentId: { type: 'string', example: '60c72b2f9b1d8c001f8e4a3c', description: 'ID del estudiante (debe coincidir con el autenticado).' },
         category: { type: 'string', example: 'CERTIFICADO_ALUMNO_REGULAR' },
-        description: { type: 'string', example: 'Mi certificado', required: false },
+        description: { type: 'string', example: 'Mi certificado' }, // 'required: false' eliminado
       },
-      required: ['file', 'studentId', 'category'],
+      required: ['file', 'studentId', 'category'], // 'description' es opcional, por lo que no se lista aquí
     },
   })
   @ApiResponse({ status: 201, description: 'Documento subido y metadatos guardados.', type: DocumentEntity })
