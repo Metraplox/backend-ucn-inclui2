@@ -19,24 +19,29 @@ export class StudentsService {
     return this.studentModel.find().exec(); // .exec() devuelve una Promise
   }
 
-  async findOne(id: string): Promise<Student | null> {
-    // Validar que el ID sea un ObjectId válido de Mongo
-    return this.studentModel.findById(id).exec();
+  async findOne(id: string): Promise<Student> {
+    const student = await this.studentModel.findById(id).exec();
+    if (!student) {
+      throw new NotFoundException(`Estudiante con ID "${id}" no encontrado.`);
+    }
+    return student;
   }
 
-  async update(id: string, updateStudentDto: UpdateStudentDto): Promise<Student | null> {
-    // findByIdAndUpdate devuelve el documento *antes* de la actualización por defecto.
-    // { new: true } hace que devuelva el documento modificado.
-    return this.studentModel.findByIdAndUpdate(id, updateStudentDto, { new: true }).exec();
+  async update(id: string, updateStudentDto: UpdateStudentDto): Promise<Student> {
+    const updatedStudent = await this.studentModel.findByIdAndUpdate(id, updateStudentDto, { new: true }).exec();
+    if (!updatedStudent) {
+      throw new NotFoundException(`Estudiante con ID "${id}" no encontrado para actualizar.`);
+    }
+    return updatedStudent;
   }
 
-  async remove(id: string): Promise<{ deletedCount?: number }> {
-    // deleteOne devuelve un objeto con { acknowledged: boolean, deletedCount: number }
+  async remove(id: string): Promise<void> {
     const result = await this.studentModel.deleteOne({ _id: id }).exec();
     if (result.deletedCount === 0) {
-        // Opcional: Podrías lanzar NotFoundException aquí si prefieres manejarlo en el servicio
-        // throw new NotFoundException(`Student with ID "${id}" not found`);
+      throw new NotFoundException(`Estudiante con ID "${id}" no encontrado para eliminar.`);
     }
-    return result; // Devolver el objeto resultado completo
+    // No es necesario devolver nada si la eliminación fue exitosa y no hay error.
+    // Si se necesita el resultado, se puede cambiar el tipo de retorno a: Promise<{ deletedCount: number }>
+    // y devolver { deletedCount: result.deletedCount }
   }
 }

@@ -32,11 +32,8 @@ export class StudentsController {
   @ApiResponse({ status: 200, description: 'Detalles del estudiante.', type: Student })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
   async findOne(@Param('id') id: string): Promise<Student> {
-    const student = await this.studentsService.findOne(id);
-    if (!student) {
-      throw new NotFoundException(`Student with ID "${id}" not found`);
-    }
-    return student;
+    // El servicio ahora lanza NotFoundException si no se encuentra.
+    return this.studentsService.findOne(id);
   }
 
   @Patch(':id')
@@ -47,11 +44,8 @@ export class StudentsController {
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
   async update(@Param('id') id: string, @Body() updateStudentDto: UpdateStudentDto): Promise<Student> {
-    const updatedStudent = await this.studentsService.update(id, updateStudentDto);
-    if (!updatedStudent) {
-      throw new NotFoundException(`Student with ID "${id}" not found`);
-    }
-    return updatedStudent;
+    // El servicio ahora lanza NotFoundException si no se encuentra o no se puede actualizar.
+    return this.studentsService.update(id, updateStudentDto);
   }
 
   @Delete(':id')
@@ -60,11 +54,9 @@ export class StudentsController {
   @ApiParam({ name: 'id', description: 'ID único del estudiante a eliminar', type: String })
   @ApiResponse({ status: 204, description: 'Estudiante eliminado exitosamente.' })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
-  async remove(@Param('id') id: string): Promise<void> { // Cambiado a Promise<void> para 204
-    const result = await this.studentsService.remove(id);
-    if (!result || result.deletedCount === 0) { // Chequear si Mongoose devolvió un resultado y si algo fue borrado
-        throw new NotFoundException(`Student with ID "${id}" not found`);
-    }
+  async remove(@Param('id') id: string): Promise<void> {
+    // El servicio ahora lanza NotFoundException si no se encuentra para eliminar.
+    await this.studentsService.remove(id);
     // No se retorna nada en el cuerpo para una respuesta 204
   }
 }
