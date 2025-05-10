@@ -128,4 +128,42 @@ export class DocumentsService {
       throw new NotFoundException(`Documento con ID "${documentId}" no encontrado para eliminar (posiblemente eliminado entre operaciones).`);
     }
   }
+
+  async uploadForStudent(
+    file: Express.Multer.File,
+    createDocumentDto: CreateDocumentDto, // studentId en este DTO debe ser validado contra el studentId autenticado
+    authenticatedStudentId: string, // ID del estudiante autenticado
+  ): Promise<DocumentDocument> {
+    if (!file) {
+      throw new BadRequestException('Archivo no proporcionado.');
+    }
+
+    // Validar que el studentId en el DTO (si se permite) coincida con el autenticado
+    // O mejor, ignorar el studentId del DTO y usar siempre el authenticatedStudentId.
+    if (createDocumentDto.studentId !== authenticatedStudentId) {
+        throw new BadRequestException('El ID de estudiante en la solicitud no coincide con el usuario autenticado.');
+    }
+    
+    // Aquí también se podría validar la existencia del estudiante si fuera necesario,
+    // pero si está autenticado, se asume que existe.
+
+    const newDocument = new this.documentModel({
+      ...createDocumentDto, // category, description
+      studentId: new Types.ObjectId(authenticatedStudentId), // Usar el ID del estudiante autenticado
+      fileNameOriginal: file.originalname,
+      storageFileName: file.filename,
+      filePath: file.path,
+      mimeType: file.mimetype,
+      sizeBytes: file.size,
+      uploadedBy: authenticatedStudentId, // El estudiante se sube su propio documento
+      uploadDate: new Date(),
+    });
+
+    try {
+      return await newDocument.save();
+    } catch (error) {
+      console.error('Error saving document to DB by student:', error);
+      throw new InternalServerErrorException('Error al guardar el documento.');
+    }
+  }
 }

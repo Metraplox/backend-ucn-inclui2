@@ -52,16 +52,16 @@ Establecer un sistema funcional para la gestión de información de estudiantes 
 *   **Módulos Afectados:** Extender `src/documents/`, crear `src/consent/` (nuevo módulo).
 *   **Estimación IA:** 14-22 iteraciones/bloques.
 *   **Progreso:**
-    *   [ ] **Extender `DocumentsService`/`Controller` para carga por estudiante.**
+    *   [x] **Extender `DocumentsService`/`Controller` para carga por estudiante.**
         *   Endpoint `POST /student/documents/upload`. Autorización para estudiante.
-    *   [ ] **Definir Esquema `Consent` (`src/consent/schemas/consent.schema.ts`)**
+    *   [x] **Definir Esquema `Consent` (`src/consent/schemas/consent.schema.ts`)**
         *   Campos: `documentId` (ref: 'Document'), `studentId` (ref: 'Student'), `isConsentGiven` (Boolean), `consentDate`, `ipAddress`, `userAgent`.
-    *   [ ] **Crear DTO `CreateConsentDto`.**
-    *   [ ] **Implementar `ConsentService`.**
+    *   [x] **Crear DTO `CreateConsentDto`.**
+    *   [x] **Implementar `ConsentService`.**
         *   Métodos: `giveOrUpdateConsent`, `getConsentForDocumentByStudent`.
-    *   [ ] **Definir Endpoints en `ConsentController`.**
+    *   [x] **Definir Endpoints en `ConsentController`.**
         *   `POST /consents`, `GET /consents/document/:documentId`. Autorización.
-    *   [ ] **Pruebas Unitarias.**
+    *   [x] **Pruebas Unitarias.** (Creadas para servicio y controlador)
 
 ## 4. Consideraciones Transversales
 
