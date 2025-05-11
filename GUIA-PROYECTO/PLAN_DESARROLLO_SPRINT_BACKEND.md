@@ -9,10 +9,35 @@ Establecer un sistema funcional para la gestión de información de estudiantes 
 *   **Backend:** NestJS, TypeScript
 *   **Base de Datos:** MongoDB (con Mongoose)
 *   **Manejo de Archivos:** Multer
+*   **Autenticación:** JWT, Passport.js
 
 ## 3. Fases de Desarrollo y Progreso
 
-### Fase 1: Gestión de Estudiantes (SCRUM-19)
+### Fase 0: Autenticación y Gestión de Usuarios (INC-13) - PRIORIDAD ALTA
+*   **Meta:** Implementar un sistema de autenticación basado en JWT y gestión de usuarios con roles básicos (administrador, personal, estudiante, docente).
+*   **Módulos Afectados:** `src/auth/` (nuevo), `src/users/` (nuevo).
+*   **Estimación IA:** 25-35 iteraciones/bloques.
+*   **Progreso:**
+    *   [x] **Definir Esquema `User` (`src/users/schemas/user.schema.ts`)**
+        *   Campos: `email` (único), `password` (hash), `roles` (array de strings/enum), `nombreCompleto`, `isActive`.
+    *   [x] **Crear DTOs para Usuarios (`CreateUserDto`, `UpdateUserDto`) y Auth (`LoginDto`).**
+    *   [x] **Implementar `UsersService` (`src/users/users.service.ts`)**
+        *   CRUD para usuarios (accesible por administradores).
+        *   Método para encontrar usuario por email (para login).
+    *   [x] **Implementar `AuthService` (`src/auth/auth.service.ts`)**
+        *   Métodos: `validateUser(email, password)`, `login(user)`, `register(createUserDto)` (si aplica).
+        *   Generación y validación de JWT.
+    *   [x] **Definir Endpoints en `UsersController` y `AuthController`.**
+        *   `POST /auth/login`
+        *   `POST /users/register` (o `POST /auth/register`)
+        *   CRUD para `/users` (protegido para administradores).
+    *   [x] **Implementar Estrategias de Passport (`JwtStrategy`, `LocalStrategy`).**
+    *   [x] **Crear Guards (`JwtAuthGuard`, `RolesGuard`).**
+    *   [x] **Integrar Guards en controladores existentes (Students, Documents, Consent).**
+    *   [x] **Reemplazar placeholders de ID de usuario/estudiante con datos del usuario autenticado.**
+    *   [x] **Pruebas Unitarias (Servicios, Controladores, Guards).** (Funcionalidad básica probada con script `api_test_script.js`. Pruebas unitarias formales pendientes).
+
+### Fase 1: Gestión de Estudiantes (SCRUM-01)
 *   **Meta:** Implementar el CRUD completo para la entidad `Student`.
 *   **Módulos Afectados:** `src/students/`
 *   **Estimación IA:** 17-25 iteraciones/bloques.

@@ -12,7 +12,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
 
-@ApiTags('consents')
+@ApiTags('consent')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('consents')

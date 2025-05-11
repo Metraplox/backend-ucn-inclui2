@@ -11,9 +11,12 @@ async function bootstrap() {
     .setTitle('INCLUI2 API')
     .setDescription('API para la gestión de estudiantes con necesidades')
     .setVersion('1.0')
-    .addTag('students', 'Operaciones relacionadas con estudiantes') // Tag para agrupar endpoints
-    .addTag('adjustments', 'Operaciones relacionadas con ajustes') // Tag para agrupar endpoints
-    // Puedes agregar más tags para otros módulos
+    .addTag('students', 'Operaciones relacionadas con estudiantes')
+    .addTag('adjustments', 'Operaciones relacionadas con ajustes')
+    .addTag('users', 'Operaciones relacionadas con usuarios')
+    .addTag('auth', 'Operaciones relacionadas con autenticación')
+    .addTag('consent', 'Operaciones relacionadas con consentimientos')
+    .addTag('documents', 'Operaciones relacionadas con documentos')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document); // Endpoint para la UI: /api

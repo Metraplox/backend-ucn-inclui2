@@ -101,6 +101,9 @@ class AdjustmentHistory {
 // Esquema principal
 @Schema({ timestamps: true })
 export class Adjustment extends Document {
+  @ApiProperty({ description: 'ID único del ajuste (generado por MongoDB)', example: '605c72ef9167f86c2cabc456' })
+  declare _id: string; // Agregado para Swagger
+
   @ApiProperty({
     example: '12345678-9',
     description: 'RUT del estudiante asociado',
@@ -121,6 +124,12 @@ export class Adjustment extends Document {
   })
   @Prop({ type: [AdjustmentHistory], default: [] })
   history: AdjustmentHistory[];
+
+  @ApiProperty({ description: 'Fecha de creación del registro', example: '2023-01-01T12:00:00.000Z', readOnly: true })
+  declare createdAt: Date;
+
+  @ApiProperty({ description: 'Fecha de última actualización del registro', example: '2023-01-02T15:30:00.000Z', readOnly: true })
+  declare updatedAt: Date;
 }
 
 export const AdjustmentSchema = SchemaFactory.createForClass(Adjustment);

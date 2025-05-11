@@ -13,7 +13,7 @@ import {
 } from '@nestjs/swagger';
 import { Adjustment } from './schemas/adjustment.schema';
 
-@ApiTags('Ajustes Razonables') // Mejor etiqueta para agrupación en Swagger UI
+@ApiTags('adjustments') 
 @ApiBearerAuth() // Para autenticación JWT (opcional)
 @Controller('adjustments')
 export class AdjustmentsController {
