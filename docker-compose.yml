@@ -1,5 +1,24 @@
 version: '3.8'
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs_app_ucn_dge
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/ucn-dge
+      JWT_SECRET: ${JWT_SECRET:-mi_secreto_jwt_por_defecto} # Utiliza una variable de entorno o un valor por defecto
+      # Agrega otras variables de entorno necesarias aquí
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules # Evita que node_modules local sobreescriba el del contenedor
+      - /usr/src/app/dist # Evita que dist local sobreescriba el del contenedor
+    # command: npm run start:dev # Descomenta para desarrollo con hot-reloading
+
   mongo:
     image: mongo:latest
     container_name: mongo_db_ucn_dge
