@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class ApiService {
   static const String baseUrl = 'http://localhost:3000'; // Asegúrate de incluir el protocolo
@@ -51,4 +52,22 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
+
+  static Future<List<String>> getUserRoles() async {
+    final token = await getToken();
+    if (token != null) {
+      final decodedToken = JwtDecoder.decode(token);
+      final roles = decodedToken['roles'];
+      if (roles is List) {
+        return roles.map((e) => e.toString()).toList();
+      }
+    }
+    return [];
+  }
+
+  static Future<bool> isStudent() async {
+    final roles = await getUserRoles();
+    return roles.contains('estudiante');
+  }
 }
+

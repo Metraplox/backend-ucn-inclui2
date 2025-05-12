@@ -1,38 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/widgets/app_scaffold.dart';
+import 'package:incluye_app/widgets/course_widget.dart';
 import 'package:incluye_app/services/api_service.dart';
-import 'package:incluye_app/screens/auth/login_screen.dart';
 
-
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  void _logout(BuildContext context) async {
-    await ApiService.logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
-  }
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isStudent = false;
+
+  @override
+void initState() {
+  super.initState();
+  _checkRole();
+}
+
+Future<void> _checkRole() async {
+  final isStudent = await ApiService.isStudent();
+  setState(() {
+    _isStudent = isStudent;
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inicio'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
-            onPressed: () => _logout(context),
-          )
-        ],
-      ),
-      body: const Center(
-        child: Text(
-          '¡Sesión iniciada correctamente!',
-          style: TextStyle(fontSize: 18),
-        ),
-      ),
+    return AppScaffold(
+      title: _isStudent ? 'Mis Asignaturas y Ajustes' : '',
+      isStudent: _isStudent,
+      body: _isStudent
+          ? SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: const [
+                  CourseWidget(
+                    courseName: 'Cálculo II',
+                    professor: 'Jorge Díaz',
+                    adjustments: [
+                      'Más tiempo en evaluaciones',
+                      'Letras más grandes',
+                      'Audífonos',
+                    ],
+                    onEdit: _onEditDemo,
+                  ),
+                  CourseWidget(
+                    courseName: 'Álgebra II',
+                    professor: 'Pablo Díaz',
+                    adjustments: [
+                      'Más tiempo en evaluaciones',
+                      'Letras más grandes',
+                      'Audífonos',
+                    ],
+                    onEdit: _onEditDemo,
+                  ),
+                  CourseWidget(
+                    courseName: 'Química',
+                    professor: 'Lionel Messi',
+                    adjustments: [
+                      'Más tiempo en evaluaciones',
+                      'Letras más grandes',
+                      'Audífonos',
+                    ],
+                    onEdit: _onEditDemo,
+                  ),
+                ],
+              ),
+            )
+          : const Center(child: Text('Bienvenido, ¡debes iniciar sesión como estudiante!')),
     );
+  }
+
+  static void _onEditDemo() {
+    // Demo: aquí ejecutarías Navigator.push(...) a la pantalla de edición
   }
 }
