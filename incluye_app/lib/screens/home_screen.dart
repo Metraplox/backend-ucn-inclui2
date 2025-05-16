@@ -12,26 +12,33 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isStudent = false;
+  bool _isAdmin = false;
 
   @override
-void initState() {
-  super.initState();
-  _checkRole();
-}
+  void initState() {
+    super.initState();
+    _checkRole();
+  }
 
-Future<void> _checkRole() async {
-  final isStudent = await ApiService.isStudent();
-  setState(() {
-    _isStudent = isStudent;
-  });
-}
-
+  Future<void> _checkRole() async {
+    final isStudent = await ApiService.isStudent();
+    final isAdmin = await ApiService.isAdmin();
+    setState(() {
+      _isStudent = isStudent;
+      _isAdmin = isAdmin;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      title: _isStudent ? 'Mis Asignaturas y Ajustes' : '',
+      title: _isStudent
+          ? 'Mis Asignaturas y Ajustes'
+          : _isAdmin
+              ? 'Panel de Administración'
+              : '',
       isStudent: _isStudent,
+      isAdmin: _isAdmin,
       body: _isStudent
           ? SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -70,7 +77,9 @@ Future<void> _checkRole() async {
                 ],
               ),
             )
-          : const Center(child: Text('Bienvenido, ¡debes iniciar sesión como estudiante!')),
+          : _isAdmin
+              ? const Center(child: Text('Bienvenido, administrador.'))
+              : const Center(child: Text('Bienvenido, ¡debes iniciar sesión!')),
     );
   }
 
