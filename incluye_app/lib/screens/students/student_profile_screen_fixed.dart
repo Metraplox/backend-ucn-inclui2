@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:incluye_app/services/api_service.dart';
-import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
-import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/widgets/edit_student_dialog.dart';
+import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
 import 'package:incluye_app/widgets/edit_adjustment_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:incluye_app/models/student_model.dart';
 
 class StudentProfileScreen extends StatefulWidget {
   final String studentId;
@@ -18,11 +18,8 @@ class StudentProfileScreen extends StatefulWidget {
 }
 
 class StudentProfileScreenState extends State<StudentProfileScreen> {
-  // Datos del estudiante
-  Student? _studentData;
-  
-  // Estado de carga
-  bool _isLoading = true;
+  Student? student;
+  bool isLoading = true;
   bool consentGiven = false;
 
   List<String> periodos = ['2025-1', '2025-2', '2026-1'];
@@ -74,9 +71,9 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
   Future<void> _loadStudent() async {
     final data = await ApiService.getStudentById(widget.studentId);
     setState(() {
-      _studentData = data;
-      _isLoading = false;
-      consentGiven = _studentData?.consentimientoFirmado ?? false;
+      student = data;
+      isLoading = false;
+      consentGiven = student?.consentimientoFirmado ?? false;
     });
   }
 
@@ -91,14 +88,14 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
   }
 
   void _showEditDialog() {
-    if (_studentData == null) return;
+    if (student == null) return;
     showDialog(
       context: context,
       builder: (_) => EditStudentDialog(
-        student: _studentData!,
+        student: student!,
         onUpdated: (updatedStudent) {
           setState(() {
-            _studentData = updatedStudent;
+            student = updatedStudent;
           });
           Navigator.of(context).pop();
         },
@@ -196,7 +193,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
@@ -208,13 +205,9 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // Mejorar detección de dispositivos móviles y tablets
-          final screenWidth = constraints.maxWidth;
-          final isMobile = screenWidth < 600;
-          final isTablet = screenWidth >= 600 && screenWidth < 900;
-          // Ajustar tamaños según el dispositivo
-          final padding = isMobile ? 12.0 : (isTablet ? 16.0 : 20.0);
-          final fontSizeTitle = isMobile ? 18.0 : (isTablet ? 20.0 : 22.0);
+          final isMobile = constraints.maxWidth < 600;
+          final padding = isMobile ? 12.0 : 16.0;
+          final fontSizeTitle = isMobile ? 18.0 : 20.0;
 
           return SingleChildScrollView(
             padding: EdgeInsets.all(padding),
@@ -240,7 +233,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${_studentData?.nombres ?? ''} ${_studentData?.apellidos ?? ''}',
+                              '${student!['nombres']} ${student!['apellidos']}',
                               style: TextStyle(
                                 fontSize: fontSizeTitle,
                                 fontWeight: FontWeight.bold,
@@ -248,17 +241,17 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'RUT: ${_studentData?.rut ?? ''}',
+                              'RUT: ${student!['rut']}',
                               style: const TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Carrera: ${_studentData?.carrera ?? ''}',
+                              'Carrera: ${student!['carrera']}',
                               style: const TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Diagnóstico: ${_studentData?.diagnostico ?? ''}',
+                              'Diagnóstico: ${student!['diagnostico']}',
                               style: const TextStyle(fontSize: 16),
                             ),
                           ],
@@ -272,7 +265,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${_studentData?.nombres ?? ''} ${_studentData?.apellidos ?? ''}',
+                                    '${student!['nombres']} ${student!['apellidos']}',
                                     style: TextStyle(
                                       fontSize: fontSizeTitle,
                                       fontWeight: FontWeight.bold,
@@ -280,7 +273,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'RUT: ${_studentData?.rut ?? ''}',
+                                    'RUT: ${student!['rut']}',
                                     style: const TextStyle(fontSize: 16),
                                   ),
                                 ],
@@ -292,12 +285,12 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Carrera: ${_studentData?.carrera ?? ''}',
+                                    'Carrera: ${student!['carrera']}',
                                     style: const TextStyle(fontSize: 16),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Diagnóstico: ${_studentData?.diagnostico ?? ""}',
+                                    'Diagnóstico: ${student!['diagnostico']}',
                                     style: const TextStyle(fontSize: 16),
                                   ),
                                 ],
@@ -454,7 +447,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                             constraints: BoxConstraints(
                               minWidth: MediaQuery.of(context).size.width - (padding * 2),
                             ),
-                            child: _buildCursosTable(isMobile),
+                            child: _buildCursosTable(),
                           ),
                         ),
                       ],
@@ -509,7 +502,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                             constraints: BoxConstraints(
                               minWidth: MediaQuery.of(context).size.width - (padding * 2),
                             ),
-                            child: _buildAjustesTable(isMobile),
+                            child: _buildAjustesTable(),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -561,7 +554,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
     );
   }
 
-  Widget _buildCursosTable(bool isMobile) {
+  Widget _buildCursosTable() {
     final cursos = cursosPorPeriodo[selectedPeriodo] ?? [];
     if (cursos.isEmpty) {
       return Center(
@@ -590,10 +583,8 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
           return null;
         },
       ),
-      columnSpacing: isMobile ? 16 : 24,
-      horizontalMargin: isMobile ? 8 : 12,
-      // Ajustar el tamaño de fuente en móviles
-      dataTextStyle: TextStyle(fontSize: isMobile ? 13 : 14),
+      columnSpacing: 24,
+      horizontalMargin: 12,
       columns: const [
         DataColumn(label: Text('Nombre', style: TextStyle(fontWeight: FontWeight.bold))),
         DataColumn(label: Text('NRC', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -625,7 +616,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
     );
   }
 
-  Widget _buildAjustesTable(bool isMobile) {
+  Widget _buildAjustesTable() {
     if (ajustes.isEmpty) {
       return Center(
         child: Padding(
@@ -653,10 +644,8 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
           return null;
         },
       ),
-      columnSpacing: isMobile ? 16 : 24,
-      horizontalMargin: isMobile ? 8 : 12,
-      // Ajustar el tamaño de fuente en móviles
-      dataTextStyle: TextStyle(fontSize: isMobile ? 13 : 14),
+      columnSpacing: 24,
+      horizontalMargin: 12,
       columns: const [
         DataColumn(label: Text('Curso', style: TextStyle(fontWeight: FontWeight.bold))),
         DataColumn(label: Text('Tipo', style: TextStyle(fontWeight: FontWeight.bold))),

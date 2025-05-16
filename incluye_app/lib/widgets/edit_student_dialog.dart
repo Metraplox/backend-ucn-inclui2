@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/services/api_service.dart';
 
 class EditStudentDialog extends StatefulWidget {
-  final Map<String, dynamic> student;
-  final Function(Map<String, dynamic>) onUpdated;
+  final Student student;
+  final Function(Student) onUpdated;
 
-  const EditStudentDialog({required this.student, required this.onUpdated, Key? key}) : super(key: key);
+  const EditStudentDialog({
+    required this.student,
+    required this.onUpdated,
+    super.key,
+  });
 
   @override
-  _EditStudentDialogState createState() => _EditStudentDialogState();
+  State<EditStudentDialog> createState() => _EditStudentDialogState();
 }
 
 class _EditStudentDialogState extends State<EditStudentDialog> {
@@ -29,17 +34,14 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
   void initState() {
     super.initState();
 
-    String fechaRaw = widget.student['fechaNacimiento'] ?? '';
-    String fechaLimpia = fechaRaw.contains('T') ? fechaRaw.split('T')[0] : fechaRaw;
-
-    _rutController = TextEditingController(text: widget.student['rut']);
-    _nombresController = TextEditingController(text: widget.student['nombres']);
-    _apellidosController = TextEditingController(text: widget.student['apellidos']);
-    _emailController = TextEditingController(text: widget.student['email']);
-    _carreraController = TextEditingController(text: widget.student['carrera']);
-    _fechaNacimientoController = TextEditingController(text: fechaLimpia);
-    _informacionContactoController = TextEditingController(text: widget.student['informacionContacto'] ?? '');
-    _necesidadesController = TextEditingController(text: widget.student['necesidadesEducativasEspeciales'] ?? '');
+    _rutController = TextEditingController(text: widget.student.rut);
+    _nombresController = TextEditingController(text: widget.student.nombres);
+    _apellidosController = TextEditingController(text: widget.student.apellidos);
+    _emailController = TextEditingController(text: widget.student.email);
+    _carreraController = TextEditingController(text: widget.student.carrera);
+    _fechaNacimientoController = TextEditingController(text: widget.student.fechaNacimiento);
+    _informacionContactoController = TextEditingController(text: widget.student.informacionContacto ?? '');
+    _necesidadesController = TextEditingController(text: widget.student.necesidadesEducativasEspeciales ?? '');
   }
 
   @override
@@ -67,20 +69,25 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
       return;
     }
 
-    final updatedStudent = {
-      'rut': _rutController.text.trim(),
-      'nombres': _nombresController.text.trim(),
-      'apellidos': _apellidosController.text.trim(),
-      'email': _emailController.text.trim(),
-      'carrera': _carreraController.text.trim(),
-      'fechaNacimiento': fecha,
-      'informacionContacto': _informacionContactoController.text.trim(),
-      'necesidadesEducativasEspeciales': _necesidadesController.text.trim(),
-    };
+    final updatedStudent = Student(
+      id: widget.student.id,
+      rut: _rutController.text.trim(),
+      nombres: _nombresController.text.trim(),
+      apellidos: _apellidosController.text.trim(),
+      email: _emailController.text.trim(),
+      carrera: _carreraController.text.trim(),
+      fechaNacimiento: fecha,
+      informacionContacto: _informacionContactoController.text.trim(),
+      necesidadesEducativasEspeciales: _necesidadesController.text.trim(),
+    );
 
-    updatedStudent.removeWhere((key, value) => value == '');
-
-    final success = await ApiService.updateStudent(widget.student['_id'], updatedStudent);
+    final success = await ApiService.updateStudent(
+      widget.student.id,
+      updatedStudent,
+    );
+    
+    if (!mounted) return;
+    
     if (success) {
       widget.onUpdated(updatedStudent);
       Navigator.of(context).pop(); // ✅ Cierra el diálogo al guardar con éxito
@@ -103,39 +110,80 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(controller: _rutController, decoration: const InputDecoration(labelText: 'RUT'), validator: _requiredValidator),
-              TextFormField(controller: _nombresController, decoration: const InputDecoration(labelText: 'Nombres'), validator: _requiredValidator),
-              TextFormField(controller: _apellidosController, decoration: const InputDecoration(labelText: 'Apellidos'), validator: _requiredValidator),
-              TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email'), validator: _requiredValidator),
-              TextFormField(controller: _carreraController, decoration: const InputDecoration(labelText: 'Carrera'), validator: _requiredValidator),
-              TextFormField(controller: _fechaNacimientoController,decoration: InputDecoration(labelText: 'Fecha de Nacimiento (YYYY-MM-DD)',
-                              errorText: _fechaError,
-                              suffixIcon: IconButton(
-                                icon: const Icon(Icons.calendar_today),
-                                onPressed: () async {
-                                  DateTime? picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.tryParse(_fechaNacimientoController.text) ?? DateTime(2000),
-                                    firstDate: DateTime(1900),
-                                    lastDate: DateTime.now(),
-                                  );
-                                  if (picked != null) {
-                                    setState(() {
-                                      _fechaNacimientoController.text = picked.toIso8601String().split('T')[0];
-                                    });
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-              TextFormField(controller: _informacionContactoController, decoration: const InputDecoration(labelText: 'Información de Contacto')),
-              TextFormField(controller: _necesidadesController, decoration: const InputDecoration(labelText: 'Necesidades Educativas Especiales')),
+              TextFormField(
+                controller: _rutController,
+                decoration: const InputDecoration(labelText: 'RUT'),
+                validator: _requiredValidator,
+              ),
+              TextFormField(
+                controller: _nombresController,
+                decoration: const InputDecoration(labelText: 'Nombres'),
+                validator: _requiredValidator,
+              ),
+              TextFormField(
+                controller: _apellidosController,
+                decoration: const InputDecoration(labelText: 'Apellidos'),
+                validator: _requiredValidator,
+              ),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator: _requiredValidator,
+              ),
+              TextFormField(
+                controller: _carreraController,
+                decoration: const InputDecoration(labelText: 'Carrera'),
+                validator: _requiredValidator,
+              ),
+              TextFormField(
+                controller: _fechaNacimientoController,
+                decoration: InputDecoration(
+                  labelText: 'Fecha de Nacimiento (YYYY-MM-DD)',
+                  errorText: _fechaError,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () async {
+                      DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate:
+                            DateTime.tryParse(
+                              _fechaNacimientoController.text,
+                            ) ??
+                            DateTime(2000),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null && mounted) {
+                        setState(() {
+                          _fechaNacimientoController.text =
+                              picked.toIso8601String().split('T')[0];
+                        });
+                      }
+                    },
+                  ),
+                ),
+              ),
+              TextFormField(
+                controller: _informacionContactoController,
+                decoration: const InputDecoration(
+                  labelText: 'Información de Contacto',
+                ),
+              ),
+              TextFormField(
+                controller: _necesidadesController,
+                decoration: const InputDecoration(
+                  labelText: 'Necesidades Educativas Especiales',
+                ),
+              ),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
         ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
       ],
     );

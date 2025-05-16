@@ -4,10 +4,14 @@ class EditAdjustmentDialog extends StatefulWidget {
   final Map<String, dynamic>? initialData;
   final void Function(Map<String, dynamic>) onSaved;
 
-  const EditAdjustmentDialog({this.initialData, required this.onSaved, Key? key}) : super(key: key);
+  const EditAdjustmentDialog({
+    this.initialData,
+    required this.onSaved,
+    super.key,
+  });
 
   @override
-  _EditAdjustmentDialogState createState() => _EditAdjustmentDialogState();
+  State<EditAdjustmentDialog> createState() => _EditAdjustmentDialogState();
 }
 
 class _EditAdjustmentDialogState extends State<EditAdjustmentDialog> {
@@ -21,11 +25,21 @@ class _EditAdjustmentDialogState extends State<EditAdjustmentDialog> {
   @override
   void initState() {
     super.initState();
-    _cursoController = TextEditingController(text: widget.initialData?['curso'] ?? '');
-    _tipoController = TextEditingController(text: widget.initialData?['tipo'] ?? '');
-    _aprobadoPorController = TextEditingController(text: widget.initialData?['aprobadoPor'] ?? '');
-    _fechaAprobacionController = TextEditingController(text: widget.initialData?['fechaAprobacion'] ?? '');
-    _vencimientoController = TextEditingController(text: widget.initialData?['vencimiento'] ?? '');
+    _cursoController = TextEditingController(
+      text: widget.initialData?['curso'] ?? '',
+    );
+    _tipoController = TextEditingController(
+      text: widget.initialData?['tipo'] ?? '',
+    );
+    _aprobadoPorController = TextEditingController(
+      text: widget.initialData?['aprobadoPor'] ?? '',
+    );
+    _fechaAprobacionController = TextEditingController(
+      text: widget.initialData?['fechaAprobacion'] ?? '',
+    );
+    _vencimientoController = TextEditingController(
+      text: widget.initialData?['vencimiento'] ?? '',
+    );
   }
 
   @override
@@ -65,7 +79,9 @@ class _EditAdjustmentDialogState extends State<EditAdjustmentDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.initialData == null ? 'Agregar Ajuste' : 'Editar Ajuste'),
+      title: Text(
+        widget.initialData == null ? 'Agregar Ajuste' : 'Editar Ajuste',
+      ),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -74,17 +90,31 @@ class _EditAdjustmentDialogState extends State<EditAdjustmentDialog> {
               TextFormField(
                 controller: _cursoController,
                 decoration: const InputDecoration(labelText: 'Curso (NRC)'),
-                validator: (v) => (v == null || v.isEmpty) ? 'Ingrese el NRC del curso' : null,
+                validator:
+                    (v) =>
+                        (v == null || v.isEmpty)
+                            ? 'Ingrese el NRC del curso'
+                            : null,
               ),
               TextFormField(
                 controller: _tipoController,
                 decoration: const InputDecoration(labelText: 'Tipo de Ajuste'),
-                validator: (v) => (v == null || v.isEmpty) ? 'Ingrese el tipo de ajuste' : null,
+                validator:
+                    (v) =>
+                        (v == null || v.isEmpty)
+                            ? 'Ingrese el tipo de ajuste'
+                            : null,
               ),
               TextFormField(
                 controller: _aprobadoPorController,
-                decoration: const InputDecoration(labelText: 'Aprobado Por (Email)'),
-                validator: (v) => (v == null || v.isEmpty) ? 'Ingrese quién aprobó' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Aprobado Por (Email)',
+                ),
+                validator:
+                    (v) =>
+                        (v == null || v.isEmpty)
+                            ? 'Ingrese quién aprobó'
+                            : null,
               ),
               TextFormField(
                 controller: _fechaAprobacionController,
@@ -94,7 +124,11 @@ class _EditAdjustmentDialogState extends State<EditAdjustmentDialog> {
                 ),
                 readOnly: true,
                 onTap: () => _pickDate(_fechaAprobacionController),
-                validator: (v) => (v == null || v.isEmpty) ? 'Ingrese la fecha de aprobación' : null,
+                validator:
+                    (v) =>
+                        (v == null || v.isEmpty)
+                            ? 'Ingrese la fecha de aprobación'
+                            : null,
               ),
               TextFormField(
                 controller: _vencimientoController,
@@ -104,7 +138,11 @@ class _EditAdjustmentDialogState extends State<EditAdjustmentDialog> {
                 ),
                 readOnly: true,
                 onTap: () => _pickDate(_vencimientoController),
-                validator: (v) => (v == null || v.isEmpty) ? 'Ingrese la fecha de vencimiento' : null,
+                validator:
+                    (v) =>
+                        (v == null || v.isEmpty)
+                            ? 'Ingrese la fecha de vencimiento'
+                            : null,
               ),
             ],
           ),
