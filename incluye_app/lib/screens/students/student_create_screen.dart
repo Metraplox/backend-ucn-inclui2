@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/services/api_service.dart';
-import 'package:incluye_app/models/student_model.dart';
 
 class StudentCreateScreen extends StatefulWidget {
   const StudentCreateScreen({super.key});
@@ -53,9 +52,8 @@ class _StudentCreateScreenState extends State<StudentCreateScreen> {
       final fecha = cleanedData['fechaNacimiento'];
       final RegExp dateRegExp = RegExp(r'^\d{4}-\d{2}-\d{2}$');
       if (!dateRegExp.hasMatch(fecha)) {
-        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('La fecha debe tener un formato válido (YYYY-MM-DD)')),
+          const SnackBar(content: Text('La fecha debe tener un formato vÃ¡lido (YYYY-MM-DD)')),
         );
         return;
       }
@@ -65,36 +63,16 @@ class _StudentCreateScreenState extends State<StudentCreateScreen> {
 
     debugPrint('Enviando estudiante: $cleanedData');
 
-    // Convertir Map a objeto Student
-    final student = Student(
-      nombres: cleanedData['nombres'] ?? '',
-      apellidos: cleanedData['apellidos'] ?? '',
-      rut: cleanedData['rut'] ?? '',
-      email: cleanedData['email'] ?? '',
-      telefono: cleanedData['telefono'],
-      carrera: cleanedData['carrera'],
-      anioIngreso: cleanedData['anioIngreso'] != null ? int.tryParse(cleanedData['anioIngreso']) : null,
-      consentimientoFirmado: cleanedData['consentimientoFirmado'] == 'true',
-      diagnostico: cleanedData['diagnostico'],
-      fechaNacimiento: cleanedData['fechaNacimiento'],
-      informacionContacto: cleanedData['informacionContacto'],
-      necesidadesEducativasEspeciales: cleanedData['necesidadesEducativasEspeciales'],
-    );
-
-    if (!mounted) return;
     setState(() => _isSubmitting = true);
-    final success = await ApiService.createStudent(student);
-    if (!mounted) return;
+    final success = await ApiService.createStudent(cleanedData);
     setState(() => _isSubmitting = false);
 
     if (success) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Estudiante creado exitosamente')),
       );
       Navigator.pop(context);
     } else {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al crear estudiante')),
       );
@@ -166,7 +144,7 @@ class _StudentCreateScreenState extends State<StudentCreateScreen> {
                 firstDate: DateTime(1900),
                 lastDate: DateTime.now(),
               );
-              if (pickedDate != null && mounted) {
+              if (pickedDate != null) {
                 setState(() {
                   final formatted = pickedDate.toIso8601String().split('T')[0];
                   _fechaController.text = formatted;

@@ -382,17 +382,17 @@ class ApiService {
     }
   }
 
-  static Future<bool> createStudent(Student student) async {
+  static Future<bool> createStudent(Map<String, dynamic> data) async {
     try {
       final token = await getToken();
       final response = await _dio.post(
         '/students',
-        data: student.toJson(),
+        data: data,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
-      log('Error al crear estudiante: $e');
+      print('Error al crear estudiante: $e');
       return false;
     }
   }
