@@ -1,61 +1,74 @@
-import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { DocumentEntity, DocumentDocument } from './schemas/document.schema';
-import { CreateDocumentDto } from './dto/create-document.dto';
-import { UpdateDocumentMetadataDto } from './dto/update-document-metadata.dto';
-// import { Student } from '../students/schemas/student.schema'; // Para validar existencia de Student
+import { DocumentEntity, DocumentDocument, DocumentStatus, DocumentCategory } from './schemas/document.schema';
+import { CreateDocumentDto, UpdateDocumentMetadataDto, VerifyDocumentDto } from './dto';
+import { Student } from '../students/schemas/student.schema';
 
 // Configuración básica de almacenamiento (se puede mover a un archivo de config)
-const UPLOAD_LOCATION = process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads'); // Directorio de uploads en la raíz del proyecto
+const UPLOAD_LOCATION = process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads');
+const TEMPLATES_LOCATION = process.env.TEMPLATES_LOCATION || path.join(__dirname, '..', '..', 'templates');
 
 @Injectable()
 export class DocumentsService {
   constructor(
     @InjectModel(DocumentEntity.name) private documentModel: Model<DocumentDocument>,
-    // @InjectModel(Student.name) private studentModel: Model<StudentDocument>, // Para validar Student si es necesario
+    @InjectModel(Student.name) private studentModel: Model<Student>
   ) {
-    // Asegurar que el directorio de uploads exista
+    // Asegurar que los directorios existan
     fs.mkdir(UPLOAD_LOCATION, { recursive: true }).catch(console.error);
+    fs.mkdir(TEMPLATES_LOCATION, { recursive: true }).catch(console.error);
   }
 
   async uploadForStudentByStaff(
     file: Express.Multer.File,
     createDocumentDto: CreateDocumentDto,
-    uploadedByStaffId: string, // ID o identificador del personal que sube
+    uploadedByStaffId: string,
   ): Promise<DocumentDocument> {
     if (!file) {
       throw new BadRequestException('Archivo no proporcionado.');
     }
 
-    // Validar que el studentId existe podría ser una buena adición aquí
-    // const studentExists = await this.studentModel.findById(createDocumentDto.studentId).exec();
-    // if (!studentExists) {
-    //   // Si el archivo ya se guardó temporalmente por Multer, habría que borrarlo.
-    //   // Por ahora, asumimos que Multer guarda directamente en la ruta final o que se maneja antes.
-    //   throw new NotFoundException(`Estudiante con ID "${createDocumentDto.studentId}" no encontrado.`);
-    // }
+    // Validar que el studentId existe
+    const studentExists = await this.studentModel.findById(createDocumentDto.studentId).exec();
+    if (!studentExists) {
+      // Eliminar el archivo temporal si el estudiante no existe
+      try {
+        await fs.unlink(file.path);
+      } catch (error) {
+        console.error(`Error al eliminar archivo temporal: ${file.path}`, error);
+      }
+      throw new NotFoundException(`Estudiante con ID "${createDocumentDto.studentId}" no encontrado.`);
+    }
+
+    // Generar URL para acceso al archivo
+    const fileUrl = `${process.env.API_BASE_URL || 'http://localhost:3000'}/documents/${file.filename}/download`;
 
     const newDocument = new this.documentModel({
       ...createDocumentDto,
       studentId: new Types.ObjectId(createDocumentDto.studentId),
       fileNameOriginal: file.originalname,
-      storageFileName: file.filename, // Asumiendo que Multer ya generó un nombre único
-      filePath: file.path, // Asumiendo que Multer proporciona la ruta completa
+      storageFileName: file.filename,
+      filePath: file.path,
       mimeType: file.mimetype,
       sizeBytes: file.size,
-      uploadedBy: uploadedByStaffId, // Aquí iría el ID del personal autenticado
+      uploadedBy: new Types.ObjectId(uploadedByStaffId),
       uploadDate: new Date(),
+      status: DocumentStatus.PENDIENTE,
+      fileUrl: fileUrl
     });
 
     try {
       return await newDocument.save();
     } catch (error) {
-      // Si falla el guardado en DB, idealmente se debería borrar el archivo físico si ya se guardó.
-      // Esto depende de la estrategia de Multer (si guarda antes o después de este método).
-      // Por simplicidad, no se maneja aquí la eliminación del archivo en caso de error de DB.
+      // Si falla el guardado en DB, borrar el archivo físico
+      try {
+        await fs.unlink(file.path);
+      } catch (unlinkError) {
+        console.error(`Error al eliminar archivo después de fallo en DB: ${file.path}`, unlinkError);
+      }
       console.error('Error saving document to DB:', error);
       throw new InternalServerErrorException('Error al guardar el documento.');
     }
@@ -131,39 +144,155 @@ export class DocumentsService {
 
   async uploadForStudent(
     file: Express.Multer.File,
-    createDocumentDto: CreateDocumentDto, // studentId en este DTO debe ser validado contra el studentId autenticado
-    authenticatedStudentId: string, // ID del estudiante autenticado
+    createDocumentDto: CreateDocumentDto,
+    authenticatedStudentId: string,
   ): Promise<DocumentDocument> {
     if (!file) {
       throw new BadRequestException('Archivo no proporcionado.');
     }
 
-    // Validar que el studentId en el DTO (si se permite) coincida con el autenticado
-    // O mejor, ignorar el studentId del DTO y usar siempre el authenticatedStudentId.
+    // Validar que el studentId en el DTO coincida con el autenticado
     if (createDocumentDto.studentId !== authenticatedStudentId) {
         throw new BadRequestException('El ID de estudiante en la solicitud no coincide con el usuario autenticado.');
     }
     
-    // Aquí también se podría validar la existencia del estudiante si fuera necesario,
-    // pero si está autenticado, se asume que existe.
+    // Generar URL para acceso al archivo
+    const fileUrl = `${process.env.API_BASE_URL || 'http://localhost:3000'}/documents/${file.filename}/download`;
 
     const newDocument = new this.documentModel({
-      ...createDocumentDto, // category, description
-      studentId: new Types.ObjectId(authenticatedStudentId), // Usar el ID del estudiante autenticado
+      ...createDocumentDto,
+      studentId: new Types.ObjectId(authenticatedStudentId),
       fileNameOriginal: file.originalname,
       storageFileName: file.filename,
       filePath: file.path,
       mimeType: file.mimetype,
       sizeBytes: file.size,
-      uploadedBy: authenticatedStudentId, // El estudiante se sube su propio documento
+      uploadedBy: new Types.ObjectId(authenticatedStudentId),
       uploadDate: new Date(),
+      status: DocumentStatus.PENDIENTE,
+      fileUrl: fileUrl
     });
 
     try {
       return await newDocument.save();
     } catch (error) {
+      // Si falla el guardado en DB, borrar el archivo físico
+      try {
+        await fs.unlink(file.path);
+      } catch (unlinkError) {
+        console.error(`Error al eliminar archivo después de fallo en DB: ${file.path}`, unlinkError);
+      }
       console.error('Error saving document to DB by student:', error);
       throw new InternalServerErrorException('Error al guardar el documento.');
+    }
+  }
+
+  async verifyDocument(documentId: string, verifyDto: VerifyDocumentDto, verifiedByUserId: string): Promise<DocumentDocument> {
+    if (!Types.ObjectId.isValid(documentId)) {
+      throw new BadRequestException('ID de documento inválido.');
+    }
+    
+    const document = await this.documentModel.findById(documentId).exec();
+    if (!document) {
+      throw new NotFoundException(`Documento con ID "${documentId}" no encontrado.`);
+    }
+    
+    if (document.status === DocumentStatus.VERIFICADO) {
+      throw new ConflictException(`El documento ya ha sido verificado.`);
+    }
+    
+    const updateData = {
+      status: DocumentStatus.VERIFICADO,
+      verifiedBy: new Types.ObjectId(verifiedByUserId),
+      verificationDate: new Date(),
+      comments: verifyDto.comments
+    };
+    
+    const updatedDocument = await this.documentModel.findByIdAndUpdate(
+      documentId,
+      { $set: updateData },
+      { new: true }
+    ).exec();
+    
+    if (!updatedDocument) {
+      throw new NotFoundException(`Error al actualizar el documento con ID "${documentId}".`);
+    }
+    
+    return updatedDocument;
+  }
+  
+  async rejectDocument(documentId: string, verifyDto: VerifyDocumentDto, verifiedByUserId: string): Promise<DocumentDocument> {
+    if (!Types.ObjectId.isValid(documentId)) {
+      throw new BadRequestException('ID de documento inválido.');
+    }
+    
+    const document = await this.documentModel.findById(documentId).exec();
+    if (!document) {
+      throw new NotFoundException(`Documento con ID "${documentId}" no encontrado.`);
+    }
+    
+    if (document.status === DocumentStatus.RECHAZADO) {
+      throw new ConflictException(`El documento ya ha sido rechazado.`);
+    }
+    
+    const updateData = {
+      status: DocumentStatus.RECHAZADO,
+      verifiedBy: new Types.ObjectId(verifiedByUserId),
+      verificationDate: new Date(),
+      comments: verifyDto.comments || 'Documento rechazado'
+    };
+    
+    const updatedDocument = await this.documentModel.findByIdAndUpdate(
+      documentId,
+      { $set: updateData },
+      { new: true }
+    ).exec();
+    
+    if (!updatedDocument) {
+      throw new NotFoundException(`Error al actualizar el documento con ID "${documentId}".`);
+    }
+    
+    return updatedDocument;
+  }
+  
+  async getDocumentTemplate(templateType: string): Promise<{ url: string; fileName: string; fileType: string }> {
+    // Mapeo de tipos de plantillas a archivos
+    const templateMap = {
+      'consentimiento': {
+        fileName: 'plantilla_consentimiento.docx',
+        fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      },
+      'informe': {
+        fileName: 'plantilla_informe.docx',
+        fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      },
+      'diagnostico': {
+        fileName: 'plantilla_diagnostico.pdf',
+        fileType: 'application/pdf'
+      }
+    };
+    
+    const template = templateMap[templateType.toLowerCase()];
+    if (!template) {
+      throw new NotFoundException(`No se encontró plantilla para el tipo "${templateType}".`);
+    }
+    
+    const templatePath = path.join(TEMPLATES_LOCATION, template.fileName);
+    
+    try {
+      // Verificar si el archivo existe
+      await fs.access(templatePath);
+      
+      // Generar URL para acceso al archivo
+      const url = `${process.env.API_BASE_URL || 'http://localhost:3000'}/documents/templates/download/${template.fileName}`;
+      
+      return {
+        url,
+        fileName: template.fileName,
+        fileType: template.fileType
+      };
+    } catch (error) {
+      throw new NotFoundException(`Plantilla "${templateType}" no encontrada en el sistema.`);
     }
   }
 }

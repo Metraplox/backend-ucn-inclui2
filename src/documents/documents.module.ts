@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DocumentsController } from './documents.controller';
 import { DocumentsService } from './documents.service';
 import { DocumentEntity, DocumentSchema } from './schemas/document.schema';
+import { Student, StudentSchema } from '../students/schemas/student.schema';
 
 // Configuración de almacenamiento de Multer
 const UPLOAD_LOCATION = process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads');
@@ -25,7 +26,10 @@ try {
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: DocumentEntity.name, schema: DocumentSchema }]),
+    MongooseModule.forFeature([
+      { name: DocumentEntity.name, schema: DocumentSchema },
+      { name: Student.name, schema: StudentSchema }
+    ]),
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {
@@ -59,8 +63,7 @@ try {
         }
       },
     }),
-    // Si necesitas el StudentModel aquí (ej. para validaciones en el servicio), impórtalo.
-    // MongooseModule.forFeature([{ name: Student.name, schema: StudentSchema }]),
+    // El modelo Student ya está importado arriba
   ],
   controllers: [DocumentsController],
   providers: [DocumentsService],

@@ -6,9 +6,10 @@ import { AppService } from './app.service';
 import { StudentsModule } from './students/students.module';
 import { AdjustmentsModule } from './adjustments/adjustments.module';
 import { DocumentsModule } from './documents/documents.module';
-import { ConsentModule } from './consent/consent.module'; // <--- Añadido ConsentModule
+import { ConsentModule } from './consent/consent.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { AuthModule } from './auth/auth.module';
     StudentsModule,
     AdjustmentsModule,
     DocumentsModule,
-    ConsentModule, // <--- Añadido ConsentModule aquí
+    ConsentModule,
+    CoursesModule,
     UsersModule,
     AuthModule,
   ],

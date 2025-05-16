@@ -1,0 +1,732 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "INCLUI2 API",
+    "description": "API para la gestión de estudiantes con necesidades educativas especiales",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor de desarrollo local"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Iniciar sesión de usuario",
+        "description": "Inicia sesión y devuelve un token JWT",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "usuario@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "contraseña"
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inicio de sesión exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales incorrectas"
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Registrar un nuevo usuario",
+        "description": "Crea un nuevo usuario en el sistema",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "nuevo@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "contraseña"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Nombre Completo"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["ADMIN", "STAFF", "STUDENT"],
+                    "example": "STUDENT"
+                  }
+                },
+                "required": ["email", "password", "name", "role"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado exitosamente"
+          },
+          "400": {
+            "description": "Datos de entrada inválidos"
+          },
+          "409": {
+            "description": "El usuario ya existe"
+          }
+        }
+      }
+    },
+    "/students": {
+      "post": {
+        "tags": ["students"],
+        "summary": "Crear un nuevo estudiante",
+        "description": "Crea un nuevo registro de estudiante (Admin, Staff)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Juan Pérez"
+                  },
+                  "rut": {
+                    "type": "string",
+                    "example": "12345678-9"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "juan.perez@alumnos.ucn.cl"
+                  },
+                  "career": {
+                    "type": "string",
+                    "example": "Ingeniería Civil Informática"
+                  },
+                  "diagnosis": {
+                    "type": "string",
+                    "example": "TDAH"
+                  }
+                },
+                "required": ["name", "rut", "email", "career"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Estudiante creado exitosamente"
+          },
+          "400": {
+            "description": "Datos de entrada inválidos"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      },
+      "get": {
+        "tags": ["students"],
+        "summary": "Obtener todos los estudiantes",
+        "description": "Lista todos los estudiantes registrados (Admin, Staff)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de estudiantes"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      }
+    },
+    "/students/{id}": {
+      "get": {
+        "tags": ["students"],
+        "summary": "Obtener un estudiante por ID",
+        "description": "Obtiene información detallada de un estudiante específico (Admin, Staff)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID único del estudiante"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del estudiante"
+          },
+          "404": {
+            "description": "Estudiante no encontrado"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["students"],
+        "summary": "Actualizar un estudiante",
+        "description": "Actualiza información de un estudiante existente (Admin, Staff)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID único del estudiante"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "career": {
+                    "type": "string"
+                  },
+                  "diagnosis": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estudiante actualizado exitosamente"
+          },
+          "404": {
+            "description": "Estudiante no encontrado"
+          },
+          "400": {
+            "description": "Datos de entrada inválidos"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["students"],
+        "summary": "Eliminar un estudiante",
+        "description": "Elimina un registro de estudiante (Admin, Staff)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID único del estudiante"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Estudiante eliminado exitosamente"
+          },
+          "404": {
+            "description": "Estudiante no encontrado"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      }
+    },
+    "/adjustments": {
+      "post": {
+        "tags": ["adjustments"],
+        "summary": "Crear nuevo ajuste razonable",
+        "description": "Registra un nuevo ajuste académico para un estudiante con NEE",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studentRut": {
+                    "type": "string",
+                    "example": "12345678-9"
+                  },
+                  "currentAdjustments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "tiempo_extra"
+                        },
+                        "courseNrc": {
+                          "type": "string",
+                          "example": "MAT101-1"
+                        },
+                        "approvedBy": {
+                          "type": "string",
+                          "example": "coordinadora@ucn.cl"
+                        },
+                        "approvedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2025-04-10T00:00:00Z"
+                        },
+                        "requiresSemesterConfirmation": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "expirationDate": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2025-12-31T00:00:00Z"
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": ["studentRut", "currentAdjustments"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ajuste creado exitosamente"
+          },
+          "400": {
+            "description": "Datos inválidos o faltantes"
+          },
+          "409": {
+            "description": "El ajuste ya existe para este curso/estudiante"
+          }
+        }
+      },
+      "get": {
+        "tags": ["adjustments"],
+        "summary": "Listar todos los ajustes",
+        "description": "Obtiene todos los ajustes razonables registrados con opción de filtrado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "studentRut",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtrar por RUT de estudiante"
+          },
+          {
+            "name": "courseNrc",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtrar por código NRC del curso"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de ajustes encontrados"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      }
+    },
+    "/documents/upload": {
+      "post": {
+        "tags": ["documents"],
+        "summary": "Subir un nuevo documento para un estudiante",
+        "description": "Sube un nuevo documento para un estudiante (Admin, Staff)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "El archivo a subir"
+                  },
+                  "studentId": {
+                    "type": "string",
+                    "example": "60c72b2f9b1d8c001f8e4a3c"
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "Informe Médico"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Informe detallado"
+                  }
+                },
+                "required": ["file", "studentId", "category"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento subido y metadatos guardados"
+          },
+          "400": {
+            "description": "Datos inválidos o archivo faltante/incorrecto"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      }
+    },
+    "/documents/student/upload": {
+      "post": {
+        "tags": ["documents"],
+        "summary": "Subir un nuevo documento (Solo Estudiantes Autenticados)",
+        "description": "Permite a un estudiante subir su propio documento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "El archivo a subir"
+                  },
+                  "studentId": {
+                    "type": "string",
+                    "example": "60c72b2f9b1d8c001f8e4a3c",
+                    "description": "ID del estudiante (debe coincidir con el autenticado)"
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "CERTIFICADO_ALUMNO_REGULAR"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Mi certificado"
+                  }
+                },
+                "required": ["file", "studentId", "category"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento subido y metadatos guardados"
+          },
+          "400": {
+            "description": "Datos inválidos, archivo faltante/incorrecto, o ID de estudiante no coincide"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido o ID de estudiante no coincide)"
+          }
+        }
+      }
+    },
+    "/consent": {
+      "post": {
+        "tags": ["consent"],
+        "summary": "Crear un nuevo consentimiento",
+        "description": "Crea un nuevo registro de consentimiento para un estudiante (Admin, Staff)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studentId": {
+                    "type": "string",
+                    "example": "60c72b2f9b1d8c001f8e4a3c"
+                  },
+                  "consentType": {
+                    "type": "string",
+                    "example": "COMPARTIR_INFORMACION"
+                  },
+                  "granted": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "grantedDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-05-15T10:30:00Z"
+                  },
+                  "expirationDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2026-05-15T10:30:00Z"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "example": "Consentimiento otorgado verbalmente"
+                  }
+                },
+                "required": ["studentId", "consentType", "granted", "grantedDate"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Consentimiento creado exitosamente"
+          },
+          "400": {
+            "description": "Datos de entrada inválidos"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      },
+      "get": {
+        "tags": ["consent"],
+        "summary": "Listar todos los consentimientos",
+        "description": "Obtiene todos los consentimientos registrados (Admin, Staff)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de consentimientos"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "tags": ["users"],
+        "summary": "Crear un nuevo usuario",
+        "description": "Crea un nuevo usuario (Admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "nuevo@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "contraseña"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Nombre Completo"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["ADMIN", "STAFF", "STUDENT"],
+                    "example": "STAFF"
+                  }
+                },
+                "required": ["email", "password", "name", "role"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario creado exitosamente"
+          },
+          "400": {
+            "description": "Datos de entrada inválidos"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      },
+      "get": {
+        "tags": ["users"],
+        "summary": "Listar todos los usuarios",
+        "description": "Obtiene todos los usuarios registrados (Admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios"
+          },
+          "401": {
+            "description": "No autorizado"
+          },
+          "403": {
+            "description": "Prohibido (rol no permitido)"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

@@ -5,6 +5,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole, User } from './schemas/user.schema'; // Import User schema for response types
 import { UserPublicData } from './interfaces/user-public-data.interface';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
@@ -41,8 +42,17 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('profile')
+  @ApiOperation({ summary: 'Obtener el perfil del usuario actual' })
+  @ApiResponse({ status: 200, description: 'Perfil del usuario actual.', type: User })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  async getProfile(@CurrentUser() user: UserPublicData): Promise<UserPublicData> {
+    // El objeto user ya contiene toda la información necesaria gracias a la estrategia JWT
+    return user;
+  }
+
   @Get(':id')
-  @Roles(UserRole.ADMIN) // Por ahora, solo admin. Se podría añadir lógica para que un usuario vea su propio perfil.
+  @Roles(UserRole.ADMIN) // Solo admin puede ver perfiles de otros usuarios por ID
   @ApiOperation({ summary: 'Obtener un usuario por su ID (Admin)' })
   @ApiParam({ name: 'id', description: 'ID único del usuario (ObjectId)', type: String })
   @ApiResponse({ status: 200, description: 'Detalles del usuario.', type: User })

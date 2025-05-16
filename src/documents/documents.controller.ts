@@ -17,8 +17,9 @@ import {
   HttpStatus,
   BadRequestException,
   NotFoundException,
-  UseGuards, // <--- Añadido UseGuards
-  Req, // <--- Añadido Req
+  ConflictException,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
@@ -33,12 +34,12 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
-import { CreateDocumentDto } from './dto/create-document.dto';
-import { UpdateDocumentMetadataDto } from './dto/update-document-metadata.dto';
-import { DocumentEntity } from './schemas/document.schema';
+import { CreateDocumentDto, UpdateDocumentMetadataDto, VerifyDocumentDto } from './dto';
+import { DocumentEntity, DocumentStatus } from './schemas/document.schema';
 
 // Configuración básica de almacenamiento (debería coincidir o ser gestionada centralmente con el servicio)
-const UPLOAD_LOCATION = process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads'); // TODO: Mover a ConfigService
+const UPLOAD_LOCATION = process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads');
+const TEMPLATES_LOCATION = process.env.TEMPLATES_LOCATION || path.join(__dirname, '..', '..', 'templates');
 
 @ApiTags('documents')
 @ApiBearerAuth()
@@ -199,6 +200,91 @@ export class DocumentsController {
     await this.documentsService.deleteDocument(documentId);
   }
 
+  @Patch('verify/:documentId')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @ApiOperation({ summary: 'Verificar un documento (Admin, Staff)' })
+  @ApiParam({ name: 'documentId', description: 'ID del documento a verificar' })
+  @ApiBody({ type: VerifyDocumentDto })
+  @ApiResponse({ status: 200, description: 'Documento verificado exitosamente', type: DocumentEntity })
+  @ApiResponse({ status: 404, description: 'Documento no encontrado' })
+  @ApiResponse({ status: 409, description: 'El documento ya ha sido verificado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  async verifyDocument(
+    @Param('documentId') documentId: string,
+    @Body() verifyDto: VerifyDocumentDto,
+    @Req() req: Request & { user: UserPublicData },
+  ): Promise<DocumentEntity> {
+    return this.documentsService.verifyDocument(documentId, verifyDto, req.user._id);
+  }
+
+  @Patch('reject/:documentId')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @ApiOperation({ summary: 'Rechazar un documento (Admin, Staff)' })
+  @ApiParam({ name: 'documentId', description: 'ID del documento a rechazar' })
+  @ApiBody({ type: VerifyDocumentDto })
+  @ApiResponse({ status: 200, description: 'Documento rechazado exitosamente', type: DocumentEntity })
+  @ApiResponse({ status: 404, description: 'Documento no encontrado' })
+  @ApiResponse({ status: 409, description: 'El documento ya ha sido rechazado' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  async rejectDocument(
+    @Param('documentId') documentId: string,
+    @Body() verifyDto: VerifyDocumentDto,
+    @Req() req: Request & { user: UserPublicData },
+  ): Promise<DocumentEntity> {
+    return this.documentsService.rejectDocument(documentId, verifyDto, req.user._id);
+  }
+
+  @Get('templates/:templateType')
+  @ApiOperation({ summary: 'Obtener la URL de descarga para una plantilla específica' })
+  @ApiParam({ name: 'templateType', description: 'Tipo de plantilla (consentimiento, informe, etc.)' })
+  @ApiResponse({ status: 200, description: 'URL de la plantilla' })
+  @ApiResponse({ status: 404, description: 'Plantilla no encontrada' })
+  async getTemplateUrl(@Param('templateType') templateType: string): Promise<{ url: string; fileName: string; fileType: string }> {
+    return this.documentsService.getDocumentTemplate(templateType);
+  }
+
+  @Get('templates/download/:fileName')
+  @ApiOperation({ summary: 'Descargar una plantilla específica' })
+  @ApiParam({ name: 'fileName', description: 'Nombre del archivo de plantilla' })
+  @ApiResponse({ status: 200, description: 'Archivo de plantilla' })
+  @ApiResponse({ status: 404, description: 'Plantilla no encontrada' })
+  async downloadTemplate(
+    @Param('fileName') fileName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const templatePath = path.join(TEMPLATES_LOCATION, fileName);
+    
+    try {
+      // Verificar si el archivo existe
+      await fs.promises.access(templatePath);
+      
+      // Determinar el tipo MIME basado en la extensión del archivo
+      let contentType = 'application/octet-stream'; // Por defecto
+      if (fileName.endsWith('.pdf')) {
+        contentType = 'application/pdf';
+      } else if (fileName.endsWith('.docx')) {
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      } else if (fileName.endsWith('.doc')) {
+        contentType = 'application/msword';
+      }
+      
+      // Configurar headers de respuesta
+      res.set({
+        'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+      });
+      
+      // Crear stream de lectura del archivo
+      const fileStream = fs.createReadStream(templatePath);
+      
+      return new StreamableFile(fileStream);
+    } catch (error) {
+      throw new NotFoundException(`Plantilla "${fileName}" no encontrada.`);
+    }
+  }
+
   // Endpoint para que los estudiantes suban sus propios documentos
   @Post('student/upload')
   @Roles(UserRole.STUDENT)
@@ -224,9 +310,7 @@ export class DocumentsController {
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido o ID de estudiante no coincide.' })
   async uploadDocumentForStudent(
-    @UploadedFile(
-      // TODO: Reintroducir ParseFilePipe
-    )
+    @UploadedFile()
     file: Express.Multer.File,
     @Body() createDocumentDto: CreateDocumentDto,
     @Req() req: Request & { user: UserPublicData },
@@ -234,28 +318,15 @@ export class DocumentsController {
     if (!file) {
       throw new BadRequestException('Archivo no proporcionado.');
     }
-    const authenticatedStudentUserId = req.user._id; // Este es el User._id
+    const authenticatedStudentUserId = req.user._id;
 
-    // IMPORTANTE: Se asume que el User.studentId (o un campo similar que lo relacione con la entidad Student)
-    // está disponible o que el User._id es suficiente si el estudiante es directamente un User.
-    // Si User y Student son entidades separadas y un User (rol STUDENT) tiene un studentProfileId o similar,
-    // ese es el ID que se debe usar/validar aquí.
-    // Por ahora, asumimos que createDocumentDto.studentId se refiere al ID de la entidad Student.
-    // Y que el usuario autenticado (req.user) tiene una forma de relacionarse con ese Student ID.
-    // Para este ejemplo, vamos a asumir que el `req.user._id` (que es el `User._id`)
-    // es el mismo que el `studentId` que se espera para el documento si el rol es ESTUDIANTE.
-    // ESTA LÓGICA PUEDE NECESITAR AJUSTE BASADO EN EL MODELO DE DATOS EXACTO.
-
-    // Validación: El studentId en el DTO debe coincidir con el ID del usuario autenticado (si es un estudiante)
-    // O, si el studentId en el DTO es para identificar a qué estudiante pertenece el documento
-    // y el usuario autenticado es un estudiante, entonces el DTO.studentId DEBE ser el ID del estudiante autenticado.
+    // Validación: El studentId en el DTO debe coincidir con el ID del usuario autenticado
     if (createDocumentDto.studentId !== authenticatedStudentUserId.toString()) {
         throw new BadRequestException(
             `El studentId '${createDocumentDto.studentId}' proporcionado en el cuerpo no coincide con el ID del estudiante autenticado '${authenticatedStudentUserId.toString()}'.`
         );
     }
     
-    // El servicio `uploadForStudent` debería usar el ID del usuario autenticado.
     return this.documentsService.uploadForStudent(file, createDocumentDto, authenticatedStudentUserId.toString());
   }
 }

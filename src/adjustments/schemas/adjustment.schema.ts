@@ -1,19 +1,37 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from '../../users/schemas/user.schema';
+import { Student } from '../../students/schemas/student.schema';
 
 export type AdjustmentDocument = Adjustment & Document;
+
+export enum AdjustmentType {
+  TIEMPO_EXTRA = 'tiempo_extra',
+  FORMATO_ALTERNATIVO = 'formato_alternativo',
+  ASISTENCIA_ESPECIAL = 'asistencia_especial',
+  UBICACION_PREFERENTE = 'ubicacion_preferente',
+  MATERIAL_ADAPTADO = 'material_adaptado',
+  EVALUACION_DIFERENCIADA = 'evaluacion_diferenciada',
+  OTRO = 'otro'
+}
+
+export enum AdjustmentStatus {
+  ACTIVO = 'activo',
+  VENCIDO = 'vencido',
+  CANCELADO = 'cancelado'
+}
 
 // Sub-esquema para ajustes actuales
 @Schema({ _id: false })
 class CurrentAdjustment {
   @ApiProperty({
-    example: 'tiempo_extra',
+    example: AdjustmentType.TIEMPO_EXTRA,
     description: 'Tipo de ajuste razonable',
-    enum: ['tiempo_extra', 'formato_alternativo', 'asistencia_especial'],
+    enum: AdjustmentType,
   })
-  @Prop({ required: true, type: String })
-  type: string;
+  @Prop({ required: true, type: String, enum: AdjustmentType })
+  type: AdjustmentType;
 
   @ApiProperty({
     example: 'MAT101-1',
@@ -21,13 +39,20 @@ class CurrentAdjustment {
   })
   @Prop({ required: true, type: String })
   courseNrc: string;
+  
+  @ApiProperty({
+    example: 'Profesor Martínez',
+    description: 'Nombre del profesor del curso',
+  })
+  @Prop({ type: String })
+  profesor?: string;
 
   @ApiProperty({
-    example: 'coordinadora@ucn.cl',
-    description: 'Email del coordinador que aprobó el ajuste',
+    example: '605c72ef9167f86c2cabc789',
+    description: 'ID del usuario que aprobó el ajuste',
   })
-  @Prop({ required: true, type: String })
-  approvedBy: string;
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  approvedBy: Types.ObjectId;
 
   @ApiProperty({
     example: '2025-04-10T00:00:00Z',
@@ -35,6 +60,13 @@ class CurrentAdjustment {
   })
   @Prop({ required: true, type: Date })
   approvedAt: Date;
+  
+  @ApiProperty({
+    example: '2025-04-15T00:00:00Z',
+    description: 'Fecha de inicio del ajuste',
+  })
+  @Prop({ required: true, type: Date })
+  fechaInicio: Date;
 
   @ApiProperty({
     example: true,
@@ -49,6 +81,29 @@ class CurrentAdjustment {
   })
   @Prop({ required: true, type: Date })
   expirationDate: Date;
+  
+  @ApiProperty({
+    example: AdjustmentStatus.ACTIVO,
+    description: 'Estado actual del ajuste',
+    enum: AdjustmentStatus,
+  })
+  @Prop({ required: true, type: String, enum: AdjustmentStatus, default: AdjustmentStatus.ACTIVO })
+  estado: AdjustmentStatus;
+  
+  @ApiProperty({
+    example: ['605c72ef9167f86c2cabc001', '605c72ef9167f86c2cabc002'],
+    description: 'IDs de documentos asociados a este ajuste',
+    type: [String],
+  })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Document' }] })
+  documentosAsociados?: Types.ObjectId[];
+  
+  @ApiProperty({
+    example: 'Ajuste aprobado por solicitud médica',
+    description: 'Comentarios adicionales sobre el ajuste',
+  })
+  @Prop({ type: String })
+  comentarios?: string;
 }
 
 // Sub-esquema para historial de cambios
@@ -100,9 +155,9 @@ class AdjustmentHistory {
 
 // Esquema principal
 @Schema({ timestamps: true })
-export class Adjustment extends Document {
+export class Adjustment {
   @ApiProperty({ description: 'ID único del ajuste (generado por MongoDB)', example: '605c72ef9167f86c2cabc456' })
-  declare _id: string; // Agregado para Swagger
+  declare _id: string;
 
   @ApiProperty({
     example: '12345678-9',
@@ -110,6 +165,13 @@ export class Adjustment extends Document {
   })
   @Prop({ required: true, type: String, index: true })
   studentRut: string;
+  
+  @ApiProperty({
+    example: '605c72ef9167f86c2cabc123',
+    description: 'ID del estudiante asociado',
+  })
+  @Prop({ type: Types.ObjectId, ref: Student.name, required: true, index: true })
+  studentId: Types.ObjectId;
 
   @ApiProperty({
     type: [CurrentAdjustment],
@@ -124,6 +186,27 @@ export class Adjustment extends Document {
   })
   @Prop({ type: [AdjustmentHistory], default: [] })
   history: AdjustmentHistory[];
+  
+  @ApiProperty({
+    example: '2025-1',
+    description: 'Semestre académico al que corresponde el ajuste',
+  })
+  @Prop({ type: String })
+  semester?: string;
+  
+  @ApiProperty({
+    example: '605c72ef9167f86c2cabc789',
+    description: 'ID del último usuario que modificó el ajuste',
+  })
+  @Prop({ type: Types.ObjectId, ref: User.name })
+  modificadoPor?: Types.ObjectId;
+  
+  @ApiProperty({
+    example: '2025-05-15T10:30:00Z',
+    description: 'Fecha de la última modificación manual',
+  })
+  @Prop({ type: Date })
+  ultimaModificacion?: Date;
 
   @ApiProperty({ description: 'Fecha de creación del registro', example: '2023-01-01T12:00:00.000Z', readOnly: true })
   declare createdAt: Date;

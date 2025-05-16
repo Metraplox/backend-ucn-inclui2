@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Student } from '../../students/schemas/student.schema'; // Asegúrate que la ruta sea correcta
-// import { User } from '../../users/schemas/user.schema'; // Asumiendo que tienes un User schema para 'uploadedBy'
+import { Student } from '../../students/schemas/student.schema';
+import { User } from '../../users/schemas/user.schema';
 
 export type DocumentDocument = Document & DocumentEntity; // Renombrado a DocumentEntity para evitar colisión con mongoose.Document
 
@@ -10,28 +10,37 @@ export enum DocumentCategory {
   INFORME_MEDICO = 'Informe Médico',
   CERTIFICADO_DISCAPACIDAD = 'Certificado de Discapacidad',
   CONSENTIMIENTO_INFORMADO = 'Consentimiento Informado',
-  OTRO = 'Otro',
+  CERTIFICADO_ALUMNO_REGULAR = 'Certificado Alumno Regular',
+  DIAGNOSTICO = 'Diagnóstico',
+  INFORME = 'Informe',
+  OTRO = 'Otro'
+}
+
+export enum DocumentStatus {
+  PENDIENTE = 'pendiente',
+  VERIFICADO = 'verificado',
+  RECHAZADO = 'rechazado'
 }
 
 @Schema({ timestamps: true })
-export class DocumentEntity { // Renombrado a DocumentEntity
+export class DocumentEntity {
   @ApiProperty({ description: 'ID único del documento (generado por MongoDB)', example: '605c72ef9167f86c2cabc001' })
   declare _id: string;
 
   @ApiProperty({ description: 'ID del estudiante asociado al documento', example: '60c72b2f9b1d8c001f8e4a3c', type: String })
   @Prop({ type: Types.ObjectId, ref: Student.name, required: true, index: true })
-  studentId: Types.ObjectId; // o Student | Types.ObjectId si quieres popular
+  studentId: Types.ObjectId;
 
   @ApiProperty({ description: 'Nombre original del archivo subido', example: 'informe_medico.pdf' })
   @Prop({ required: true, trim: true })
   fileNameOriginal: string;
 
   @ApiProperty({ description: 'Nombre del archivo almacenado en el sistema (puede incluir UUID)', example: 'uuid-informe_medico.pdf' })
-  @Prop({ required: true, trim: true }) // Nombre usado para guardar en el sistema de archivos, puede incluir un UUID
+  @Prop({ required: true, trim: true })
   storageFileName: string;
 
   @ApiProperty({ description: 'Ruta donde se almacena el archivo en el servidor', example: 'uploads/uuid-informe_medico.pdf' })
-  @Prop({ required: true, trim: true }) // Ruta relativa o completa donde se almacena el archivo
+  @Prop({ required: true, trim: true })
   filePath: string;
 
   @ApiProperty({ description: 'Tipo MIME del archivo', example: 'application/pdf' })
@@ -51,15 +60,32 @@ export class DocumentEntity { // Renombrado a DocumentEntity
   description?: string;
 
   @ApiProperty({ description: 'ID del usuario (personal/admin) que subió el documento', example: '605c72ef9167f86c2cabc789' })
-  // Asumiendo que tienes un módulo de usuarios/personal. Si no, esto podría ser un string simple.
-  // @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  // uploadedBy: Types.ObjectId; // o User | Types.ObjectId
-  @Prop({ required: true, trim: true }) // Simplificado por ahora si no hay módulo User
-  uploadedBy: string; // Podría ser el ID o nombre del personal
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  uploadedBy: Types.ObjectId;
 
   @ApiProperty({ description: 'Fecha y hora de subida del documento', example: '2023-05-10T09:00:00.000Z' })
   @Prop({ type: Date, default: Date.now })
   uploadDate: Date;
+
+  @ApiProperty({ description: 'Estado del documento', enum: DocumentStatus, example: DocumentStatus.PENDIENTE })
+  @Prop({ type: String, enum: DocumentStatus, default: DocumentStatus.PENDIENTE })
+  status: DocumentStatus;
+
+  @ApiProperty({ description: 'ID del usuario que verificó el documento', example: '605c72ef9167f86c2cabc789', required: false })
+  @Prop({ type: Types.ObjectId, ref: User.name })
+  verifiedBy?: Types.ObjectId;
+
+  @ApiProperty({ description: 'Fecha de verificación del documento', example: '2023-05-15T14:30:00.000Z', required: false })
+  @Prop({ type: Date })
+  verificationDate?: Date;
+
+  @ApiProperty({ description: 'Comentarios sobre la verificación', example: 'Documento verificado correctamente', required: false })
+  @Prop({ trim: true })
+  comments?: string;
+
+  @ApiProperty({ description: 'URL para acceder al archivo', example: 'https://example.com/files/uuid-informe_medico.pdf', required: false })
+  @Prop({ trim: true })
+  fileUrl?: string;
 
   @ApiProperty({ description: 'Fecha de creación del registro', example: '2023-01-01T12:00:00.000Z', readOnly: true })
   declare createdAt: Date;

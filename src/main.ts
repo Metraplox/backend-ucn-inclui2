@@ -6,6 +6,13 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Configuración de CORS
+  app.enableCors({
+    origin: '*', // Permite todas las solicitudes de origen. Cambia esto en producción.
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+  });
+
   // Swagger
   const config = new DocumentBuilder()
     .setTitle('INCLUI2 API')
@@ -22,11 +29,13 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document); // Endpoint para la UI: /api
 
   // Habilitar ValidationPipe globalmente
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // Elimina propiedades no definidas en el DTO
-    forbidNonWhitelisted: true, // Lanza error si hay propiedades no permitidas
-    transform: true, // Transforma el payload al tipo del DTO
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Elimina propiedades no definidas en el DTO
+      forbidNonWhitelisted: true, // Lanza error si hay propiedades no permitidas
+      transform: true, // Transforma el payload al tipo del DTO
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
 }

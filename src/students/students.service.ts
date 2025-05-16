@@ -8,7 +8,9 @@ import { Student, StudentDocument } from './schemas/student.schema';
 @Injectable()
 export class StudentsService {
   // Inyectar el modelo de Mongoose para Student
-  constructor(@InjectModel(Student.name) private studentModel: Model<StudentDocument>) {}
+  constructor(
+    @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
+  ) {}
 
   async create(createStudentDto: CreateStudentDto): Promise<Student> {
     const createdStudent = new this.studentModel(createStudentDto);
@@ -19,6 +21,14 @@ export class StudentsService {
     return this.studentModel.find().exec(); // .exec() devuelve una Promise
   }
 
+  async findByEmail(email: string): Promise<Student> {
+    const student = await this.studentModel.findOne({ email }).exec();
+    if (!student) {
+      throw new NotFoundException(`Estudiante con email "${email}" no encontrado.`);
+    }
+    return student;
+  }
+
   async findOne(id: string): Promise<Student> {
     const student = await this.studentModel.findById(id).exec();
     if (!student) {
@@ -27,10 +37,17 @@ export class StudentsService {
     return student;
   }
 
-  async update(id: string, updateStudentDto: UpdateStudentDto): Promise<Student> {
-    const updatedStudent = await this.studentModel.findByIdAndUpdate(id, updateStudentDto, { new: true }).exec();
+  async update(
+    id: string,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<Student> {
+    const updatedStudent = await this.studentModel
+      .findByIdAndUpdate(id, updateStudentDto, { new: true })
+      .exec();
     if (!updatedStudent) {
-      throw new NotFoundException(`Estudiante con ID "${id}" no encontrado para actualizar.`);
+      throw new NotFoundException(
+        `Estudiante con ID "${id}" no encontrado para actualizar.`,
+      );
     }
     return updatedStudent;
   }
@@ -38,7 +55,9 @@ export class StudentsService {
   async remove(id: string): Promise<void> {
     const result = await this.studentModel.deleteOne({ _id: id }).exec();
     if (result.deletedCount === 0) {
-      throw new NotFoundException(`Estudiante con ID "${id}" no encontrado para eliminar.`);
+      throw new NotFoundException(
+        `Estudiante con ID "${id}" no encontrado para eliminar.`,
+      );
     }
     // No es necesario devolver nada si la eliminación fue exitosa y no hay error.
     // Si se necesita el resultado, se puede cambiar el tipo de retorno a: Promise<{ deletedCount: number }>
