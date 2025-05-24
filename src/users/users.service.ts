@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Document } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -11,9 +17,16 @@ import { UserPublicData } from './interfaces/user-public-data.interface';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  private toPublicUserData(userDocOrObject: (Document<unknown, {}, User> & User) | (User & { _id: import('mongoose').Types.ObjectId }) ): UserPublicData {
+  private toPublicUserData(
+    userDocOrObject:
+      | (Document<unknown, {}, User> & User)
+      | (User & { _id: import('mongoose').Types.ObjectId }),
+  ): UserPublicData {
     // Si es un documento Mongoose, convertirlo a objeto. Si ya es un objeto (de .lean()), usarlo directamente.
-    const userObject = 'toObject' in userDocOrObject ? userDocOrObject.toObject() : userDocOrObject;
+    const userObject =
+      'toObject' in userDocOrObject
+        ? userDocOrObject.toObject()
+        : userDocOrObject;
 
     // Extraer explícitamente los campos para UserPublicData
     // Esto evita problemas con __v o campos inesperados de la desestructuración.
@@ -50,24 +63,37 @@ export class UsersService {
       const savedUser = await newUserDoc.save();
       return this.toPublicUserData(savedUser);
     } catch (error) {
-      throw new InternalServerErrorException('Ocurrió un error al crear el usuario.');
+      throw new InternalServerErrorException(
+        'Ocurrió un error al crear el usuario.',
+      );
     }
   }
 
   async findAll(): Promise<UserPublicData[]> {
-    const users = await this.userModel.find().select('-password_hash').lean().exec();
-    return users.map(user => ({
-        ...user,
-        _id: user._id.toString(),
-    } as UserPublicData));
+    const users = await this.userModel
+      .find()
+      .select('-password_hash')
+      .lean()
+      .exec();
+    return users.map(
+      (user) =>
+        ({
+          ...user,
+          _id: user._id.toString(),
+        }) as UserPublicData,
+    );
   }
 
   async findOneById(id: string): Promise<UserPublicData> {
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-        throw new BadRequestException('El ID proporcionado no es válido.');
+      throw new BadRequestException('El ID proporcionado no es válido.');
     }
     // Usar .lean() para obtener un objeto plano y facilitar la transformación.
-    const userFromDb = await this.userModel.findById(id).select('-password_hash').lean().exec();
+    const userFromDb = await this.userModel
+      .findById(id)
+      .select('-password_hash')
+      .lean()
+      .exec();
     if (!userFromDb) {
       throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
     }
@@ -89,21 +115,50 @@ export class UsersService {
     return this.userModel.findOne({ email }).exec();
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserPublicData> {
+  async findByRole(role: UserRole): Promise<User[]> {
+    return this.userModel.find({ roles: role }).exec();
+  }
+
+  async findByRoles(roles: UserRole[]): Promise<User[]> {
+    return this.userModel.find({ roles: { $in: roles } }).exec();
+  }
+
+  async findById(id: string): Promise<User> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+    return user;
+  }
+
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserPublicData> {
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-        throw new BadRequestException('El ID proporcionado no es válido.');
+      throw new BadRequestException('El ID proporcionado no es válido.');
     }
     const existingUserDoc = await this.userModel.findById(id).exec();
     if (!existingUserDoc) {
       throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
     }
 
-    const { email: newEmail, password, nombreCompleto, roles, isActive } = updateUserDto;
+    const {
+      email: newEmail,
+      password,
+      nombreCompleto,
+      roles,
+      isActive,
+    } = updateUserDto;
 
     if (newEmail && newEmail !== existingUserDoc.email) {
-      const userWithNewEmail = await this.userModel.findOne({ email: newEmail }).exec();
+      const userWithNewEmail = await this.userModel
+        .findOne({ email: newEmail })
+        .exec();
       if (userWithNewEmail) {
-        throw new ConflictException('El nuevo correo electrónico ya está registrado por otro usuario.');
+        throw new ConflictException(
+          'El nuevo correo electrónico ya está registrado por otro usuario.',
+        );
       }
       existingUserDoc.email = newEmail;
     }
@@ -126,13 +181,15 @@ export class UsersService {
       const updatedUser = await existingUserDoc.save();
       return this.toPublicUserData(updatedUser);
     } catch (error) {
-      throw new InternalServerErrorException('Ocurrió un error al actualizar el usuario.');
+      throw new InternalServerErrorException(
+        'Ocurrió un error al actualizar el usuario.',
+      );
     }
   }
 
   async remove(id: string): Promise<{ deleted: boolean; message?: string }> {
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-        throw new BadRequestException('El ID proporcionado no es válido.');
+      throw new BadRequestException('El ID proporcionado no es válido.');
     }
     const result = await this.userModel.deleteOne({ _id: id }).exec();
     if (result.deletedCount === 0) {

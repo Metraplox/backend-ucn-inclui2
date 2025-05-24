@@ -6,7 +6,10 @@ export type CourseDocument = Course & Document;
 
 @Schema({ timestamps: true })
 export class Course {
-  @ApiProperty({ description: 'ID único del curso (generado por MongoDB)', example: '605c72ef9167f86c2cabc789' })
+  @ApiProperty({
+    description: 'ID único del curso (generado por MongoDB)',
+    example: '605c72ef9167f86c2cabc789',
+  })
   declare _id: string;
 
   @ApiProperty({
@@ -52,10 +55,18 @@ export class Course {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Student' }], default: [] })
   estudiantes: Types.ObjectId[];
 
-  @ApiProperty({ description: 'Fecha de creación del registro', example: '2023-01-01T12:00:00.000Z', readOnly: true })
+  @ApiProperty({
+    description: 'Fecha de creación del registro',
+    example: '2023-01-01T12:00:00.000Z',
+    readOnly: true,
+  })
   declare createdAt: Date;
 
-  @ApiProperty({ description: 'Fecha de última actualización del registro', example: '2023-01-02T15:30:00.000Z', readOnly: true })
+  @ApiProperty({
+    description: 'Fecha de última actualización del registro',
+    example: '2023-01-02T15:30:00.000Z',
+    readOnly: true,
+  })
   declare updatedAt: Date;
 }
 

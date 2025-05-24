@@ -1,5 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger'; // Importar decoradores de Swagger
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger'; // Importar decoradores de Swagger
 import { StudentsService } from './students.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -21,7 +39,11 @@ export class StudentsController {
   @Post()
   @Roles(UserRole.ADMIN, UserRole.STAFF)
   @ApiOperation({ summary: 'Crear un nuevo estudiante (Admin, Staff)' })
-  @ApiResponse({ status: 201, description: 'El estudiante ha sido creado exitosamente.', type: Student })
+  @ApiResponse({
+    status: 201,
+    description: 'El estudiante ha sido creado exitosamente.',
+    type: Student,
+  })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
@@ -33,7 +55,11 @@ export class StudentsController {
   @Get()
   @Roles(UserRole.ADMIN, UserRole.STAFF)
   @ApiOperation({ summary: 'Obtener todos los estudiantes (Admin, Staff)' })
-  @ApiResponse({ status: 200, description: 'Lista de estudiantes.', type: [Student] })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de estudiantes.',
+    type: [Student],
+  })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async findAll(): Promise<Student[]> {
@@ -41,9 +67,18 @@ export class StudentsController {
   }
 
   @Get('profile')
-  @ApiOperation({ summary: 'Obtener el perfil académico del estudiante actual' })
-  @ApiResponse({ status: 200, description: 'Perfil académico del estudiante.', type: Student })
-  @ApiResponse({ status: 404, description: 'Perfil de estudiante no encontrado.' })
+  @ApiOperation({
+    summary: 'Obtener el perfil académico del estudiante actual',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil académico del estudiante.',
+    type: Student,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Perfil de estudiante no encontrado.',
+  })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   async getProfile(@CurrentUser() user: UserPublicData): Promise<Student> {
     return this.studentsService.findByEmail(user.email);
@@ -52,8 +87,16 @@ export class StudentsController {
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.STAFF)
   @ApiOperation({ summary: 'Obtener un estudiante por su ID (Admin, Staff)' })
-  @ApiParam({ name: 'id', description: 'ID único del estudiante (ObjectId)', type: String })
-  @ApiResponse({ status: 200, description: 'Detalles del estudiante.', type: Student })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del estudiante (ObjectId)',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Detalles del estudiante.',
+    type: Student,
+  })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
@@ -64,15 +107,28 @@ export class StudentsController {
 
   @Patch(':id')
   @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Actualizar un estudiante existente (Admin, Staff)' })
-  @ApiParam({ name: 'id', description: 'ID único del estudiante a actualizar', type: String })
+  @ApiOperation({
+    summary: 'Actualizar un estudiante existente (Admin, Staff)',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del estudiante a actualizar',
+    type: String,
+  })
   @ApiBody({ type: UpdateStudentDto })
-  @ApiResponse({ status: 200, description: 'Estudiante actualizado exitosamente.', type: Student })
+  @ApiResponse({
+    status: 200,
+    description: 'Estudiante actualizado exitosamente.',
+    type: Student,
+  })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
-  async update(@Param('id') id: string, @Body() updateStudentDto: UpdateStudentDto): Promise<Student> {
+  async update(
+    @Param('id') id: string,
+    @Body() updateStudentDto: UpdateStudentDto,
+  ): Promise<Student> {
     // El servicio ahora lanza NotFoundException si no se encuentra o no se puede actualizar.
     return this.studentsService.update(id, updateStudentDto);
   }
@@ -81,8 +137,15 @@ export class StudentsController {
   @Roles(UserRole.ADMIN, UserRole.STAFF)
   @HttpCode(HttpStatus.NO_CONTENT) // Estándar para DELETE exitoso sin contenido de respuesta
   @ApiOperation({ summary: 'Eliminar un estudiante (Admin, Staff)' })
-  @ApiParam({ name: 'id', description: 'ID único del estudiante a eliminar', type: String })
-  @ApiResponse({ status: 204, description: 'Estudiante eliminado exitosamente.' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del estudiante a eliminar',
+    type: String,
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Estudiante eliminado exitosamente.',
+  })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })

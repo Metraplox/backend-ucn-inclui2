@@ -3,7 +3,8 @@ import { IsMongoId, IsNotEmpty, IsBoolean } from 'class-validator';
 
 export class CreateConsentDto {
   @ApiProperty({
-    description: 'ID del documento para el cual se otorga/modifica el consentimiento.',
+    description:
+      'ID del documento para el cual se otorga/modifica el consentimiento.',
     example: '60c72b2f9b1d8c001f8e4a3c',
   })
   @IsMongoId({ message: 'El ID del documento debe ser un MongoID válido.' })
@@ -11,10 +12,13 @@ export class CreateConsentDto {
   documentId: string;
 
   @ApiProperty({
-    description: 'Estado del consentimiento (true para otorgado, false para no otorgado/revocado).',
+    description:
+      'Estado del consentimiento (true para otorgado, false para no otorgado/revocado).',
     example: true,
   })
-  @IsBoolean({ message: 'El estado del consentimiento debe ser un valor booleano.' })
+  @IsBoolean({
+    message: 'El estado del consentimiento debe ser un valor booleano.',
+  })
   @IsNotEmpty({ message: 'El estado del consentimiento no puede estar vacío.' })
   isConsentGiven: boolean;
 

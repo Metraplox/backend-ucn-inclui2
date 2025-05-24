@@ -10,6 +10,9 @@ import { ConsentModule } from './consent/consent.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CoursesModule } from './courses/courses.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { DepartmentsModule } from './departments/departments.module';
+import { CareersModule } from './careers/careers.module';
 
 @Module({
   imports: [
@@ -30,6 +33,9 @@ import { CoursesModule } from './courses/courses.module';
     CoursesModule,
     UsersModule,
     AuthModule,
+    NotificationsModule,
+    DepartmentsModule,
+    CareersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

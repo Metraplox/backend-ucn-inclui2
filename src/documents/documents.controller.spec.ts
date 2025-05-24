@@ -3,9 +3,17 @@ import { DocumentsController } from './documents.controller';
 import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentMetadataDto } from './dto/update-document-metadata.dto';
-import { DocumentCategory, DocumentDocument, DocumentEntity } from './schemas/document.schema';
+import {
+  DocumentCategory,
+  DocumentDocument,
+  DocumentEntity,
+} from './schemas/document.schema';
 import { Types } from 'mongoose';
-import { StreamableFile, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  StreamableFile,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { Readable } from 'stream';
 import * as fs from 'fs'; // <--- Añadido import para fs
@@ -34,7 +42,8 @@ const createDocDto: CreateDocumentDto = {
   description: 'Test description',
 };
 
-const mockDocumentResult: Partial<DocumentDocument> = { // Usar DocumentDocument para _id
+const mockDocumentResult: Partial<DocumentDocument> = {
+  // Usar DocumentDocument para _id
   _id: documentId as any,
   studentId: new Types.ObjectId(studentId),
   fileNameOriginal: mockMulterFile.originalname,
@@ -84,8 +93,15 @@ describe('DocumentsController', () => {
 
   describe('uploadDocument', () => {
     it('should call service.uploadForStudentByStaff and return document metadata', async () => {
-      const result = await controller.uploadDocument(mockMulterFile, createDocDto);
-      expect(service.uploadForStudentByStaff).toHaveBeenCalledWith(mockMulterFile, createDocDto, 'staff-placeholder-id');
+      const result = await controller.uploadDocument(
+        mockMulterFile,
+        createDocDto,
+      );
+      expect(service.uploadForStudentByStaff).toHaveBeenCalledWith(
+        mockMulterFile,
+        createDocDto,
+        'staff-placeholder-id',
+      );
       expect(result).toEqual(mockDocumentResult);
     });
     // Pruebas para ParseFilePipe (si estuviera activo) serían más de integración o e2e.
@@ -99,7 +115,9 @@ describe('DocumentsController', () => {
       expect(result).toEqual([mockDocumentResult]);
     });
     it('should throw BadRequestException for invalid studentId', async () => {
-      await expect(controller.getDocumentsByStudent('invalid-id')).rejects.toThrow(BadRequestException);
+      await expect(
+        controller.getDocumentsByStudent('invalid-id'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -109,8 +127,10 @@ describe('DocumentsController', () => {
       expect(service.getDocumentById).toHaveBeenCalledWith(documentId);
       expect(result).toEqual(mockDocumentResult);
     });
-     it('should throw BadRequestException for invalid documentId', async () => {
-      await expect(controller.getDocumentMetadata('invalid-id')).rejects.toThrow(BadRequestException);
+    it('should throw BadRequestException for invalid documentId', async () => {
+      await expect(
+        controller.getDocumentMetadata('invalid-id'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -128,12 +148,21 @@ describe('DocumentsController', () => {
 
     it('should call service.getDocumentFileDetails and return a StreamableFile', async () => {
       // Mock fs.createReadStream para que no intente leer un archivo real
-      const mockReadStream = new Readable({ read() { this.push(null); } }); // Emite EOF inmediatamente
-      jest.spyOn(require('fs'), 'createReadStream').mockReturnValue(mockReadStream);
+      const mockReadStream = new Readable({
+        read() {
+          this.push(null);
+        },
+      }); // Emite EOF inmediatamente
+      jest
+        .spyOn(require('fs'), 'createReadStream')
+        .mockReturnValue(mockReadStream);
       jest.spyOn(fs.promises, 'access').mockResolvedValue(undefined); // Simula que el archivo existe
 
-      const result = await controller.downloadDocument(documentId, mockResponse as Response);
-      
+      const result = await controller.downloadDocument(
+        documentId,
+        mockResponse as Response,
+      );
+
       expect(service.getDocumentFileDetails).toHaveBeenCalledWith(documentId);
       expect(mockResponse.set).toHaveBeenCalledWith({
         'Content-Type': mockDocumentResult.mimeType,
@@ -142,41 +171,62 @@ describe('DocumentsController', () => {
       expect(result).toBeInstanceOf(StreamableFile);
       expect(result.getStream()).toBe(mockReadStream);
     });
-    
+
     it('should throw BadRequestException for invalid documentId', async () => {
-      await expect(controller.downloadDocument('invalid-id', mockResponse as Response)).rejects.toThrow(BadRequestException);
+      await expect(
+        controller.downloadDocument('invalid-id', mockResponse as Response),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw NotFoundException if physical file does not exist', async () => {
-      jest.spyOn(fs.promises, 'access').mockRejectedValueOnce(new Error('File not found'));
-      mockDocumentsService.getDocumentFileDetails.mockResolvedValueOnce(mockDocumentResult); // Asegura que el servicio devuelva datos
+      jest
+        .spyOn(fs.promises, 'access')
+        .mockRejectedValueOnce(new Error('File not found'));
+      mockDocumentsService.getDocumentFileDetails.mockResolvedValueOnce(
+        mockDocumentResult,
+      ); // Asegura que el servicio devuelva datos
 
-      await expect(controller.downloadDocument(documentId, mockResponse as Response))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        controller.downloadDocument(documentId, mockResponse as Response),
+      ).rejects.toThrow(NotFoundException);
       expect(service.getDocumentFileDetails).toHaveBeenCalledWith(documentId);
     });
   });
 
   describe('updateMetadata', () => {
-    const updateDto: UpdateDocumentMetadataDto = { category: DocumentCategory.CERTIFICADO_DISCAPACIDAD };
+    const updateDto: UpdateDocumentMetadataDto = {
+      category: DocumentCategory.CERTIFICADO_DISCAPACIDAD,
+    };
     it('should call service.updateDocumentMetadata and return updated metadata', async () => {
-      mockDocumentsService.updateDocumentMetadata.mockResolvedValueOnce({ ...mockDocumentResult, ...updateDto });
+      mockDocumentsService.updateDocumentMetadata.mockResolvedValueOnce({
+        ...mockDocumentResult,
+        ...updateDto,
+      });
       const result = await controller.updateMetadata(documentId, updateDto);
-      expect(service.updateDocumentMetadata).toHaveBeenCalledWith(documentId, updateDto);
+      expect(service.updateDocumentMetadata).toHaveBeenCalledWith(
+        documentId,
+        updateDto,
+      );
       expect(result.category).toBe(DocumentCategory.CERTIFICADO_DISCAPACIDAD);
     });
-     it('should throw BadRequestException for invalid documentId', async () => {
-      await expect(controller.updateMetadata('invalid-id', updateDto)).rejects.toThrow(BadRequestException);
+    it('should throw BadRequestException for invalid documentId', async () => {
+      await expect(
+        controller.updateMetadata('invalid-id', updateDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('deleteDocument', () => {
     it('should call service.deleteDocument', async () => {
-      await expect(controller.deleteDocument(documentId)).resolves.toBeUndefined();
+      await expect(
+        controller.deleteDocument(documentId),
+      ).resolves.toBeUndefined();
       expect(service.deleteDocument).toHaveBeenCalledWith(documentId);
     });
-     it('should throw BadRequestException for invalid documentId', async () => {
-      await expect(controller.deleteDocument('invalid-id')).rejects.toThrow(BadRequestException);
+    it('should throw BadRequestException for invalid documentId', async () => {
+      await expect(controller.deleteDocument('invalid-id')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

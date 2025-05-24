@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsMongoId } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  IsMongoId,
+} from 'class-validator';
 import { DocumentCategory } from '../schemas/document.schema'; // Ajusta la ruta si es necesario
 
 export class CreateDocumentDto {
@@ -16,7 +22,9 @@ export class CreateDocumentDto {
     enum: DocumentCategory,
     example: DocumentCategory.INFORME_MEDICO,
   })
-  @IsEnum(DocumentCategory, { message: 'La categoría del documento no es válida.' })
+  @IsEnum(DocumentCategory, {
+    message: 'La categoría del documento no es válida.',
+  })
   @IsNotEmpty({ message: 'La categoría del documento no puede estar vacía.' })
   category: DocumentCategory;
 

@@ -1,4 +1,13 @@
-import { Controller, Post, Body, UseGuards, Request, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -17,10 +26,22 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Iniciar sesión de usuario' })
   @ApiBody({ type: LoginDto }) // Documentar el cuerpo esperado
-  @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso, retorna token JWT.', schema: { example: { access_token: 'jwt_token_aqui' } } })
-  @ApiResponse({ status: 400, description: 'Solicitud incorrecta (ej. DTO inválido, aunque LocalAuthGuard podría manejarlo antes).' })
+  @ApiResponse({
+    status: 200,
+    description: 'Inicio de sesión exitoso, retorna token JWT.',
+    schema: { example: { access_token: 'jwt_token_aqui' } },
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Solicitud incorrecta (ej. DTO inválido, aunque LocalAuthGuard podría manejarlo antes).',
+  })
   @ApiResponse({ status: 401, description: 'Credenciales incorrectas.' })
-  async login(@Request() req: { user: Omit<User, 'password_hash'> }, @Body() loginDto: LoginDto) { // req.user es establecido por LocalAuthGuard/LocalStrategy. loginDto es para Swagger.
+  async login(
+    @Request() req: { user: Omit<User, 'password_hash'> },
+    @Body() loginDto: LoginDto,
+  ) {
+    // req.user es establecido por LocalAuthGuard/LocalStrategy. loginDto es para Swagger.
     // El body con LoginDto es manejado automáticamente por LocalStrategy a través de LocalAuthGuard.
     // No necesitamos loginDto como parámetro explícito aquí si LocalAuthGuard está activo.
     // Sin embargo, para que Swagger genere la documentación del body, se puede dejar @Body() loginDto: LoginDto,
@@ -28,8 +49,11 @@ export class AuthController {
     // Por simplicidad y claridad con el guard, lo removemos del signature si el guard se encarga.
     // Si se deja, asegurarse que no cause confusión.
     // Para este caso, se deja loginDto para que Swagger lo muestre, pero no se usa en la lógica del método.
-    if (!req.user) { // Doble chequeo, aunque LocalAuthGuard debería lanzar error si no hay user.
-        throw new UnauthorizedException('Usuario no autenticado después del guard.');
+    if (!req.user) {
+      // Doble chequeo, aunque LocalAuthGuard debería lanzar error si no hay user.
+      throw new UnauthorizedException(
+        'Usuario no autenticado después del guard.',
+      );
     }
     return this.authService.login(req.user);
   }
@@ -38,10 +62,19 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
   @ApiBody({ type: CreateUserDto })
-  @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente.', type: User }) // Usar User como tipo de respuesta
-  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos (ej. email ya existe).' })
-  @ApiResponse({ status: 409, description: 'Conflicto, el usuario ya existe.'})
-  async register(@Body() createUserDto: CreateUserDto): Promise<UserPublicData> {
+  @ApiResponse({
+    status: 201,
+    description: 'Usuario registrado exitosamente.',
+    type: User,
+  }) // Usar User como tipo de respuesta
+  @ApiResponse({
+    status: 400,
+    description: 'Datos de entrada inválidos (ej. email ya existe).',
+  })
+  @ApiResponse({ status: 409, description: 'Conflicto, el usuario ya existe.' })
+  async register(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<UserPublicData> {
     return this.authService.register(createUserDto);
   }
 

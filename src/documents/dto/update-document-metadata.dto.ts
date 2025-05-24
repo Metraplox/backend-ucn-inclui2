@@ -9,7 +9,9 @@ export class UpdateDocumentMetadataDto {
     example: DocumentCategory.OTRO,
   })
   @IsOptional()
-  @IsEnum(DocumentCategory, { message: 'La categoría del documento no es válida.' })
+  @IsEnum(DocumentCategory, {
+    message: 'La categoría del documento no es válida.',
+  })
   category?: DocumentCategory;
 
   @ApiPropertyOptional({
@@ -18,6 +20,8 @@ export class UpdateDocumentMetadataDto {
   })
   @IsOptional()
   @IsString({ message: 'La descripción debe ser texto.' })
-  @MaxLength(500, { message: 'La descripción no puede exceder los 500 caracteres.'})
+  @MaxLength(500, {
+    message: 'La descripción no puede exceder los 500 caracteres.',
+  })
   description?: string;
 }

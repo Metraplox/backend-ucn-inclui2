@@ -33,7 +33,7 @@ export class CoursesService {
     if (!isValidId) {
       throw new NotFoundException(`ID inválido: ${id}`);
     }
-    
+
     const course = await this.courseModel.findById(id).exec();
     if (!course) {
       throw new NotFoundException(`Curso con ID ${id} no encontrado`);
@@ -45,7 +45,7 @@ export class CoursesService {
     const updatedCourse = await this.courseModel
       .findByIdAndUpdate(id, updateCourseDto, { new: true })
       .exec();
-    
+
     if (!updatedCourse) {
       throw new NotFoundException(`Curso con ID ${id} no encontrado`);
     }
@@ -73,45 +73,62 @@ export class CoursesService {
     return this.courseModel.find(query).exec();
   }
 
+  async findByTeacher(teacherId: string, semester: string): Promise<Course[]> {
+    return this.courseModel
+      .find({
+        teacherId: teacherId,
+        semestre: semester,
+      })
+      .exec();
+  }
+
   async findStudentsWithAdjustments(courseId: string): Promise<any[]> {
     const course = await this.findOne(courseId);
-    
+
     // Encontrar todos los ajustes activos para el curso específico
-    const adjustments = await this.adjustmentModel.find({
-      'currentAdjustments.courseNrc': course.nrc,
-      'currentAdjustments.estado': 'activo',
-    }).exec();
-    
+    const adjustments = await this.adjustmentModel
+      .find({
+        'currentAdjustments.courseNrc': course.nrc,
+        'currentAdjustments.estado': 'activo',
+      })
+      .exec();
+
     // Obtener los IDs de estudiantes únicos de los ajustes
-    const studentIds = [...new Set(adjustments.map(adj => adj.studentId.toString()))];
-    
+    const studentIds = [
+      ...new Set(adjustments.map((adj) => adj.studentId.toString())),
+    ];
+
     // Buscar la información de los estudiantes
-    const students = await this.studentModel.find({
-      _id: { $in: studentIds },
-    }).exec();
-    
+    const students = await this.studentModel
+      .find({
+        _id: { $in: studentIds },
+      })
+      .exec();
+
     // Crear un mapa para asociar estudiantes con sus ajustes
-    const result = students.map(student => {
+    const result = students.map((student) => {
       const studentAdjustments = adjustments
-        .filter(adj => adj.studentId.toString() === student._id.toString())
-        .flatMap(adj => adj.currentAdjustments)
-        .filter(adj => adj.courseNrc === course.nrc && adj.estado === 'activo')
+        .filter((adj) => adj.studentId.toString() === student._id.toString())
+        .flatMap((adj) => adj.currentAdjustments)
+        .filter(
+          (adj) => adj.courseNrc === course.nrc && adj.estado === 'activo',
+        )
         .map((adj, index) => ({
           _id: index.toString(), // Usar un índice como identificador único
           tipo: adj.type,
-          descripcion: adj.comentarios || `Ajuste tipo ${adj.type}`
+          descripcion: adj.comentarios || `Ajuste tipo ${adj.type}`,
         }));
-      
+
       return {
         _id: student._id,
         nombres: student.nombres || 'N/A',
         apellidos: student.apellidos || 'N/A',
         rut: student.rut || 'N/A',
         email: student.email || 'N/A',
-        ajustes: studentAdjustments
+        ajustes: studentAdjustments,
       };
     });
-    
+
     return result;
   }
 }

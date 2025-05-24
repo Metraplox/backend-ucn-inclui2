@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 import * as path from 'path';
-import *  as fs from 'fs';
+import * as fs from 'fs';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,7 +12,8 @@ import { DocumentEntity, DocumentSchema } from './schemas/document.schema';
 import { Student, StudentSchema } from '../students/schemas/student.schema';
 
 // Configuración de almacenamiento de Multer
-const UPLOAD_LOCATION = process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads');
+const UPLOAD_LOCATION =
+  process.env.UPLOAD_LOCATION || path.join(__dirname, '..', '..', 'uploads');
 
 // Asegurar que el directorio de uploads exista al iniciar el módulo
 try {
@@ -28,7 +29,7 @@ try {
   imports: [
     MongooseModule.forFeature([
       { name: DocumentEntity.name, schema: DocumentSchema },
-      { name: Student.name, schema: StudentSchema }
+      { name: Student.name, schema: StudentSchema },
     ]),
     MulterModule.register({
       storage: diskStorage({

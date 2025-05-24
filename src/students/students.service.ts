@@ -24,7 +24,9 @@ export class StudentsService {
   async findByEmail(email: string): Promise<Student> {
     const student = await this.studentModel.findOne({ email }).exec();
     if (!student) {
-      throw new NotFoundException(`Estudiante con email "${email}" no encontrado.`);
+      throw new NotFoundException(
+        `Estudiante con email "${email}" no encontrado.`,
+      );
     }
     return student;
   }
@@ -52,15 +54,13 @@ export class StudentsService {
     return updatedStudent;
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.studentModel.deleteOne({ _id: id }).exec();
-    if (result.deletedCount === 0) {
+  async remove(id: string): Promise<Student> {
+    const deletedStudent = await this.studentModel.findByIdAndDelete(id).exec();
+    if (!deletedStudent) {
       throw new NotFoundException(
         `Estudiante con ID "${id}" no encontrado para eliminar.`,
       );
     }
-    // No es necesario devolver nada si la eliminación fue exitosa y no hay error.
-    // Si se necesita el resultado, se puede cambiar el tipo de retorno a: Promise<{ deletedCount: number }>
-    // y devolver { deletedCount: result.deletedCount }
+    return deletedStudent;
   }
 }

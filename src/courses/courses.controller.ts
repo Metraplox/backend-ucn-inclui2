@@ -1,5 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, NotFoundException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -19,7 +37,11 @@ export class CoursesController {
   @Post()
   @Roles(UserRole.ADMIN, UserRole.STAFF)
   @ApiOperation({ summary: 'Crear un nuevo curso (Admin, Staff)' })
-  @ApiResponse({ status: 201, description: 'Curso creado exitosamente', type: Course })
+  @ApiResponse({
+    status: 201,
+    description: 'Curso creado exitosamente',
+    type: Course,
+  })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
@@ -30,7 +52,11 @@ export class CoursesController {
   @Get()
   @Roles(UserRole.ADMIN, UserRole.STAFF)
   @ApiOperation({ summary: 'Obtener todos los cursos (Admin, Staff)' })
-  @ApiQuery({ name: 'semester', required: false, description: 'Filtrar por semestre (ej: 2025-1)' })
+  @ApiQuery({
+    name: 'semester',
+    required: false,
+    description: 'Filtrar por semestre (ej: 2025-1)',
+  })
   @ApiResponse({ status: 200, description: 'Lista de cursos', type: [Course] })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
@@ -43,10 +69,20 @@ export class CoursesController {
 
   @Get('student/:studentId')
   @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.STUDENT)
-  @ApiOperation({ summary: 'Obtener cursos de un estudiante (Admin, Staff, Student)' })
+  @ApiOperation({
+    summary: 'Obtener cursos de un estudiante (Admin, Staff, Student)',
+  })
   @ApiParam({ name: 'studentId', description: 'ID del estudiante' })
-  @ApiQuery({ name: 'semester', required: false, description: 'Filtrar por semestre (ej: 2025-1)' })
-  @ApiResponse({ status: 200, description: 'Lista de cursos del estudiante', type: [Course] })
+  @ApiQuery({
+    name: 'semester',
+    required: false,
+    description: 'Filtrar por semestre (ej: 2025-1)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de cursos del estudiante',
+    type: [Course],
+  })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
@@ -71,13 +107,20 @@ export class CoursesController {
 
   @Get(':courseId/students-with-adjustments')
   @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Obtener estudiantes con ajustes en un curso (Admin, Staff)' })
+  @ApiOperation({
+    summary: 'Obtener estudiantes con ajustes en un curso (Admin, Staff)',
+  })
   @ApiParam({ name: 'courseId', description: 'ID del curso' })
-  @ApiResponse({ status: 200, description: 'Lista de estudiantes con ajustes activos en el curso' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de estudiantes con ajustes activos en el curso',
+  })
   @ApiResponse({ status: 404, description: 'Curso no encontrado' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
-  async getStudentsWithAdjustments(@Param('courseId') courseId: string): Promise<any[]> {
+  async getStudentsWithAdjustments(
+    @Param('courseId') courseId: string,
+  ): Promise<any[]> {
     return this.coursesService.findStudentsWithAdjustments(courseId);
   }
 
@@ -85,7 +128,11 @@ export class CoursesController {
   @Roles(UserRole.ADMIN, UserRole.STAFF)
   @ApiOperation({ summary: 'Actualizar un curso (Admin, Staff)' })
   @ApiParam({ name: 'id', description: 'ID del curso' })
-  @ApiResponse({ status: 200, description: 'Curso actualizado exitosamente', type: Course })
+  @ApiResponse({
+    status: 200,
+    description: 'Curso actualizado exitosamente',
+    type: Course,
+  })
   @ApiResponse({ status: 404, description: 'Curso no encontrado' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
   @ApiResponse({ status: 401, description: 'No autorizado' })

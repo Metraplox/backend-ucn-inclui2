@@ -1,4 +1,8 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
 
@@ -14,7 +18,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   //   }
   //   return user; // Devuelve el usuario que JwtStrategy.validate() retornó
   // }
-
   // canActivate también puede ser sobreescrito si es necesario,
   // por ejemplo, para permitir acceso público a una ruta protegida si no hay token,
   // pero aún así poblar req.user si hay un token válido.

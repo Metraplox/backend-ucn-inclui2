@@ -12,11 +12,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private usersService: UsersService,
     // private configService: ConfigService, // Descomentar cuando ConfigModule esté configurado
   ) {
+    const jwtSecret = process.env.JWT_SECRET;
+
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET must be defined in environment variables');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      // secretOrKey: configService.get<string>('JWT_SECRET'), // Usar variable de entorno
-      secretOrKey: process.env.JWT_SECRET || 'fallbackSecret123!@#', // Temporal: Usar variable de entorno o un fallback seguro
+      secretOrKey: jwtSecret,
     });
   }
 

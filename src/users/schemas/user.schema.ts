@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum UserRole {
@@ -12,10 +12,16 @@ export enum UserRole {
 
 @Schema({ timestamps: true })
 export class User extends Document {
-  @ApiProperty({ description: 'ID único del usuario (generado por MongoDB)', example: '605c72ef9167f86c2cabc789' })
+  @ApiProperty({
+    description: 'ID único del usuario (generado por MongoDB)',
+    example: '605c72ef9167f86c2cabc789',
+  })
   declare _id: string;
 
-  @ApiProperty({ description: 'Correo electrónico único del usuario', example: 'usuario@example.com' })
+  @ApiProperty({
+    description: 'Correo electrónico único del usuario',
+    example: 'usuario@example.com',
+  })
   @Prop({ type: String, unique: true, required: true, trim: true })
   email: string;
 
@@ -23,23 +29,65 @@ export class User extends Document {
   @Prop({ type: String, required: true })
   password_hash: string; // Se almacena el hash, no la contraseña en texto plano
 
-  @ApiProperty({ description: 'Roles del usuario', enum: UserRole, isArray: true, example: [UserRole.STUDENT] })
-  @Prop({ type: [{ type: String, enum: UserRole }], required: true, default: [UserRole.STUDENT] })
+  @ApiProperty({
+    description: 'Roles del usuario',
+    enum: UserRole,
+    isArray: true,
+    example: [UserRole.STUDENT],
+  })
+  @Prop({
+    type: [{ type: String, enum: UserRole }],
+    required: true,
+    default: [UserRole.STUDENT],
+  })
   roles: UserRole[];
 
-  @ApiProperty({ description: 'Nombre completo del usuario', example: 'Ana María López' })
+  @ApiProperty({
+    description: 'Nombre completo del usuario',
+    example: 'Ana María López',
+  })
   @Prop({ type: String, required: true, trim: true })
   nombreCompleto: string;
 
-  @ApiProperty({ description: 'Indica si el usuario está activo', example: true })
+  @ApiProperty({
+    description: 'Indica si el usuario está activo',
+    example: true,
+  })
   @Prop({ type: Boolean, required: true, default: true })
   isActive: boolean;
 
-  @ApiProperty({ description: 'Fecha de creación del registro', example: '2023-01-01T12:00:00.000Z', readOnly: true })
+  @ApiProperty({ description: 'Responsabilidades adicionales del usuario' })
+  @Prop({
+    type: {
+      isDepartmentHead: { type: Boolean, default: false },
+      isCareerHead: { type: Boolean, default: false },
+      isDIDDECStaff: { type: Boolean, default: false },
+      departmentIds: [{ type: Types.ObjectId, ref: 'Department' }],
+      careerIds: [{ type: Types.ObjectId, ref: 'Career' }],
+    },
+    default: {},
+  })
+  additionalResponsibilities: {
+    isDepartmentHead?: boolean;
+    isCareerHead?: boolean;
+    isDIDDECStaff?: boolean;
+    departmentIds?: Types.ObjectId[];
+    careerIds?: Types.ObjectId[];
+  };
+
+  @ApiProperty({
+    description: 'Fecha de creación del registro',
+    example: '2023-01-01T12:00:00.000Z',
+    readOnly: true,
+  })
   @Prop() // Mongoose maneja esto con timestamps: true
   declare createdAt?: Date;
 
-  @ApiProperty({ description: 'Fecha de última actualización del registro', example: '2023-01-02T15:30:00.000Z', readOnly: true })
+  @ApiProperty({
+    description: 'Fecha de última actualización del registro',
+    example: '2023-01-02T15:30:00.000Z',
+    readOnly: true,
+  })
   @Prop() // Mongoose maneja esto con timestamps: true
   declare updatedAt?: Date;
 
@@ -52,6 +100,8 @@ export class User extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+export type UserDocument = User & Document;
 
 // Optimizaciones de índices si es necesario
 // UserSchema.index({ email: 1 }); // Eliminado para evitar duplicación, unique:true en @Prop es suficiente

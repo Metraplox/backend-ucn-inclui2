@@ -17,10 +17,22 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     PassportModule, // PassportModule.register({ defaultStrategy: 'jwt' }) es opcional aquí
     JwtModule.registerAsync({
       imports: [ConfigModule], // Asegurar que ConfigModule está disponible
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'fallbackSecret123!@#', // Usar variable de entorno
-        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '1h' }, // Ejemplo: '60s', '1h', '7d'
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const jwtSecret = configService.get<string>('JWT_SECRET');
+
+        if (!jwtSecret) {
+          throw new Error(
+            'JWT_SECRET must be defined in environment variables',
+          );
+        }
+
+        return {
+          secret: jwtSecret,
+          signOptions: {
+            expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '1h',
+          },
+        };
+      },
       inject: [ConfigService],
     }),
     ConfigModule, // Importar ConfigModule para que esté disponible para JwtModule.registerAsync y otros servicios

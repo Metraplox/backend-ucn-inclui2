@@ -9,7 +9,8 @@ import { NotFoundException } from '@nestjs/common';
 // Datos de ejemplo consistentes con students.service.spec.ts
 const studentId = 'someMongoId';
 
-const mockStudentResult: Partial<StudentDocument> = { // Tipo que incluye _id
+const mockStudentResult: Partial<StudentDocument> = {
+  // Tipo que incluye _id
   _id: studentId as any,
   rut: '12345678-9',
   nombres: 'Juan',
@@ -38,19 +39,29 @@ const mockStudentsService = {
     if (id === studentId) {
       return Promise.resolve(mockStudentResult);
     }
-    return Promise.reject(new NotFoundException(`Estudiante con ID "${id}" no encontrado.`));
+    return Promise.reject(
+      new NotFoundException(`Estudiante con ID "${id}" no encontrado.`),
+    );
   }),
   update: jest.fn().mockImplementation((id: string, dto: UpdateStudentDto) => {
     if (id === studentId) {
       return Promise.resolve({ ...mockStudentResult, ...dto });
     }
-    return Promise.reject(new NotFoundException(`Estudiante con ID "${id}" no encontrado para actualizar.`));
+    return Promise.reject(
+      new NotFoundException(
+        `Estudiante con ID "${id}" no encontrado para actualizar.`,
+      ),
+    );
   }),
   remove: jest.fn().mockImplementation((id: string) => {
     if (id === studentId) {
       return Promise.resolve(undefined); // Simula void para éxito
     }
-    return Promise.reject(new NotFoundException(`Estudiante con ID "${id}" no encontrado para eliminar.`));
+    return Promise.reject(
+      new NotFoundException(
+        `Estudiante con ID "${id}" no encontrado para eliminar.`,
+      ),
+    );
   }),
 };
 
@@ -104,7 +115,9 @@ describe('StudentsController', () => {
     it('should re-throw NotFoundException if service.findOne throws it', async () => {
       const nonExistentId = 'nonExistentId';
       // El mock de service.findOne ya está configurado para lanzar NotFoundException
-      await expect(controller.findOne(nonExistentId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(nonExistentId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(service.findOne).toHaveBeenCalledWith(nonExistentId);
     });
   });
@@ -118,8 +131,13 @@ describe('StudentsController', () => {
 
     it('should re-throw NotFoundException if service.update throws it', async () => {
       const nonExistentId = 'nonExistentId';
-      await expect(controller.update(nonExistentId, updateStudentDto)).rejects.toThrow(NotFoundException);
-      expect(service.update).toHaveBeenCalledWith(nonExistentId, updateStudentDto);
+      await expect(
+        controller.update(nonExistentId, updateStudentDto),
+      ).rejects.toThrow(NotFoundException);
+      expect(service.update).toHaveBeenCalledWith(
+        nonExistentId,
+        updateStudentDto,
+      );
     });
   });
 
@@ -131,7 +149,9 @@ describe('StudentsController', () => {
 
     it('should re-throw NotFoundException if service.remove throws it', async () => {
       const nonExistentId = 'nonExistentId';
-      await expect(controller.remove(nonExistentId)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(nonExistentId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(service.remove).toHaveBeenCalledWith(nonExistentId);
     });
   });

@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -14,9 +18,16 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<Omit<User, 'password_hash'> | null> {
+  async validateUser(
+    email: string,
+    pass: string,
+  ): Promise<Omit<User, 'password_hash'> | null> {
     const user = await this.usersService.findByEmail(email);
-    if (user && user.password_hash && await bcrypt.compare(pass, user.password_hash)) {
+    if (
+      user &&
+      user.password_hash &&
+      (await bcrypt.compare(pass, user.password_hash))
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password_hash, ...result } = user.toObject(); // user es un Documento Mongoose
       return result;
@@ -29,18 +40,20 @@ export class AuthService {
     // o es UserPublicData que tampoco lo tiene.
     // Necesitamos el _id y los roles para el payload del JWT.
     // Asegurémonos que 'user' tenga _id (puede ser string o ObjectId) y roles.
-    
+
     // Asegurar que user._id se maneja correctamente si es ObjectId o string
-    const userIdAsString = typeof user._id === 'string' ? user._id : (user._id as any).toString();
+    const userIdAsString =
+      typeof user._id === 'string' ? user._id : (user._id as any).toString();
 
     const payload = {
-        email: user.email,
-        sub: userIdAsString,
-        roles: user.roles,
-     };
+      email: user.email,
+      sub: userIdAsString,
+      roles: user.roles,
+    };
     return {
       access_token: this.jwtService.sign(payload),
-      user: { // Devolver datos públicos del usuario
+      user: {
+        // Devolver datos públicos del usuario
         _id: userIdAsString,
         email: user.email,
         nombreCompleto: user.nombreCompleto,

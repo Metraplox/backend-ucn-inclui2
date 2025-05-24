@@ -1,5 +1,22 @@
-import { Controller, Post, Body, Get, Param, Req, Ip, UseGuards, BadRequestException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Req,
+  Ip,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Request as ExpressRequest } from 'express'; // Renombrado para evitar conflicto con @Req
 import { Types } from 'mongoose';
 
@@ -21,20 +38,33 @@ export class ConsentController {
 
   @Post()
   @Roles(UserRole.STUDENT)
-  @ApiOperation({ summary: 'Otorgar o actualizar el consentimiento para un documento (Solo Estudiantes)' })
+  @ApiOperation({
+    summary:
+      'Otorgar o actualizar el consentimiento para un documento (Solo Estudiantes)',
+  })
   @ApiBody({ type: CreateConsentDto })
-  @ApiResponse({ status: 201, description: 'Consentimiento registrado/actualizado exitosamente.', type: Consent })
+  @ApiResponse({
+    status: 201,
+    description: 'Consentimiento registrado/actualizado exitosamente.',
+    type: Consent,
+  })
   @ApiResponse({ status: 400, description: 'Datos inválidos.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido o ID de estudiante no coincide.' })
-  @ApiResponse({ status: 404, description: 'Estudiante o Documento no encontrado.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido. Rol no permitido o ID de estudiante no coincide.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Estudiante o Documento no encontrado.',
+  })
   async giveOrUpdateConsent(
     @Body() createConsentDto: CreateConsentDto,
     @Req() req: ExpressRequest & { user: UserPublicData },
     @Ip() ipAddress: string,
   ): Promise<Consent> {
     const authenticatedStudentUserId = req.user._id; // User._id del estudiante autenticado
-    
+
     const userAgent = req.headers['user-agent'];
     return this.consentService.giveOrUpdateConsent(
       authenticatedStudentUserId.toString(), // Asegurar que es string
@@ -46,9 +76,20 @@ export class ConsentController {
 
   @Get('document/:documentId')
   @Roles(UserRole.STUDENT)
-  @ApiOperation({ summary: 'Obtener el estado de consentimiento para un documento específico (Solo Estudiantes)' })
-  @ApiParam({ name: 'documentId', description: 'ID del documento', type: String })
-  @ApiResponse({ status: 200, description: 'Estado del consentimiento (puede ser nulo si no existe).', type: Consent })
+  @ApiOperation({
+    summary:
+      'Obtener el estado de consentimiento para un documento específico (Solo Estudiantes)',
+  })
+  @ApiParam({
+    name: 'documentId',
+    description: 'ID del documento',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado del consentimiento (puede ser nulo si no existe).',
+    type: Consent,
+  })
   @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
@@ -63,17 +104,31 @@ export class ConsentController {
       throw new BadRequestException('ID de documento inválido.');
     }
 
-    return this.consentService.getConsentForDocumentByStudent(authenticatedStudentUserId.toString(), documentId);
+    return this.consentService.getConsentForDocumentByStudent(
+      authenticatedStudentUserId.toString(),
+      documentId,
+    );
   }
 
   @Get('student/my-consents')
   @Roles(UserRole.STUDENT)
-  @ApiOperation({ summary: 'Obtener todos los consentimientos otorgados por el estudiante autenticado (Solo Estudiantes)' })
-  @ApiResponse({ status: 200, description: 'Lista de consentimientos.', type: [Consent] })
+  @ApiOperation({
+    summary:
+      'Obtener todos los consentimientos otorgados por el estudiante autenticado (Solo Estudiantes)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de consentimientos.',
+    type: [Consent],
+  })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
-  async getMyConsents(@Req() req: ExpressRequest & { user: UserPublicData }): Promise<Consent[]> {
+  async getMyConsents(
+    @Req() req: ExpressRequest & { user: UserPublicData },
+  ): Promise<Consent[]> {
     const authenticatedStudentUserId = req.user._id;
-    return this.consentService.getConsentsByStudent(authenticatedStudentUserId.toString());
+    return this.consentService.getConsentsByStudent(
+      authenticatedStudentUserId.toString(),
+    );
   }
 }

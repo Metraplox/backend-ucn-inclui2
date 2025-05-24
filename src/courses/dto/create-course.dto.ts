@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsArray, IsOptional, IsMongoId } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsArray,
+  IsOptional,
+  IsMongoId,
+} from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateCourseDto {
@@ -51,6 +57,9 @@ export class CreateCourseDto {
   })
   @IsOptional()
   @IsArray({ message: 'Los estudiantes deben ser un array' })
-  @IsMongoId({ each: true, message: 'Cada ID de estudiante debe ser un MongoID válido' })
+  @IsMongoId({
+    each: true,
+    message: 'Cada ID de estudiante debe ser un MongoID válido',
+  })
   estudiantes?: string[];
 }

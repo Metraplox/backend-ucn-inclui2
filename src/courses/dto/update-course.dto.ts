@@ -57,6 +57,9 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   })
   @IsOptional()
   @IsArray({ message: 'Los estudiantes deben ser un array' })
-  @IsMongoId({ each: true, message: 'Cada ID de estudiante debe ser un MongoID válido' })
+  @IsMongoId({
+    each: true,
+    message: 'Cada ID de estudiante debe ser un MongoID válido',
+  })
   estudiantes?: string[];
 }
