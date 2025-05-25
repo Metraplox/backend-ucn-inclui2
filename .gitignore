@@ -49,6 +49,10 @@ lerna-debug.log*
 # Runtime data
 pids
 *.pid
+
+# Carpeta de guía del proyecto
+GUIA-PROYECTO/
+
 *.seed
 *.pid.lock
 
