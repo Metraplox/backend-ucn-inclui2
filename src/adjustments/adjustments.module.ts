@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AdjustmentsService } from './adjustments.service';
 import { AdjustmentsController } from './adjustments.controller';
 import { TeacherAdjustmentsController } from './controllers/teacher-adjustments.controller';
@@ -20,7 +20,7 @@ import { UsersModule } from '../users/users.module';
     ]),
     NotificationsModule,
     CoursesModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [AdjustmentsController, TeacherAdjustmentsController],
   providers: [AdjustmentsService],

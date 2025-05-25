@@ -21,9 +21,23 @@ import { CareersModule } from './careers/careers.module';
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGODB_URI');
+        if (!uri) {
+          throw new Error('MONGODB_URI no está definido en las variables de entorno');
+        }
+        return {
+          uri,
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+          serverSelectionTimeoutMS: 5000,
+          socketTimeoutMS: 45000,
+          connectTimeoutMS: 10000,
+          retryWrites: true,
+          retryReads: true,
+          maxPoolSize: 10,
+        };
+      },
       inject: [ConfigService],
     }),
     StudentsModule,

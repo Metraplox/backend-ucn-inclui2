@@ -1,17 +1,28 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'; // Importar Swagger
+import { ValidationPipe, Logger } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
+  logger.log('Iniciando aplicación...');
 
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
+
+  const configService = app.get(ConfigService);
+  
   // Configuración de CORS
+  const frontendUrl = configService.get('FRONTEND_URL') || '*';
   app.enableCors({
-    origin: '*', // Permite todas las solicitudes de origen. Cambia esto en producción.
+    origin: frontendUrl,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Accept, Authorization',
   });
+  
+  logger.log(`CORS configurado para: ${frontendUrl}`);
 
   // Swagger
   const config = new DocumentBuilder()
@@ -37,6 +48,14 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = configService.get('PORT') || 3000;
+  await app.listen(port);
+  
+  logger.log(`Servidor iniciado en: http://localhost:${port}`);
+  logger.log(`Swagger disponible en: http://localhost:${port}/api`);
+  logger.log(`Entorno: ${configService.get('NODE_ENV') || 'development'}`);
 }
-bootstrap();
+
+bootstrap().catch(err => {
+  console.error('Error al iniciar la aplicación:', err);
+});
