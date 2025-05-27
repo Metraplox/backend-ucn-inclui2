@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:incluye_app/services/adjustment_service.';
+import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/app_scaffold.dart';
 import 'package:incluye_app/widgets/course_widget.dart';
