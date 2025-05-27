@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Department, DepartmentDocument } from './schemas/department.schema';
+import { CreateDepartmentDto } from './dto/create-department.dto';
+import { UpdateDepartmentDto } from './dto/update-department.dto';
 
 @Injectable()
 export class DepartmentsService {
@@ -10,7 +12,7 @@ export class DepartmentsService {
     private departmentModel: Model<DepartmentDocument>,
   ) {}
 
-  async create(createDepartmentDto: any): Promise<Department> {
+  async create(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
     const department = new this.departmentModel(createDepartmentDto);
     return department.save();
   }
@@ -103,7 +105,7 @@ export class DepartmentsService {
     return department.teacherIds;
   }
 
-  async update(id: string, updateDepartmentDto: any): Promise<Department> {
+  async update(id: string, updateDepartmentDto: UpdateDepartmentDto): Promise<Department> {
     const department = await this.departmentModel
       .findByIdAndUpdate(id, updateDepartmentDto, { new: true })
       .exec();
@@ -113,5 +115,12 @@ export class DepartmentsService {
     }
 
     return department;
+  }
+
+  async remove(id: string): Promise<void> {
+    const result = await this.departmentModel.deleteOne({ _id: id }).exec();
+    if (result.deletedCount === 0) {
+      throw new NotFoundException(`Departamento con ID ${id} no encontrado`);
+    }
   }
 }

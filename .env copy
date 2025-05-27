@@ -1,4 +1,0 @@
-MONGODB_URI=mongodb+srv://metra:JKyKxr1LJrgwToX5@inclui2.hauusrc.mongodb.net/?retryWrites=true&w=majority&appName=inclui2
-GOOGLE_CLIENT_ID=tu_client_id_google
-GOOGLE_CLIENT_SECRET=tu_secret_google
-JWT_SECRET=mi_secreto_jwt
