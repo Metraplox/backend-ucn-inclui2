@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/student_service.dart';
 
 class EditStudentDialog extends StatefulWidget {
   final Student student;
@@ -81,7 +82,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
       necesidadesEducativasEspeciales: _necesidadesController.text.trim(),
     );
 
-    final success = await ApiService.updateStudent(
+    final success = await StudentService.updateStudent(
       widget.student.id,
       updatedStudent,
     );

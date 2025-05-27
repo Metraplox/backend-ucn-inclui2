@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/adjustment_service';
 import 'package:incluye_app/models/adjustment_model.dart';
 import 'package:intl/intl.dart';
 
@@ -32,7 +32,7 @@ class AdjustmentHistoryScreenState extends State<AdjustmentHistoryScreen> {
   }
 
   Future<void> _loadAjustesHistoricos() async {
-    final ajustes = await ApiService.getAdjustmentHistory(widget.studentId);
+    final ajustes = await AdjustmentService.getAdjustmentHistory(widget.studentId);
     
     // Verificar si el widget sigue montado antes de actualizar el estado
     if (!mounted) return;

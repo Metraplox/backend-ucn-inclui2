@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
 import 'package:incluye_app/models/student_model.dart';
+import 'package:incluye_app/services/document_service.dart';
+import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/edit_student_dialog.dart';
 import 'package:incluye_app/widgets/edit_adjustment_dialog.dart';
 import 'package:intl/intl.dart';
@@ -72,7 +74,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
   }
 
   Future<void> _loadStudent() async {
-    final data = await ApiService.getStudentById(widget.studentId);
+    final data = await StudentService.getStudentById(widget.studentId);
     setState(() {
       _studentData = data;
       _isLoading = false;
@@ -130,7 +132,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
       final file = File(filePath);
       
       // Subir archivo usando ApiService
-      final document = await ApiService.uploadDocument(
+      final document = await DocumentService.uploadDocument(
         file, 
         widget.studentId,
         documentType: 'CONSENTIMIENTO',

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/notification_service.dart';
+import 'package:incluye_app/services/student_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -22,7 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUserInfo() async {
-    final userInfo = await ApiService.getCurrentUserInfo();
+    final userInfo = await StudentService.getCurrentUserInfo();
     
     if (!mounted) return;
     

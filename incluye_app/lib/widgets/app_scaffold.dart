@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/notification_service.dart';
 import 'package:incluye_app/screens/auth/login_screen.dart';
 import 'package:incluye_app/screens/students/student_list_screen.dart';
 import 'package:incluye_app/screens/students/student_own_profile_screen.dart';
 import 'package:incluye_app/screens/settings/settings_screen.dart';
+import 'package:incluye_app/services/student_service.dart';
 
 class AppScaffold extends StatelessWidget {
   // Título para la barra de aplicación
@@ -35,7 +37,7 @@ class AppScaffold extends StatelessWidget {
   });
 
   void _logout(BuildContext context) async {
-    await ApiService.logout();
+    await AuthService.logout();
     
     if (!context.mounted) return;
     
@@ -96,7 +98,7 @@ class AppScaffold extends StatelessWidget {
                 title: const Text('Mi perfil'),
                 onTap: () async {
                   Navigator.pop(context);
-                  final userInfo = await ApiService.getCurrentUserInfo();
+                  final userInfo = await StudentService.getCurrentUserInfo();
                   if (!context.mounted) return;
                   
                   if (userInfo != null && userInfo['id'] != null) {

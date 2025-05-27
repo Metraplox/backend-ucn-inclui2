@@ -1,6 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/screens/home_screen.dart';
 import 'package:incluye_app/config/app_config.dart';
 import 'package:incluye_app/config/test_credentials.dart';
@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     log('URL API: ${AppConfig.apiBaseUrl}');
     
     try {
-      final user = await ApiService.login(email, password);
+      final user = await AuthService.login(email, password);
       
       // Verificar si el widget sigue montado antes de actualizar el estado
       if (!mounted) return;

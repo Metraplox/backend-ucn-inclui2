@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/student_service.dart';
 
 class StudentCreateScreen extends StatefulWidget {
   const StudentCreateScreen({super.key});
@@ -64,7 +65,7 @@ class _StudentCreateScreenState extends State<StudentCreateScreen> {
     debugPrint('Enviando estudiante: $cleanedData');
 
     setState(() => _isSubmitting = true);
-    final success = await ApiService.createStudent(cleanedData);
+    final success = await StudentService.createStudent(cleanedData);
     setState(() => _isSubmitting = false);
 
     if (success) {

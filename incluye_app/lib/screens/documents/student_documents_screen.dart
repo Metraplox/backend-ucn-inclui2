@@ -5,9 +5,12 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/document_model.dart';
+import 'package:incluye_app/services/document_service.dart';
+import 'package:incluye_app/services/consent_service.dart';
+import 'package:incluye_app/services/api_service.dart';
 
 // Widget principal para la pantalla de documentos
 class StudentDocumentsScreen extends StatefulWidget {
@@ -50,7 +53,7 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
     
     try {
       // Obtener datos del estudiante
-      final studentData = await ApiService.getStudentById(widget.studentId);
+      final studentData = await StudentService.getStudentById(widget.studentId);
       
       // Verificar si el widget sigue montado antes de continuar
       if (!mounted) return;
@@ -125,7 +128,7 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
         final file = File(path);
         
         // Subir documento usando ApiService
-        final document = await ApiService.uploadDocument(
+        final document = await DocumentService.uploadDocument(
           file, 
           widget.studentId,
           documentType: 'GENERAL',
@@ -160,7 +163,7 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
   // Método para dar consentimiento (sólo para administradores)
   Future<void> _giveConsent() async {
     try {
-      final success = await ApiService.giveConsent(widget.studentId);
+      final success = await ConsentService.giveConsent(widget.studentId);
       
       // Verificar si el widget sigue montado después de la operación asíncrona
       if (!mounted) return;
@@ -331,7 +334,7 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
                 
                 // Botón para administradores (aprobar consentimiento)
                 FutureBuilder<bool>(
-                  future: ApiService.isAdmin(),
+                  future: StudentService.isAdmin(),
                   builder: (context, snapshot) {
                     final isAdmin = snapshot.data ?? false;
                     return isAdmin && !_hasConsent

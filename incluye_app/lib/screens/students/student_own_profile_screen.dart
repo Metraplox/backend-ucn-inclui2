@@ -3,10 +3,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:incluye_app/models/document_model.dart';
 import 'dart:io';
 import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/adjustment_model.dart';
+import 'package:incluye_app/services/document_service.dart';
+import 'package:incluye_app/services/student_service.dart';
 
 // Widget principal para el perfil del estudiante (vista personal)
 class StudentOwnProfileScreen extends StatefulWidget {
@@ -49,11 +52,11 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
     
     try {
       // Usar el nuevo endpoint de perfil para obtener los datos del estudiante
-      final data = await ApiService.getStudentProfile();
+      final data = await StudentService.getStudentProfile();
       
       // Si no se encuentra el perfil del estudiante, intentar con el método anterior
       if (data == null) {
-        final fallbackData = await ApiService.getStudentById(widget.studentId);
+        final fallbackData = await StudentService.getStudentById(widget.studentId);
         if (fallbackData == null) {
           throw Exception('No se pudo obtener el perfil del estudiante');
         }
@@ -143,7 +146,7 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
         final file = File(path);
         
         // Subir documento usando ApiService
-        final document = await ApiService.uploadDocument(
+        final document = await DocumentService.uploadDocument(
           file, 
           widget.studentId, 
           documentType: 'CONSENTIMIENTO',

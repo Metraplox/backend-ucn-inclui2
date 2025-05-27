@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/edit_student_dialog.dart';
 import 'package:incluye_app/screens/students/student_profile_screen.dart';
 import 'package:incluye_app/screens/students/student_create_screen.dart';
@@ -46,7 +47,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
   }
 
   Future<void> _fetchStudents() async {
-    final students = await ApiService.getAllStudents();
+    final students = await StudentService.getAllStudents();
     setState(() {
       _students = students;
       _filteredStudents = students;
@@ -99,7 +100,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
     if (!mounted) return;
 
     if (confirm == true) {
-      final success = await ApiService.deleteStudent(id);
+      final success = await StudentService.deleteStudent(id);
       
       // Verificar si el widget sigue montado después de la operación asíncrona
       if (!mounted) return;

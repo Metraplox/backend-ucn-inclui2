@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/services/adjustment_service.';
+import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/app_scaffold.dart';
 import 'package:incluye_app/widgets/course_widget.dart';
-import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/notification_service.dart';
 import 'package:incluye_app/screens/students/student_own_profile_screen.dart';
 import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
 import 'package:incluye_app/models/student_model.dart';
+import 'package:incluye_app/models/adjustment_model.dart';
 import 'package:incluye_app/screens/students/student_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -55,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadCoordinadoraData() async {
     try {
       // Cargar lista de estudiantes
-      final students = await ApiService.getAllStudents();
+      final students = await StudentService.getAllStudents();
       
       // Calcular estadísticas básicas
       final totalStudents = students.length;
@@ -78,42 +80,45 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   Future<void> _checkForNotifications() async {
-    await NotificationService.checkForPendingAdjustments(
-      getPendingCount: () async {
-        final ajustes = await ApiService.getAdjustmentHistory(_currentUserId!);
-        final count = ajustes.where((a) => 
-          a['estado'] == 'pendiente' || 
-          (a['vencimiento'] != null && 
-           DateTime.tryParse(a['vencimiento']) != null && 
-           DateTime.parse(a['vencimiento']).isAfter(DateTime.now()))
-        ).length;
-        
-        if (mounted) {
-          setState(() {
-            _pendingAdjustmentsCount = count;
-          });
-        }
-        
-        return count;
-      },
-      onAdjustmentsTap: () {
-        if (_currentUserId != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AdjustmentHistoryScreen(studentId: _currentUserId!),
-            ),
-          );
-        }
-      },
-    );
-  }
+  await NotificationService.checkForPendingAdjustments(
+    getPendingCount: () async {
+      final ajustes = await AdjustmentService.getAdjustmentHistory(_currentUserId!);
+
+      final count = ajustes
+        .where((a) => (a as Adjustment).isPending || 
+                    ((a as Adjustment).expirationDate != null &&
+                      DateTime.tryParse((a as Adjustment).expirationDate!)?.isAfter(DateTime.now()) == true))
+        .length;
+
+
+      if (mounted) {
+        setState(() {
+          _pendingAdjustmentsCount = count;
+        });
+      }
+
+      return count;
+    },
+    onAdjustmentsTap: () {
+      if (_currentUserId != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdjustmentHistoryScreen(studentId: _currentUserId!),
+          ),
+        );
+      }
+    },
+  );
+}
+
+
 
   Future<void> _checkRole() async {
-    final isStudent = await ApiService.isStudent();
-    final isAdmin = await ApiService.isAdmin();
+    final isStudent = await StudentService.isStudent();
+    final isAdmin = await StudentService.isAdmin();
     
-    final userInfo = await ApiService.getCurrentUserInfo();
+    final userInfo = await StudentService.getCurrentUserInfo();
     
     if (mounted) {
       setState(() {
