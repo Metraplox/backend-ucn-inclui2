@@ -91,7 +91,7 @@ export class DIDDECController {
     // Estadísticas de estudiantes
     const students = await this.studentsService.findAll();
     const studentsWithNEE = students.filter(
-      (s) => s.hasDisability && s.semester === semester,
+      (s) => s.hasDisability && s.semestre === semester,
     );
 
     // Estadísticas de ajustes
@@ -129,12 +129,12 @@ export class DIDDECController {
     return {
       semester,
       studentsStatistics: {
-        total: students.filter((s) => s.semester === semester).length,
+        total: students.filter((s) => s.semestre === semester).length,
         withNEE: studentsWithNEE.length,
         percentageWithNEE:
-          students.filter((s) => s.semester === semester).length > 0
+          students.filter((s) => s.semestre === semester).length > 0
             ? (studentsWithNEE.length /
-                students.filter((s) => s.semester === semester).length) *
+                students.filter((s) => s.semestre === semester).length) *
               100
             : 0,
       },
@@ -202,7 +202,7 @@ export class DIDDECController {
   ): Promise<any> {
     const students = await this.studentsService.findAll();
     const studentsWithNEE = students.filter(
-      (s) => s.hasDisability && s.semester === semester,
+      (s) => s.hasDisability && s.semestre === semester,
     );
 
     const disabilityTypes: { [key: string]: number } = {};
@@ -314,7 +314,7 @@ export class DIDDECController {
         const careerStudentsWithNEE = students.filter(
           (s) =>
             s.hasDisability &&
-            s.semester === semester &&
+            s.semestre === semester &&
             career.studentIds.includes(s._id as any),
         );
         totalStudentsWithNEE += careerStudentsWithNEE.length;

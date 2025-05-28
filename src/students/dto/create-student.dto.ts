@@ -7,6 +7,7 @@ import {
   IsDateString,
   MinLength,
   MaxLength,
+  IsMongoId,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -53,12 +54,23 @@ export class CreateStudentDto {
   readonly email: string;
 
   @ApiProperty({
-    description: 'Carrera que cursa el estudiante',
-    example: 'Ingeniería Civil en Computación e Informática',
+    description: 'ID de la carrera que cursa el estudiante',
+    example: '605c72ef9167f86c2cabc123',
   })
-  @IsString({ message: 'La carrera debe ser texto.' })
+  @IsMongoId({ message: 'El ID de la carrera debe ser un MongoID válido.' })
   @IsNotEmpty({ message: 'La carrera no puede estar vacía.' })
-  readonly carrera: string;
+  readonly carreraId: string;
+  
+  @ApiProperty({
+    description: 'Semestre académico actual',
+    example: '2025-1',
+  })
+  @IsString({ message: 'El semestre debe ser texto.' })
+  @IsNotEmpty({ message: 'El semestre no puede estar vacío.' })
+  @Matches(/^\d{4}-[1-2]$/, {
+    message: 'El semestre debe tener el formato YYYY-P donde P es 1 o 2',
+  })
+  readonly semester: string;
 
   @ApiProperty({
     description: 'Fecha de nacimiento del estudiante (YYYY-MM-DD)',

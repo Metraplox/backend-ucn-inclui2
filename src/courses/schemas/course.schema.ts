@@ -17,7 +17,7 @@ export class Course {
     description: 'Código del curso',
   })
   @Prop({ required: true, type: String, index: true })
-  codigo: string;
+  code: string;
 
   @ApiProperty({
     example: 'MAT101-1',
@@ -38,7 +38,7 @@ export class Course {
     description: 'Nombre del profesor del curso',
   })
   @Prop({ required: true, type: String })
-  profesor: string;
+  teacherName: string;
 
   @ApiProperty({
     example: '2025-1',
@@ -53,7 +53,7 @@ export class Course {
     type: [String],
   })
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Student' }], default: [] })
-  estudiantes: Types.ObjectId[];
+  students: Types.ObjectId[];
 
   @ApiProperty({
     description: 'Fecha de creación del registro',

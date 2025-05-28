@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type StudentDocument = Student & Document;
 
@@ -41,11 +41,18 @@ export class Student {
   email: string;
 
   @ApiProperty({
-    description: 'Carrera que cursa el estudiante',
-    example: 'Ingeniería Civil en Computación e Informática',
+    description: 'ID de la carrera que cursa el estudiante',
+    example: '605c72ef9167f86c2cabc123',
+  })
+  @Prop({ type: Types.ObjectId, ref: 'Career', required: true })
+  carreraId: Types.ObjectId;
+  
+  @ApiProperty({
+    description: 'Semestre académico actual',
+    example: '2025-1',
   })
   @Prop({ required: true, trim: true })
-  carrera: string;
+  semester: string;
 
   @ApiProperty({
     description: 'Fecha de nacimiento del estudiante (YYYY-MM-DD)',
@@ -88,12 +95,7 @@ export class Student {
   @Prop({ required: false, trim: true })
   disabilityType?: string;
 
-  @ApiProperty({
-    description: 'Semestre actual del estudiante',
-    example: '2025-1',
-  })
-  @Prop({ required: true })
-  semester: string;
+  // Ahora usamos directamente semester como campo estándar
 
   @ApiProperty({
     description: 'Fecha de creación del registro',
@@ -111,3 +113,9 @@ export class Student {
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student);
+
+// Crear índices para optimizar consultas
+StudentSchema.index({ semester: 1 }); // Índice para consultas por semestre
+StudentSchema.index({ carreraId: 1, semester: 1 }); // Índice compuesto para consultas de estudiantes por carrera y semestre
+StudentSchema.index({ email: 1 }, { unique: true }); // Índice único para búsquedas por email
+StudentSchema.index({ rut: 1 }, { unique: true }); // Índice único para búsquedas por rut

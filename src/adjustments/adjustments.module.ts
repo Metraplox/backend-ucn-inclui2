@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { AdjustmentsService } from './adjustments.service';
+import { AdjustmentsServiceExtension } from './adjustments.service.extension';
 import { AdjustmentsController } from './adjustments.controller';
 import { TeacherAdjustmentsController } from './controllers/teacher-adjustments.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -23,7 +24,7 @@ import { UsersModule } from '../users/users.module';
     forwardRef(() => UsersModule),
   ],
   controllers: [AdjustmentsController, TeacherAdjustmentsController],
-  providers: [AdjustmentsService],
-  exports: [AdjustmentsService],
+  providers: [AdjustmentsService, AdjustmentsServiceExtension],
+  exports: [AdjustmentsService, AdjustmentsServiceExtension],
 })
 export class AdjustmentsModule {}

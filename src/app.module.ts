@@ -4,15 +4,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { StudentsModule } from './students/students.module';
-import { AdjustmentsModule } from './adjustments/adjustments.module';
-import { DocumentsModule } from './documents/documents.module';
-import { ConsentModule } from './consent/consent.module';
+import { CareersModule } from './careers/careers.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { AdjustmentsModule } from './adjustments/adjustments.module';
+import { DocumentsModule } from './documents/documents.module';
 import { CoursesModule } from './courses/courses.module';
-import { NotificationsModule } from './notifications/notifications.module';
 import { DepartmentsModule } from './departments/departments.module';
-import { CareersModule } from './careers/careers.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { DiddecModule } from './diddec/diddec.module';
+import { ConsentModule } from './consent/consent.module';
+import { ResourcesModule } from './resources/resources.module';
 
 @Module({
   imports: [
@@ -50,6 +52,8 @@ import { CareersModule } from './careers/careers.module';
     NotificationsModule,
     DepartmentsModule,
     CareersModule,
+    DiddecModule,
+    ResourcesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

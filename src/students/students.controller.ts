@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,6 +18,7 @@ import {
   ApiParam,
   ApiBody,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger'; // Importar decoradores de Swagger
 import { StudentsService } from './students.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -38,32 +40,44 @@ export class StudentsController {
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Crear un nuevo estudiante (Admin, Staff)' })
-  @ApiResponse({
-    status: 201,
-    description: 'El estudiante ha sido creado exitosamente.',
-    type: Student,
+  @ApiOperation({
+    summary: 'Crear un nuevo estudiante',
+    description: 'Crea un nuevo estudiante y lo asocia automáticamente a la carrera especificada',
   })
-  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
-  @ApiBody({ type: CreateStudentDto }) // Describe el cuerpo esperado
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Estudiante creado exitosamente',
+    type: Student
+  })
+  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido - No tiene permisos suficientes' })
+  @ApiBody({ type: CreateStudentDto })
   async create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
     return this.studentsService.create(createStudentDto);
   }
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Obtener todos los estudiantes (Admin, Staff)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de estudiantes.',
-    type: [Student],
+  @ApiOperation({
+    summary: 'Obtener todos los estudiantes',
+    description: 'Retorna la lista de todos los estudiantes registrados en el sistema',
   })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
-  async findAll(): Promise<Student[]> {
-    return this.studentsService.findAll();
+  @ApiQuery({
+    name: 'semester',
+    required: false,
+    description: 'Filtrar por semestre académico (ej: 2025-1)',
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de estudiantes obtenida exitosamente',
+    type: [Student]
+  })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido - No tiene permisos suficientes' })
+  async findAll(@Query('semester') semester?: string): Promise<Student[]> {
+    // Actualizamos el servicio para que acepte el parámetro de semestre
+    return this.studentsService.findAll(semester);
   }
 
   @Get('profile')

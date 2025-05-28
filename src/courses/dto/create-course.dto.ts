@@ -15,7 +15,7 @@ export class CreateCourseDto {
   })
   @IsString({ message: 'El código debe ser texto' })
   @IsNotEmpty({ message: 'El código no puede estar vacío' })
-  codigo: string;
+  code: string;
 
   @ApiProperty({
     description: 'Código NRC del curso',
@@ -39,7 +39,7 @@ export class CreateCourseDto {
   })
   @IsString({ message: 'El nombre del profesor debe ser texto' })
   @IsNotEmpty({ message: 'El nombre del profesor no puede estar vacío' })
-  profesor: string;
+  teacherName: string;
 
   @ApiProperty({
     description: 'Semestre académico',
@@ -61,5 +61,5 @@ export class CreateCourseDto {
     each: true,
     message: 'Cada ID de estudiante debe ser un MongoID válido',
   })
-  estudiantes?: string[];
+  students?: string[];
 }
