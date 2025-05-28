@@ -24,11 +24,23 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UserRole } from '../../users/schemas/user.schema';
+
+// Define roles compatible con el decorador
+enum Role {
+  ADMIN = 'admin',
+  STAFF = 'staff',
+  STUDENT = 'student',
+  TEACHER = 'teacher',
+  CAREER_HEAD = 'career_head',
+  DEPARTMENT_HEAD = 'department_head',
+  DIDDEC = 'diddec'
+}
 import { GetUser } from '../../auth/decorators/get-user.decorator';
 import { MarkAdjustmentReadDto } from '../dto/mark-adjustment-read.dto';
 import { HelpRequestDto } from '../dto/help-request.dto';
-import { Adjustment } from '../schemas/adjustment.schema';
+import { Adjustment, AdjustmentStatus } from '../schemas/adjustment.schema';
 import { NotificationsService } from '../../notifications/notifications.service';
+import { AdjustmentNotificationsService } from '../../notifications/services/adjustment-notifications.service';
 import { Types } from 'mongoose';
 
 @ApiTags('teacher-adjustments')
@@ -39,12 +51,13 @@ export class TeacherAdjustmentsController {
   constructor(
     private readonly adjustmentsService: AdjustmentsService,
     private readonly notificationsService: NotificationsService,
+    private readonly adjustmentNotificationsService: AdjustmentNotificationsService,
     private readonly coursesService: CoursesService,
     private readonly usersService: UsersService,
   ) {}
 
   @Get('my-courses/:courseNrc')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(Role.TEACHER, Role.ADMIN)
   @ApiOperation({
     summary: 'Obtener ajustes de estudiantes en un curso específico',
   })
@@ -69,7 +82,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Patch(':adjustmentId/current/:index/mark-as-read')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(Role.TEACHER, Role.ADMIN)
   @ApiOperation({ summary: 'Marcar un ajuste como leído' })
   @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
   @ApiParam({
@@ -113,7 +126,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Post(':adjustmentId/current/:index/request-help')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(Role.TEACHER, Role.ADMIN)
   @ApiOperation({ summary: 'Solicitar ayuda para implementar un ajuste' })
   @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
   @ApiParam({
@@ -173,7 +186,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Get('read-status/:courseNrc')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(Role.ADMIN, Role.STAFF)
   @ApiOperation({
     summary: 'Obtener estado de lectura de ajustes por curso (Admin, Staff)',
   })
@@ -198,7 +211,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Get('pending-help-requests')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(Role.ADMIN, Role.STAFF)
   @ApiOperation({
     summary: 'Obtener solicitudes de ayuda pendientes (Admin, Staff)',
   })
@@ -213,6 +226,81 @@ export class TeacherAdjustmentsController {
   })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  @Post(':adjustmentId/current/:index/mark-as-implemented')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  @ApiOperation({ summary: 'Marcar un ajuste como implementado' })
+  @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
+  @ApiParam({
+    name: 'index',
+    description: 'Índice del ajuste actual a marcar como implementado',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Ajuste marcado como implementado',
+    type: Adjustment,
+  })
+  @ApiResponse({ status: 404, description: 'Ajuste no encontrado' })
+  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  async markAsImplemented(
+    @Param('adjustmentId') adjustmentId: string,
+    @Param('index') index: string,
+    @GetUser('_id') userId: string,
+    @GetUser('name') userName: string,
+    @Body() data: { comments?: string },
+  ): Promise<Adjustment> {
+    const adjustmentIndex = parseInt(index, 10);
+    if (isNaN(adjustmentIndex)) {
+      throw new NotFoundException('Índice de ajuste inválido');
+    }
+
+    // Actualizar el estado del ajuste a implementado
+    const updatedAdjustment = await this.adjustmentsService.updateStatus(
+      adjustmentId,
+      adjustmentIndex,
+      AdjustmentStatus.IMPLEMENTED,
+      userId,
+      data.comments || 'Ajuste marcado como implementado por el docente',
+    );
+
+    // Obtener los usuarios de staff para notificarles
+    const staffUsers = await this.usersService.findByRole(UserRole.STAFF);
+    const staffIds = staffUsers.map(user => user._id.toString());
+    
+    // Notificar al personal de staff sobre la implementación del ajuste
+    try {
+      const targetAdjustment = updatedAdjustment.currentAdjustments[adjustmentIndex];
+      // Obtener nombre del estudiante del modelo o de un servicio, o usar un valor por defecto
+      const studentName = "Estudiante"; // En una implementación real, deberías obtener el nombre del estudiante
+      const courseName = targetAdjustment.courseNrc || 'N/A';
+      
+      await this.adjustmentNotificationsService.notifyAdjustmentImplemented(
+        staffIds,
+        userId,
+        userName,
+        updatedAdjustment._id.toString(),
+        studentName,
+        courseName,
+        updatedAdjustment.semester || '2025-1' // Valor por defecto si semester es undefined
+      );
+      
+      // También notificar al estudiante
+      await this.notificationsService.createSystemNotification(
+        updatedAdjustment.studentId.toString(),
+        'Ajuste implementado',
+        `El ajuste de tipo "${targetAdjustment.type}" ha sido implementado por el docente ${userName} en el curso ${courseName}`,
+        'success',
+        updatedAdjustment.semester || '2025-1' // Valor por defecto si semester es undefined
+      );
+    } catch (error) {
+      // No interrumpir el flujo principal si falla la notificación
+      console.error('Error al enviar notificación:', error);
+    }
+
+    return updatedAdjustment;
+  }
+
   async getPendingHelpRequests(
     @Query('semester') semester: string = '2025-1',
   ): Promise<any[]> {

@@ -16,12 +16,14 @@ import {
   DocumentEntity,
   DocumentDocument,
 } from '../documents/schemas/document.schema';
+import { AdjustmentNotificationsService } from '../notifications/services/adjustment-notifications.service';
 
 @Injectable()
 export class AdjustmentsService {
   constructor(
     @InjectModel(Adjustment.name)
     private adjustmentModel: Model<AdjustmentDocument>,
+    private readonly adjustmentNotificationsService: AdjustmentNotificationsService,
     @InjectModel(DocumentEntity.name)
     private documentModel: Model<DocumentDocument>,
   ) {}
@@ -146,13 +148,28 @@ export class AdjustmentsService {
     return updatedAdjustment;
   }
 
+  /**
+   * Actualiza el estado de un ajuste razonable con validaciones de transición
+   * @param adjustmentId ID del ajuste a actualizar
+   * @param adjustmentIndex Índice del ajuste actual (en currentAdjustments)
+   * @param newStatus Nuevo estado del ajuste
+   * @param updatedByUserId ID del usuario que realiza el cambio
+   * @param comments Comentarios opcionales sobre el cambio de estado
+   * @returns El ajuste actualizado
+   */
   async updateStatus(
     adjustmentId: string,
-    status: AdjustmentStatus,
+    adjustmentIndex: number,
+    newStatus: AdjustmentStatus,
     updatedByUserId: string,
+    comments?: string,
   ): Promise<Adjustment> {
     if (!Types.ObjectId.isValid(adjustmentId)) {
       throw new BadRequestException('ID de ajuste inválido');
+    }
+
+    if (!Types.ObjectId.isValid(updatedByUserId)) {
+      throw new BadRequestException('ID de usuario inválido');
     }
 
     // Verificar que el ajuste existe
@@ -163,15 +180,47 @@ export class AdjustmentsService {
       );
     }
 
+    // Verificar que el índice del ajuste actual es válido
+    if (
+      adjustmentIndex < 0 ||
+      adjustmentIndex >= adjustment.currentAdjustments.length
+    ) {
+      throw new BadRequestException(
+        `Índice de ajuste ${adjustmentIndex} fuera de rango`,
+      );
+    }
+
+    const currentAdjustment = adjustment.currentAdjustments[adjustmentIndex];
+    const currentStatus = currentAdjustment.estado;
+
+    // Validar transición de estado
+    if (!this.isValidStatusTransition(currentStatus, newStatus)) {
+      throw new BadRequestException(
+        `Transición de estado inválida: de ${currentStatus} a ${newStatus}`,
+      );
+    }
+
+    // Preparar el registro para el historial
+    const historyEntry = {
+      type: currentAdjustment.type,
+      status: newStatus,
+      requestedBy: adjustment.studentRut,
+      reviewedBy: updatedByUserId,
+      timestamp: new Date(),
+      comments: comments || `Estado cambiado de ${currentStatus} a ${newStatus}`,
+    };
+
     // Actualizar el estado del ajuste
+    const updatePath = `currentAdjustments.${adjustmentIndex}.estado`;
     const updateData = {
-      estado: status,
-      ultimaActualizacion: new Date(),
-      actualizadoPor: new Types.ObjectId(updatedByUserId),
+      [updatePath]: newStatus,
+      ultimaModificacion: new Date(),
+      modificadoPor: new Types.ObjectId(updatedByUserId),
+      $push: { history: historyEntry },
     };
 
     const updatedAdjustment = await this.adjustmentModel
-      .findByIdAndUpdate(adjustmentId, { $set: updateData }, { new: true })
+      .findByIdAndUpdate(adjustmentId, updateData, { new: true })
       .exec();
 
     if (!updatedAdjustment) {
@@ -181,6 +230,46 @@ export class AdjustmentsService {
     }
 
     return updatedAdjustment;
+  }
+
+  /**
+   * Valida si una transición de estado es permitida según las reglas de negocio
+   * @param currentStatus Estado actual del ajuste
+   * @param newStatus Nuevo estado propuesto
+   * @returns true si la transición es válida, false en caso contrario
+   */
+  private isValidStatusTransition(
+    currentStatus: AdjustmentStatus,
+    newStatus: AdjustmentStatus,
+  ): boolean {
+    // Matriz de transiciones permitidas
+    const allowedTransitions = {
+      [AdjustmentStatus.PENDING]: [
+        AdjustmentStatus.APPROVED,
+        AdjustmentStatus.REJECTED,
+      ],
+      [AdjustmentStatus.APPROVED]: [
+        AdjustmentStatus.IMPLEMENTED,
+        AdjustmentStatus.REJECTED,
+        AdjustmentStatus.EXPIRED,
+      ],
+      [AdjustmentStatus.REJECTED]: [AdjustmentStatus.PENDING],
+      [AdjustmentStatus.IMPLEMENTED]: [AdjustmentStatus.EXPIRED],
+      [AdjustmentStatus.EXPIRED]: [AdjustmentStatus.ACTIVE],
+      [AdjustmentStatus.ACTIVE]: [
+        AdjustmentStatus.EXPIRED,
+        AdjustmentStatus.CANCELLED,
+      ],
+      [AdjustmentStatus.CANCELLED]: [AdjustmentStatus.ACTIVE],
+    };
+
+    // Si es el mismo estado, permitir (no hay cambio real)
+    if (currentStatus === newStatus) {
+      return true;
+    }
+
+    // Verificar si la transición está en la lista de permitidas
+    return allowedTransitions[currentStatus]?.includes(newStatus) || false;
   }
 
   async markAsRead(

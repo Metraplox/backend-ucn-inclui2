@@ -17,9 +17,13 @@ export enum AdjustmentType {
 }
 
 export enum AdjustmentStatus {
-  ACTIVO = 'activo',
-  VENCIDO = 'vencido',
-  CANCELADO = 'cancelado',
+  PENDING = 'pendiente',
+  APPROVED = 'aprobado',
+  REJECTED = 'rechazado',
+  IMPLEMENTED = 'implementado',
+  EXPIRED = 'vencido',
+  CANCELLED = 'cancelado',
+  ACTIVE = 'activo'
 }
 
 // Sub-esquema para ajustes actuales
@@ -83,7 +87,7 @@ class CurrentAdjustment {
   expirationDate: Date;
 
   @ApiProperty({
-    example: AdjustmentStatus.ACTIVO,
+    example: AdjustmentStatus.ACTIVE,
     description: 'Estado actual del ajuste',
     enum: AdjustmentStatus,
   })
@@ -91,7 +95,7 @@ class CurrentAdjustment {
     required: true,
     type: String,
     enum: AdjustmentStatus,
-    default: AdjustmentStatus.ACTIVO,
+    default: AdjustmentStatus.ACTIVE,
   })
   estado: AdjustmentStatus;
 

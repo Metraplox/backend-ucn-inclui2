@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsDateString } from 'class-validator';
 
 export class MarkAdjustmentReadDto {
   @ApiProperty({
@@ -11,4 +11,13 @@ export class MarkAdjustmentReadDto {
   @IsString()
   @MaxLength(500)
   comments?: string;
+
+  @ApiProperty({
+    description: 'Timestamp de marcado como leído',
+    example: '2025-05-28T01:01:57-04:00',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  readAt?: string;
 }

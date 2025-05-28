@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,17 +16,30 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiParam,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UserRole } from '../../users/schemas/user.schema';
+import { AdjustmentStatus } from '../schemas/adjustment.schema';
+
+// Define roles compatible with the decorator
+enum Role {
+  ADMIN = 'admin',
+  STAFF = 'staff',
+  STUDENT = 'student',
+  TEACHER = 'teacher',
+  CAREER_HEAD = 'career_head',
+  DEPARTMENT_HEAD = 'department_head',
+  DIDDEC = 'diddec'
+}
 import { AdjustmentsService } from '../adjustments.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { Types } from 'mongoose';
 
 @ApiTags('staff-adjustments')
-@Controller('staff/adjustments')
+@Controller('staff-adjustments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class StaffAdjustmentsController {
@@ -35,7 +49,7 @@ export class StaffAdjustmentsController {
   ) {}
 
   @Get('help-requests')
-  @Roles(UserRole.STAFF, UserRole.ADMIN)
+  @Roles(Role.STAFF, Role.ADMIN)
   @ApiOperation({
     summary: 'Obtener todas las solicitudes de ayuda pendientes',
   })
@@ -98,7 +112,7 @@ export class StaffAdjustmentsController {
   }
 
   @Get('help-requests/:adjustmentId/:adjustmentIndex')
-  @Roles(UserRole.STAFF, UserRole.ADMIN)
+  @Roles(Role.STAFF, Role.ADMIN)
   @ApiOperation({
     summary: 'Obtener detalle de una solicitud de ayuda específica',
   })
@@ -136,7 +150,7 @@ export class StaffAdjustmentsController {
   }
 
   @Patch('help-requests/:adjustmentId/:adjustmentIndex/status')
-  @Roles(UserRole.STAFF, UserRole.ADMIN)
+  @Roles(Role.STAFF, Role.ADMIN)
   @ApiOperation({ summary: 'Actualizar el estado de una solicitud de ayuda' })
   @ApiResponse({
     status: 200,
@@ -195,14 +209,114 @@ export class StaffAdjustmentsController {
       'Respuesta a solicitud de ayuda',
       `Tu solicitud de ayuda para el ajuste en ${currAdj.courseNrc} ha sido ${updateDto.status}`,
       'info',
-      adjustment.semester || '2025-1',
+      adjustment.semester || '2025-1'
     );
-
+    
     return updatedAdjustment;
   }
 
+  @Post(':id/:index/approve')
+  @Roles(Role.STAFF, Role.ADMIN)
+  @ApiOperation({ summary: 'Aprobar un ajuste razonable' })
+  @ApiParam({ name: 'id', description: 'ID del ajuste' })
+  @ApiParam({ name: 'index', description: 'Índice del ajuste en el array de ajustes actuales' })
+  @ApiResponse({ status: 200, description: 'Ajuste aprobado exitosamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos o transición de estado no permitida' })
+  @ApiResponse({ status: 404, description: 'Ajuste no encontrado' })
+  async approveAdjustment(
+    @Param('id') id: string,
+    @Param('index') index: string,
+    @Body() data: { comments?: string },
+    @Request() req,
+  ): Promise<any> {
+    const adjustmentIndex = parseInt(index, 10);
+    if (isNaN(adjustmentIndex)) {
+      throw new BadRequestException('Índice de ajuste inválido');
+    }
+
+    const userId = req.user.userId;
+    return this.adjustmentsService.updateStatus(
+      id,
+      adjustmentIndex,
+      AdjustmentStatus.APPROVED,
+      userId,
+      data.comments || 'Ajuste aprobado por el administrador',
+    );
+  }
+
+  @Post(':id/:index/reject')
+  @Roles(Role.STAFF, Role.ADMIN)
+  @ApiOperation({ summary: 'Rechazar un ajuste razonable' })
+  @ApiParam({ name: 'id', description: 'ID del ajuste' })
+  @ApiParam({ name: 'index', description: 'Índice del ajuste en el array de ajustes actuales' })
+  @ApiResponse({ status: 200, description: 'Ajuste rechazado exitosamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos o transición de estado no permitida' })
+  @ApiResponse({ status: 404, description: 'Ajuste no encontrado' })
+  async rejectAdjustment(
+    @Param('id') id: string,
+    @Param('index') index: string,
+    @Body() data: { comments?: string },
+    @Request() req,
+  ): Promise<any> {
+    const adjustmentIndex = parseInt(index, 10);
+    if (isNaN(adjustmentIndex)) {
+      throw new BadRequestException('Índice de ajuste inválido');
+    }
+
+    const userId = req.user.userId;
+    const adjustment = await this.adjustmentsService.updateStatus(
+      id,
+      adjustmentIndex,
+      AdjustmentStatus.REJECTED,
+      userId,
+      data.comments || 'Ajuste rechazado por el administrador',
+    );
+
+    // Notificar al estudiante sobre el rechazo
+    if (adjustment) {
+      await this.notificationsService.createSystemNotification(
+        adjustment.studentId.toString(),
+        'Ajuste rechazado',
+        `Tu ajuste ha sido rechazado. ${data.comments || ''}`,
+        'ADJUSTMENT_REJECTED',
+        adjustment.semester || '2025-1',
+        {
+          type: 'adjustment',
+          id: new Types.ObjectId(id),
+        },
+      );
+    }
+
+    return adjustment;
+  }
+
+  @Get('pending')
+  @Roles(Role.STAFF, Role.ADMIN)
+  @ApiOperation({ summary: 'Obtener ajustes pendientes de aprobación' })
+  @ApiQuery({ name: 'semester', required: false, description: 'Semestre académico (formato YYYY-P)' })
+  @ApiResponse({ status: 200, description: 'Lista de ajustes pendientes' })
+  async getPendingAdjustments(
+    @Query('semester') semester: string = '2025-1',
+  ): Promise<any[]> {
+    const adjustments = await this.adjustmentsService.findAll({
+      'currentAdjustments.estado': AdjustmentStatus.ACTIVE,
+      semester,
+    });
+
+    // Formatear para incluir solo información relevante
+    return adjustments.map(adjustment => ({
+      _id: adjustment._id,
+      studentRut: adjustment.studentRut,
+      studentId: adjustment.studentId,
+      currentAdjustments: adjustment.currentAdjustments.filter(
+        adj => adj.estado === AdjustmentStatus.ACTIVE
+      ),
+      semester: adjustment.semester,
+    }));
+  }
+
   @Get('read-statistics')
-  @Roles(UserRole.STAFF, UserRole.ADMIN)
+  @Roles(Role.STAFF, Role.ADMIN)
   @ApiOperation({ summary: 'Obtener estadísticas de lectura de ajustes' })
   @ApiResponse({ status: 200, description: 'Estadísticas de lectura' })
   @ApiQuery({
@@ -257,7 +371,7 @@ export class StaffAdjustmentsController {
   }
 
   @Get('unread-by-teacher')
-  @Roles(UserRole.STAFF, UserRole.ADMIN)
+  @Roles(Role.STAFF, Role.ADMIN)
   @ApiOperation({ summary: 'Obtener ajustes no leídos agrupados por docente' })
   @ApiResponse({
     status: 200,

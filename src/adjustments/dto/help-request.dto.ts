@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, IsOptional, IsDateString } from 'class-validator';
 
 export class HelpRequestDto {
   @ApiProperty({
@@ -12,4 +12,13 @@ export class HelpRequestDto {
   @IsString()
   @MaxLength(1000)
   description: string;
+
+  @ApiProperty({
+    description: 'Timestamp de creación de la solicitud',
+    example: '2025-05-28T01:01:57-04:00',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  createdAt?: string;
 }

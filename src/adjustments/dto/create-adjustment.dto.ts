@@ -5,10 +5,11 @@ import {
   ValidateNested,
   IsDateString,
   IsBoolean,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class CurrentAdjustmentDto {
+export class CurrentAdjustmentDto {
   @ApiProperty({ description: 'Tipo de ajuste', example: 'tiempo_extra' })
   @IsString()
   type: string;
@@ -47,6 +48,12 @@ class CurrentAdjustmentDto {
   })
   @IsDateString()
   expirationDate: string;
+  @ApiProperty({
+    description: 'Semestre académico al que corresponde el ajuste',
+    example: '2025-1',
+  })
+  @IsString()
+  semester: string;
 }
 
 export class CreateAdjustmentDto {
@@ -65,4 +72,20 @@ export class CreateAdjustmentDto {
   @ValidateNested({ each: true })
   @Type(() => CurrentAdjustmentDto)
   currentAdjustments: CurrentAdjustmentDto[];
+
+  @ApiProperty({
+    description: 'Timestamp de creación',
+    example: '2025-05-28T00:00:00Z',
+    required: false,
+  })
+  @IsDateString()
+  createdAt?: string;
+
+  @ApiProperty({
+    description: 'Timestamp de última actualización',
+    example: '2025-05-28T00:00:00Z',
+    required: false,
+  })
+  @IsDateString()
+  updatedAt?: string;
 }
