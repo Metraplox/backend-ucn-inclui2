@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum UserRole {
   ADMIN = 'administrador',
@@ -91,12 +91,35 @@ export class User extends Document {
   @Prop() // Mongoose maneja esto con timestamps: true
   declare updatedAt?: Date;
 
-  // Campos adicionales según el documento de diseño final (opcional por ahora, se pueden añadir después)
-  // @Prop({ type: String })
-  // googleId?: string;
+  @ApiPropertyOptional({
+    description: 'ID del perfil de estudiante asociado (si aplica)',
+    example: '605c72ef9167f86c2cabc123',
+  })
+  @Prop({ type: Types.ObjectId, ref: 'Student' })
+  studentId?: Types.ObjectId;
 
-  // @Prop({ type: Date })
-  // lastLogin?: Date;
+  @ApiProperty({
+    description: 'Indica si el usuario ha completado su perfil',
+    example: true,
+    default: false
+  })
+  @Prop({ type: Boolean, default: false })
+  isProfileComplete: boolean;
+
+  // Campos para autenticación externa
+  @ApiPropertyOptional({
+    description: 'ID de Google (si se registró con Google)',
+    example: '123456789012345678901'
+  })
+  @Prop({ type: String, sparse: true })
+  googleId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Fecha del último inicio de sesión',
+    example: '2025-05-27T12:00:00.000Z'
+  })
+  @Prop({ type: Date })
+  lastLogin?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

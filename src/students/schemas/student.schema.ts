@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Document, Types } from 'mongoose';
+import { UserRole } from '../../users/schemas/user.schema';
 
 export type StudentDocument = Student & Document;
 
@@ -37,8 +38,15 @@ export class Student {
     description: 'Correo electrónico único del estudiante',
     example: 'juan.perez@example.com',
   })
-  @Prop({ required: true, unique: true, lowercase: true, trim: true }) // lowercase y trim para consistencia
+  @Prop({ required: true, unique: true, lowercase: true, trim: true, index: true })
   email: string;
+
+  @ApiProperty({
+    description: 'ID del usuario asociado al estudiante',
+    example: '605c72ef9167f86c2cabc123',
+  })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
+  userId: Types.ObjectId;
 
   @ApiProperty({
     description: 'ID de la carrera que cursa el estudiante',

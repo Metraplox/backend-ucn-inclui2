@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Role } from '../auth/enums/role.enum';
 import { UserRole } from '../users/schemas/user.schema';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -39,7 +40,7 @@ export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(Role.ADMIN, Role.STAFF)
   @ApiOperation({
     summary: 'Crear un nuevo estudiante',
     description: 'Crea un nuevo estudiante y lo asocia automáticamente a la carrera especificada',
@@ -58,7 +59,7 @@ export class StudentsController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(Role.ADMIN, Role.STAFF)
   @ApiOperation({
     summary: 'Obtener todos los estudiantes',
     description: 'Retorna la lista de todos los estudiantes registrados en el sistema',
@@ -81,8 +82,10 @@ export class StudentsController {
   }
 
   @Get('profile')
+  @Roles(Role.STUDENT)
   @ApiOperation({
     summary: 'Obtener el perfil académico del estudiante actual',
+    description: 'Obtiene el perfil completo del estudiante autenticado usando la relación con su cuenta de usuario'
   })
   @ApiResponse({
     status: 200,
@@ -94,12 +97,14 @@ export class StudentsController {
     description: 'Perfil de estudiante no encontrado.',
   })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido - El usuario no tiene rol de estudiante.' })
   async getProfile(@CurrentUser() user: UserPublicData): Promise<Student> {
-    return this.studentsService.findByEmail(user.email);
+    // Usar el ID del usuario para buscar el perfil de estudiante relacionado
+    return this.studentsService.findByUserId(user._id);
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(Role.ADMIN, Role.STAFF)
   @ApiOperation({ summary: 'Obtener un estudiante por su ID (Admin, Staff)' })
   @ApiParam({
     name: 'id',
@@ -120,7 +125,7 @@ export class StudentsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(Role.ADMIN, Role.STAFF)
   @ApiOperation({
     summary: 'Actualizar un estudiante existente (Admin, Staff)',
   })
@@ -148,7 +153,7 @@ export class StudentsController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(Role.ADMIN, Role.STAFF)
   @HttpCode(HttpStatus.NO_CONTENT) // Estándar para DELETE exitoso sin contenido de respuesta
   @ApiOperation({ summary: 'Eliminar un estudiante (Admin, Staff)' })
   @ApiParam({

@@ -1,53 +1,103 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, PipelineStage } from 'mongoose';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student, StudentDocument } from './schemas/student.schema';
+import { User, UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
 export class StudentsService {
-  // Inyectar el modelo de Mongoose para Student
   constructor(
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
+    @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
   async create(createStudentDto: CreateStudentDto): Promise<Student> {
-    // Crear el estudiante con la carrera asociada
-    const createdStudent = new this.studentModel({
-      ...createStudentDto,
-      carreraId: new Types.ObjectId(createStudentDto.carreraId)
-    });
-    
-    // Guardar el estudiante en la base de datos
-    const savedStudent = await createdStudent.save();
-    
-    // Actualizar directamente la colección de carreras para agregar el estudiante
-    // Esto evita la referencia circular entre módulos
-    await this.updateCareerWithStudent(createStudentDto.carreraId, savedStudent._id.toString());
-    
-    return savedStudent;
+    // Iniciar una sesión de transacción
+    const session = await this.studentModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      // 1. Crear el usuario primero
+      const user = new this.userModel({
+        email: createStudentDto.email.toLowerCase(),
+        nombreCompleto: `${createStudentDto.nombres} ${createStudentDto.apellidos}`.trim(),
+        roles: [UserRole.STUDENT],
+        isActive: true,
+        isProfileComplete: false, // El perfil se completará con la autenticación de Google
+        password_hash: null, // Se establecerá con Google Auth
+      });
+
+      const savedUser = await user.save({ session });
+
+      // 2. Crear el estudiante con referencia al usuario
+      const createdStudent = new this.studentModel({
+        ...createStudentDto,
+        userId: savedUser._id,
+        carreraId: new Types.ObjectId(createStudentDto.carreraId)
+      });
+
+      const savedStudent = await createdStudent.save({ session });
+
+      // 3. Actualizar el usuario con la referencia al estudiante
+      await this.userModel.findByIdAndUpdate(
+        savedUser._id,
+        { $set: { studentId: savedStudent._id, isProfileComplete: true } },
+        { session }
+      );
+
+      // 4. Actualizar la carrera con el nuevo estudiante
+      await this.updateCareerWithStudent(createStudentDto.carreraId, savedStudent._id.toString(), session);
+
+      // Confirmar la transacción
+      await session.commitTransaction();
+      
+      return savedStudent;
+    } catch (error) {
+      // Si hay un error, deshacer la transacción
+      await session.abortTransaction();
+      
+      // Manejar errores de duplicado
+      if (error.code === 11000) {
+        throw new ConflictException('El correo electrónico ya está en uso');
+      }
+      
+      throw new InternalServerErrorException('Error al crear el estudiante: ' + error.message);
+    } finally {
+      // Finalizar la sesión
+      await session.endSession();
+    }
   }
   
   /**
    * Método privado para actualizar la carrera con el ID del estudiante
    * Implementado directamente sobre la colección de MongoDB para evitar dependencias circulares
    */
-  private async updateCareerWithStudent(careerId: string, studentId: string): Promise<void> {
+  private async updateCareerWithStudent(
+    careerId: string, 
+    studentId: string, 
+    session?: any
+  ): Promise<void> {
     try {
-      // Acceder directamente a la colección de carreras en MongoDB
       const studentObjectId = new Types.ObjectId(studentId);
       const careerObjectId = new Types.ObjectId(careerId);
       
-      // Usando el modelo de mongoose directamente para actualizar
+      const updateOperation = {
+        $addToSet: { studentIds: studentObjectId }
+      };
+      
+      const options = session ? { session } : {};
+      
       await this.studentModel.db.collection('careers').updateOne(
         { _id: careerObjectId },
-        { $addToSet: { studentIds: studentObjectId } }
+        updateOperation,
+        options
       );
     } catch (error) {
       console.error('Error al actualizar la carrera con el estudiante:', error);
-      // No lanzamos el error para no impedir la creación del estudiante
-      // Se registra pero permite continuar con la operación
+      // En este caso, como estamos en una transacción, es mejor lanzar el error
+      throw error;
     }
   }
 
@@ -68,7 +118,11 @@ export class StudentsService {
   }
 
   async findByEmail(email: string): Promise<Student> {
-    const student = await this.studentModel.findOne({ email }).exec();
+    const student = await this.studentModel
+      .findOne({ email: email.toLowerCase().trim() })
+      .populate('userId', 'email isActive roles')
+      .exec();
+      
     if (!student) {
       throw new NotFoundException(
         `Estudiante con email "${email}" no encontrado.`,
@@ -76,9 +130,38 @@ export class StudentsService {
     }
     return student;
   }
+  
+  /**
+   * Encuentra un estudiante basado en el ID de usuario asociado
+   * @param userId ID del usuario en la colección de usuarios
+   * @returns El perfil de estudiante completo
+   */
+  async findByUserId(userId: string): Promise<Student> {
+    // Convertir el string ID a ObjectId para la búsqueda
+    const objectId = new Types.ObjectId(userId);
+    
+    const student = await this.studentModel
+      .findOne({ userId: objectId })
+      .populate('userId', 'email isActive roles nombreCompleto')
+      .populate('carreraId', 'name code')
+      .exec();
+    
+    if (!student) {
+      throw new NotFoundException(
+        `Perfil de estudiante no encontrado para el usuario con ID "${userId}".`,
+      );
+    }
+    
+    return student;
+  }
 
   async findOne(id: string): Promise<Student> {
-    const student = await this.studentModel.findById(id).exec();
+    const student = await this.studentModel
+      .findById(id)
+      .populate('userId', 'email isActive roles')
+      .populate('carreraId', 'name code')
+      .exec();
+      
     if (!student) {
       throw new NotFoundException(`Estudiante con ID "${id}" no encontrado.`);
     }
@@ -90,13 +173,38 @@ export class StudentsService {
     updateStudentDto: UpdateStudentDto,
   ): Promise<Student> {
     const updatedStudent = await this.studentModel
-      .findByIdAndUpdate(id, updateStudentDto, { new: true })
+      .findByIdAndUpdate(
+        id, 
+        { 
+          ...updateStudentDto,
+          // Si se actualiza la carrera, convertir el ID
+          ...(updateStudentDto.carreraId && { 
+            carreraId: new Types.ObjectId(updateStudentDto.carreraId) 
+          })
+        }, 
+        { 
+          new: true,
+          runValidators: true 
+        }
+      )
+      .populate('userId', 'email isActive roles')
+      .populate('carreraId', 'name code')
       .exec();
+      
     if (!updatedStudent) {
       throw new NotFoundException(
         `Estudiante con ID "${id}" no encontrado para actualizar.`,
       );
     }
+    
+    // Si se actualizó el email, actualizar también en el usuario
+    if (updateStudentDto.email) {
+      await this.userModel.findByIdAndUpdate(
+        updatedStudent.userId,
+        { email: updateStudentDto.email.toLowerCase().trim() }
+      );
+    }
+    
     return updatedStudent;
   }
 

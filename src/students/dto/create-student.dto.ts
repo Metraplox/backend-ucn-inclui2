@@ -1,50 +1,38 @@
-import {
-  IsString,
-  IsEmail,
-  IsNotEmpty,
-  Matches,
-  IsOptional,
-  IsDateString,
-  MinLength,
-  MaxLength,
-  IsMongoId,
-} from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsString, IsOptional, IsMongoId, Matches, IsBoolean, MaxLength, IsISO8601 } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UserRole } from '../../users/schemas/user.schema';
 
 export class CreateStudentDto {
   @ApiProperty({
-    description: 'RUT único del estudiante (formato: 12345678-9 o 1234567-k)',
-    example: '12345678-9',
-    pattern: '^[0-9]{7,8}-[0-9kK]$',
-  })
-  @IsString({ message: 'El RUT debe ser un texto.' })
-  @IsNotEmpty({ message: 'El RUT no puede estar vacío.' })
-  @Matches(/^[0-9]{7,8}-[0-9kK]$/, {
-    message: 'El RUT debe tener el formato 12345678-9 o 1234567-k.',
-  })
-  readonly rut: string;
-
-  @ApiProperty({
     description: 'Nombres del estudiante',
-    example: 'Juan Alberto',
+    example: 'Juan Andrés',
   })
-  @IsString({ message: 'Los nombres deben ser texto.' })
-  @IsNotEmpty({ message: 'Los nombres no pueden estar vacíos.' })
-  @MinLength(2, { message: 'Los nombres deben tener al menos 2 caracteres.' })
-  readonly nombres: string; // Cambiado de name
+  @IsString({ message: 'Los nombres deben ser una cadena de texto' })
+  @IsNotEmpty({ message: 'Los nombres son obligatorios' })
+  nombres: string;
 
   @ApiProperty({
     description: 'Apellidos del estudiante',
     example: 'Pérez González',
   })
-  @IsString({ message: 'Los apellidos deben ser texto.' })
-  @IsNotEmpty({ message: 'Los apellidos no pueden estar vacíos.' })
-  @MinLength(2, { message: 'Los apellidos deben tener al menos 2 caracteres.' })
-  readonly apellidos: string; // Cambiado de lastName
+  @IsString({ message: 'Los apellidos deben ser una cadena de texto' })
+  @IsNotEmpty({ message: 'Los apellidos son obligatorios' })
+  apellidos: string;
 
   @ApiProperty({
-    description: 'Correo electrónico único del estudiante',
-    example: 'juan.perez@example.com',
+    description: 'RUT del estudiante sin puntos ni guión',
+    example: '123456789',
+  })
+  @IsString({ message: 'El RUT debe ser una cadena de texto' })
+  @IsNotEmpty({ message: 'El RUT es obligatorio' })
+  @Matches(/^[0-9]+[0-9kK]?$/, { 
+    message: 'El RUT debe contener solo números y terminar opcionalmente con K' 
+  })
+  rut: string;
+
+  @ApiProperty({
+    description: 'Correo electrónico institucional del estudiante',
+    example: 'juan.perez@alumnos.ucn.cl',
   })
   @IsEmail(
     {},
@@ -72,20 +60,19 @@ export class CreateStudentDto {
   })
   readonly semester: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Fecha de nacimiento del estudiante (YYYY-MM-DD)',
     example: '2000-05-15',
-    required: false,
   })
   @IsOptional()
-  @IsDateString(
+  @IsISO8601(
     {},
     {
       message:
         'La fecha de nacimiento debe ser una fecha válida en formato YYYY-MM-DD.',
     },
   )
-  readonly fechaNacimiento?: Date;
+  readonly fechaNacimiento?: string;
 
   @ApiProperty({
     description:
