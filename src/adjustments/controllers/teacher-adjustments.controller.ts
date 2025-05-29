@@ -633,7 +633,7 @@ export class TeacherAdjustmentsController {
             
             // Obtener información del usuario que solicitó ayuda
             const requestUser = await this.usersService.findById(
-              currentAdjustment.helpRequest.requestedBy.toString()
+              pendingRequests[0].userId.toString()
             );
             
             result.push({
