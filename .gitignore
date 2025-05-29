@@ -50,6 +50,9 @@ lerna-debug.log*
 pids
 *.pid
 
+# Documentación interna
+/GUIA-PROYECTO/
+
 # Carpeta de guía del proyecto
 GUIA-PROYECTO/
 
