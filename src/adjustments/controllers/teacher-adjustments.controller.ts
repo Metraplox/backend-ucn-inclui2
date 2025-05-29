@@ -135,7 +135,9 @@ export class TeacherAdjustmentsController {
             
             if (student) {
               const hasUnreadAdjustments = adjustment.currentAdjustments.some(
-                adj => adj.courseNrc === course.nrc && !adj.readByTeacher
+                adj => adj.courseNrc === course.nrc && 
+                (!adj.readBy || adj.readBy.length === 0 || 
+                 !adj.readBy.some(read => read.userId.toString() === teacherId))
               );
               
               if (hasUnreadAdjustments) {
@@ -221,10 +223,23 @@ export class TeacherAdjustmentsController {
         throw new BadRequestException('ID de ajuste inválido');
       }
       
-      // Confirmar recepción del ajuste
-      const updatedAdjustment = await this.adjustmentsService.acknowledgeAdjustment(
-        adjustmentId,
-        userId
+      // Buscar el ajuste por ID
+      const adjustment = await this.adjustmentsService.findOne(adjustmentId);
+      
+      if (!adjustment) {
+        throw new NotFoundException(`No se pudo encontrar el ajuste con ID ${adjustmentId}`);
+      }
+      
+      // Marcar como recibido (usando findOneAndUpdate directamente, ya que no existe acknowledgeAdjustment)
+      const updatedAdjustment = await this.adjustmentsService.findOneAndUpdate(
+        { _id: adjustmentId },
+        { 
+          $set: { 
+            'currentAdjustments.$[].acknowledgedBy': new Types.ObjectId(userId),
+            'currentAdjustments.$[].acknowledgedAt': new Date() 
+          } 
+        },
+        { new: true }
       );
       
       if (!updatedAdjustment) {
@@ -406,12 +421,37 @@ export class TeacherAdjustmentsController {
   ): Promise<Adjustment> {
     const adjustmentIndex = parseInt(index, 10);
 
-    const updatedAdjustment = await this.adjustmentsService.markAsRead(
-      adjustmentId,
-      adjustmentIndex,
-      userId,
-      markReadDto.isRead
-    );
+    // Buscar el ajuste por ID
+  const adjustment = await this.adjustmentsService.findOne(adjustmentId);
+  
+  if (!adjustment) {
+    throw new NotFoundException(`No se pudo encontrar el ajuste con ID ${adjustmentId}`);
+  }
+  
+  // Verificar que el índice sea válido
+  if (!adjustment.currentAdjustments || adjustmentIndex >= adjustment.currentAdjustments.length) {
+    throw new BadRequestException('Índice de ajuste fuera de rango');
+  }
+  
+  // Verificar si el ajuste ya fue leído por este usuario
+  const currentAdjustment = adjustment.currentAdjustments[adjustmentIndex];
+  const readByArray = currentAdjustment.readBy || [];
+  
+  // Si no existe el usuario en readBy, agregarlo
+  if (!readByArray.some(read => read.userId.toString() === userId)) {
+    readByArray.push({
+      userId: new Types.ObjectId(userId),
+      readDate: new Date(),
+      comments: markReadDto.comments || 'Ajuste leído por el docente'
+    });
+  }
+  
+  // Actualizar el documento
+  const updatedAdjustment = await this.adjustmentsService.findOneAndUpdate(
+    { _id: adjustmentId },
+    { $set: { [`currentAdjustments.${adjustmentIndex}.readBy`]: readByArray } },
+    { new: true }
+  );
 
     if (!updatedAdjustment) {
       throw new NotFoundException(
@@ -551,8 +591,12 @@ export class TeacherAdjustmentsController {
         );
       }
 
-      // Obtener ajustes con solicitudes de ayuda pendientes
-      const adjustments = await this.adjustmentsService.findWithPendingHelpRequests(semester);
+      // Construir el query para buscar ajustes con solicitudes de ayuda pendientes
+      const query: any = { semester };
+      query['currentAdjustments.helpRequests.status'] = 'pending';
+      
+      // Obtener ajustes con solicitudes de ayuda pendientes usando findAll que sí existe
+      const adjustments = await this.adjustmentsService.findAll(query);
       
       const result: Array<{
         _id: string;
@@ -580,8 +624,12 @@ export class TeacherAdjustmentsController {
         for (let i = 0; i < adjustment.currentAdjustments.length; i++) {
           const currentAdjustment = adjustment.currentAdjustments[i];
           
-          if (currentAdjustment.helpRequest && 
-              currentAdjustment.helpRequest.status === 'pending') {
+          // Verificar si hay solicitudes de ayuda y si alguna está pendiente
+          const pendingRequests = (currentAdjustment.helpRequests || []).filter(
+            req => req.status === 'pending'
+          );
+          
+          if (pendingRequests.length > 0) {
             
             // Obtener información del usuario que solicitó ayuda
             const requestUser = await this.usersService.findById(
@@ -594,10 +642,10 @@ export class TeacherAdjustmentsController {
               studentName,
               courseNrc: currentAdjustment.courseNrc,
               request: {
-                description: currentAdjustment.helpRequest.description,
-                status: currentAdjustment.helpRequest.status,
-                requestedAt: currentAdjustment.helpRequest.requestedAt,
-                requestedBy: requestUser ? requestUser.name : 'Usuario desconocido',
+                description: pendingRequests[0].description,
+                status: pendingRequests[0].status,
+                requestedAt: pendingRequests[0].requestDate,
+                requestedBy: requestUser ? (requestUser as any).name || 'Sin nombre' : 'Usuario desconocido',
               },
             });
           }
