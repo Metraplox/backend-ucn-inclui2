@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
@@ -15,6 +16,10 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { DiddecModule } from './diddec/diddec.module';
 import { ConsentModule } from './consent/consent.module';
 import { ResourcesModule } from './resources/resources.module';
+import { HawaiiModule } from './hawaii/hawaii.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { SyncModule } from './sync/sync.module';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 @Module({
   imports: [
@@ -46,6 +51,8 @@ import { ResourcesModule } from './resources/resources.module';
     AdjustmentsModule,
     DocumentsModule,
     ConsentModule,
+    HawaiiModule,
+    EnrollmentsModule,
     CoursesModule,
     UsersModule,
     AuthModule,
@@ -54,8 +61,16 @@ import { ResourcesModule } from './resources/resources.module';
     CareersModule,
     DiddecModule,
     ResourcesModule,
+    SyncModule,
+    HawaiiModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+  ],
 })
 export class AppModule {}

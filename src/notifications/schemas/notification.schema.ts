@@ -177,56 +177,61 @@ export class Notification {
     description: 'Usuario destinatario (virtual)',
   })
   @Prop({
+    type: Object,
     ref: 'User',
     localField: 'userId',
     foreignField: '_id',
     justOne: true,
   })
-  user?: any;
+  user?: Record<string, any>;
   
   @ApiProperty({
     description: 'Estudiante relacionado (virtual)',
   })
   @Prop({
+    type: Object,
     ref: 'Student',
     localField: 'studentId',
     foreignField: '_id',
     justOne: true,
   })
-  student?: any;
+  student?: Record<string, any>;
   
   @ApiProperty({
     description: 'Ajuste relacionado (virtual)',
   })
   @Prop({
+    type: Object,
     ref: 'Adjustment',
     localField: 'adjustmentId',
     foreignField: '_id',
     justOne: true,
   })
-  adjustment?: any;
+  adjustment?: Record<string, any>;
   
   @ApiProperty({
     description: 'Curso relacionado (virtual)',
   })
   @Prop({
+    type: Object,
     ref: 'Course',
     localField: 'courseId',
     foreignField: '_id',
     justOne: true,
   })
-  course?: any;
+  course?: Record<string, any>;
   
   @ApiProperty({
     description: 'Recurso relacionado (virtual)',
   })
   @Prop({
+    type: Object,
     ref: 'Resource',
     localField: 'resourceId',
     foreignField: '_id',
     justOne: true,
   })
-  resource?: any;
+  resource?: Record<string, any>;
 
   @ApiProperty({
     description: 'Referencia al objeto relacionado',
@@ -243,12 +248,7 @@ export class Notification {
     id: Types.ObjectId;
   };
 
-  @ApiProperty({
-    description: 'Indica si la notificación ha sido leída',
-    example: false,
-  })
-  @Prop({ type: Boolean, default: false, index: true })
-  isRead: boolean;
+  // La propiedad isRead ya está definida arriba
 
   @ApiProperty({
     description: 'Fecha de creación del registro',

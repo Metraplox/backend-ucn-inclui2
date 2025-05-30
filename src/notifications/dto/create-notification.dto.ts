@@ -16,7 +16,7 @@ import {
 } from 'class-validator';
 import { NotificationType, NotificationPriority } from '../schemas/notification.schema';
 
-class RelatedToDto {
+export class RelatedToDto {
   @ApiProperty({
     description: 'Tipo del objeto relacionado',
     enum: ['adjustment', 'student', 'course'],

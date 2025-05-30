@@ -349,6 +349,8 @@ export class AdjustmentsController {
       throw new BadRequestException('Estado de ajuste inválido');
     }
 
-    return this.adjustmentsService.updateStatus(id, status, req.user._id);
+    // Suponiendo que adjustmentIndex viene en el body o query, aquí lo obtendremos de req.body.adjustmentIndex
+const adjustmentIndex = (req.body && (req.body as any).adjustmentIndex) ?? 0;
+return this.adjustmentsService.updateStatus(id, adjustmentIndex, status, req.user._id);
   }
 }

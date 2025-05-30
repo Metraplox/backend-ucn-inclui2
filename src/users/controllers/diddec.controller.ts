@@ -26,7 +26,32 @@ import { DepartmentsService } from '../../departments/departments.service';
 import { CareersService } from '../../careers/careers.service';
 import { UserRole } from '../schemas/user.schema';
 import { Department } from '../../departments/schemas/department.schema';
-import { Notification } from '../../notifications/schemas/notification.schema';
+import { Notification, NotificationType } from '../../notifications/schemas/notification.schema';
+
+/**
+ * Función auxiliar para mapear tipos simples a NotificationType
+ * Esto permite compatibilidad con diferentes esquemas de notificaciones
+ */
+function mapNotificationTypeToEnum(type: 'info' | 'warning' | 'success' | 'error' | NotificationType): NotificationType {
+  // Si ya es un NotificationType, devolverlo directamente
+  if (Object.values(NotificationType).includes(type as NotificationType)) {
+    return type as NotificationType;
+  }
+  
+  // Mapear los tipos simples a NotificationType
+  switch (type) {
+    case 'info':
+      return NotificationType.SYSTEM_ALERT;
+    case 'warning':
+      return NotificationType.REMINDER;
+    case 'success':
+      return NotificationType.ADJUSTMENT_APPROVED;
+    case 'error':
+      return NotificationType.ADJUSTMENT_REJECTED;
+    default:
+      return NotificationType.SYSTEM_ALERT;
+  }
+}
 
 @ApiTags('diddec')
 @ApiBearerAuth()
@@ -91,7 +116,7 @@ export class DIDDECController {
     // Estadísticas de estudiantes
     const students = await this.studentsService.findAll();
     const studentsWithNEE = students.filter(
-      (s) => s.hasDisability && s.semestre === semester,
+      (s) => s.hasDisability && s.semester === semester,
     );
 
     // Estadísticas de ajustes
@@ -129,12 +154,12 @@ export class DIDDECController {
     return {
       semester,
       studentsStatistics: {
-        total: students.filter((s) => s.semestre === semester).length,
+        total: students.filter((s) => s.semester === semester).length,
         withNEE: studentsWithNEE.length,
         percentageWithNEE:
-          students.filter((s) => s.semestre === semester).length > 0
+          students.filter((s) => s.semester === semester).length > 0
             ? (studentsWithNEE.length /
-                students.filter((s) => s.semestre === semester).length) *
+                students.filter((s) => s.semester === semester).length) *
               100
             : 0,
       },
@@ -202,7 +227,7 @@ export class DIDDECController {
   ): Promise<any> {
     const students = await this.studentsService.findAll();
     const studentsWithNEE = students.filter(
-      (s) => s.hasDisability && s.semestre === semester,
+      (s) => s.hasDisability && s.semester === semester,
     );
 
     const disabilityTypes: { [key: string]: number } = {};
@@ -314,7 +339,7 @@ export class DIDDECController {
         const careerStudentsWithNEE = students.filter(
           (s) =>
             s.hasDisability &&
-            s.semestre === semester &&
+            s.semester === semester &&
             career.studentIds.includes(s._id as any),
         );
         totalStudentsWithNEE += careerStudentsWithNEE.length;
@@ -547,7 +572,7 @@ export class DIDDECController {
           user._id.toString(),
           notificationDto.title,
           notificationDto.message,
-          notificationDto.type,
+          mapNotificationTypeToEnum(notificationDto.type),
           notificationDto.semester,
         );
       notifications.push(notification);
@@ -693,7 +718,7 @@ export class DIDDECController {
         alerts.push({
           type: 'career_without_head',
           severity: 'medium',
-          careerId: career._id,
+          careerId: (career as any)._id,
           careerName: career.name,
           careerCode: career.code,
         });

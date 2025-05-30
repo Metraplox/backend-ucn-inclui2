@@ -12,6 +12,7 @@ import {
 import { NotificationsModule } from '../notifications/notifications.module';
 import { CoursesModule } from '../courses/courses.module';
 import { UsersModule } from '../users/users.module';
+import { StudentsModule } from '../students/students.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UsersModule } from '../users/users.module';
     NotificationsModule,
     CoursesModule,
     forwardRef(() => UsersModule),
+    forwardRef(() => StudentsModule),
   ],
   controllers: [AdjustmentsController, TeacherAdjustmentsController],
   providers: [AdjustmentsService, AdjustmentsServiceExtension],

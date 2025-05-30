@@ -1,15 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { AdjustmentStatus } from '../adjustments/schemas/adjustment.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Department, DepartmentDocument } from './schemas/department.schema';
-import { CreateDepartmentDto } from './dto/create-department.dto'; // Ruta absoluta alternativa: src/departments/dto/create-department.dto
-import { UpdateDepartmentDto } from './dto/update-department.dto'; // Ruta absoluta alternativa: src/departments/dto/update-department.dto
+import { CreateDepartmentDto } from './dto/create-department.dto';
+import { UpdateDepartmentDto } from './dto/update-department.dto';
+import { CoursesService } from '../courses/courses.service';
+import { StudentsService } from '../students/students.service';
+import { AdjustmentsService } from '../adjustments/adjustments.service';
 
 @Injectable()
 export class DepartmentsService {
   constructor(
     @InjectModel(Department.name)
     private departmentModel: Model<DepartmentDocument>,
+    private readonly coursesService: CoursesService,
+    private readonly studentsService: StudentsService,
+    private readonly adjustmentsService: AdjustmentsService,
   ) {}
 
   async create(createDepartmentDto: CreateDepartmentDto): Promise<Department> {
@@ -90,10 +97,72 @@ export class DepartmentsService {
     return department.save();
   }
 
-  async getTeachersByDepartment(departmentId: string): Promise<any[]> {
+  async getDepartmentStats(departmentId: string, semester: string): Promise<any> {
     const department = await this.departmentModel
       .findById(departmentId)
-      .populate('teacherIds')
+      .populate('teacherIds', 'nombreCompleto email')
+      .exec();
+
+    if (!department) {
+      throw new NotFoundException(`Departamento con ID ${departmentId} no encontrado`);
+    }
+
+    // Obtener cursos del departamento
+    const courses = await this.coursesService.findByDepartment(departmentId, semester);
+    
+    // Obtener estudiantes con NEE
+    const studentsWithNEE = await this.studentsService.findByDepartmentWithNEE(departmentId, semester);
+    
+    // Obtener ajustes del departamento
+    const adjustments = await this.adjustmentsService.findByDepartment(departmentId ?? '', semester);
+
+    return {
+      department: {
+        id: department._id,
+        name: department.name,
+        code: department.code,
+        totalTeachers: department.teacherIds.length,
+      },
+      stats: {
+        totalCourses: courses.length,
+        totalStudentsWithNEE: studentsWithNEE.length,
+        totalAdjustments: adjustments.length,
+        adjustmentsByStatus: adjustments.reduce((acc, curr) => {
+          acc[curr.estado] = (acc[curr.estado] || 0) + 1;
+          return acc;
+        }, {}),
+      },
+      lastUpdated: new Date(),
+    };
+  }
+
+  async getDepartmentStudentsWithNEE(departmentId: string, semester: string): Promise<any[]> {
+    const students = await this.studentsService.findByDepartmentWithNEE(departmentId, semester);
+    
+    return students.map(student => ({
+      id: student._id,
+      nombreCompleto: student.nombreCompleto,
+      rut: student.rut,
+      email: student.email,
+      career: student.career,
+      semester: student.semester,
+      adjustments: student.adjustments?.map(adj => ({
+        id: adj._id,
+        type: adj.type,
+        estado: adj.estado,
+        createdAt: adj.createdAt,
+      })) || [],
+    }));
+  }
+
+  async getTeachersByDepartment(departmentId: string, semester?: string): Promise<any[]> {
+    const department = await this.departmentModel
+      .findById(departmentId)
+      .populate({
+        path: 'teacherIds',
+        select: 'nombreCompleto email roles',
+        match: { isActive: true },
+      })
       .exec();
 
     if (!department) {
@@ -102,7 +171,47 @@ export class DepartmentsService {
       );
     }
 
-    return department.teacherIds;
+    // Obtener estadísticas de cada docente
+    const teachersWithStats = await Promise.all(
+      department.teacherIds.map(async (teacher: any) => {
+        const courses = await this.coursesService.findByTeacher(teacher._id.toString(), semester || '2025-1');
+        let studentsWithNEE = 0;
+        let totalAdjustments = 0;
+        let pendingAdjustments = 0;
+
+        for (const course of courses) {
+          const adjustments = await this.adjustmentsService.findByCourseNrc(
+            course.nrc,
+            semester,
+          );
+          
+          const courseAdjustments = adjustments.filter(adj => 
+            adj.currentAdjustments.some(ca => ca.courseNrc === course.nrc)
+          );
+          
+          studentsWithNEE += new Set(
+            courseAdjustments.flatMap(adj => adj.studentId.toString())
+          ).size;
+          
+          totalAdjustments += courseAdjustments.length;
+          pendingAdjustments += courseAdjustments.filter(adj => 
+            adj.currentAdjustments && adj.currentAdjustments.some(ca => ca.estado === AdjustmentStatus.PENDING && ca.courseNrc === course.nrc)
+          ).length;
+        }
+
+        return {
+          id: teacher._id,
+          nombreCompleto: teacher.nombreCompleto,
+          email: teacher.email,
+          courses: courses.length,
+          studentsWithNEE,
+          totalAdjustments,
+          pendingAdjustments,
+        };
+      })
+    );
+
+    return teachersWithStats;
   }
 
   async update(id: string, updateDepartmentDto: UpdateDepartmentDto): Promise<Department> {

@@ -115,6 +115,13 @@ class CurrentAdjustment {
   comentarios?: string;
 
   @ApiProperty({
+    example: '2025-1',
+    description: 'Semestre académico al que corresponde el ajuste',
+  })
+  @Prop({ type: String })
+  semester: string;
+
+  @ApiProperty({
     description: 'Registro de docentes que han marcado como leído el ajuste',
     type: Array,
     example: [

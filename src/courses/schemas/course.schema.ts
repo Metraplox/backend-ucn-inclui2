@@ -41,6 +41,20 @@ export class Course {
   teacherName: string;
 
   @ApiProperty({
+    example: '605c72ef9167f86c2cabc456',
+    description: 'ID del profesor',
+  })
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  teacherId: Types.ObjectId;
+  
+  @ApiProperty({
+    example: 'Departamento de Matemáticas',
+    description: 'Departamento académico al que pertenece el curso',
+  })
+  @Prop({ type: String, index: true })
+  departamento: string;
+
+  @ApiProperty({
     example: '2025-1',
     description: 'Semestre académico',
   })

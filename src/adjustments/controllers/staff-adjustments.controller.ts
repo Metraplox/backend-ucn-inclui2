@@ -23,6 +23,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UserRole } from '../../users/schemas/user.schema';
 import { AdjustmentStatus } from '../schemas/adjustment.schema';
+import { NotificationType } from '../../notifications/schemas/notification.schema';
 
 // Define roles compatible with the decorator
 enum Role {
@@ -208,7 +209,7 @@ export class StaffAdjustmentsController {
       teacherId.toString(),
       'Respuesta a solicitud de ayuda',
       `Tu solicitud de ayuda para el ajuste en ${currAdj.courseNrc} ha sido ${updateDto.status}`,
-      'info',
+      NotificationType.SYSTEM_ALERT,
       adjustment.semester || '2025-1'
     );
     
@@ -278,7 +279,7 @@ export class StaffAdjustmentsController {
         adjustment.studentId.toString(),
         'Ajuste rechazado',
         `Tu ajuste ha sido rechazado. ${data.comments || ''}`,
-        'ADJUSTMENT_REJECTED',
+        NotificationType.ADJUSTMENT_REJECTED,
         adjustment.semester || '2025-1',
         {
           type: 'adjustment',

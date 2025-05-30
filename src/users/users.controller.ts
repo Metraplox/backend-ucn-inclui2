@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Role } from '../auth/enums/role.enum';
 import { UserRole, User } from './schemas/user.schema'; // Import User schema for response types
 import { UserPublicData } from './interfaces/user-public-data.interface';
 import {
@@ -37,7 +38,7 @@ export class UsersController {
   // El endpoint de creación directa de usuarios (si es necesario) también estaría aquí
   // y protegido por roles. Por ahora, el registro es vía AuthController.
   // @Post()
-  // @Roles(UserRole.ADMIN)
+  // @Roles(Role.ADMIN)
   // @HttpCode(HttpStatus.CREATED)
   // @ApiOperation({ summary: 'Crear un nuevo usuario (Admin)' })
   // @ApiBody({ type: CreateUserDto })
@@ -50,7 +51,7 @@ export class UsersController {
   // }
 
   @Get()
-  @Roles(UserRole.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Obtener todos los usuarios (Admin)' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios.', type: [User] })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
@@ -75,7 +76,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN) // Solo admin puede ver perfiles de otros usuarios por ID
+  @Roles(Role.ADMIN) // Solo admin puede ver perfiles de otros usuarios por ID
   @ApiOperation({ summary: 'Obtener un usuario por su ID (Admin)' })
   @ApiParam({
     name: 'id',
@@ -95,7 +96,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN) // Por ahora, solo admin.
+  @Roles(Role.ADMIN) // Por ahora, solo admin.
   @ApiOperation({ summary: 'Actualizar un usuario existente (Admin)' })
   @ApiParam({
     name: 'id',
@@ -120,7 +121,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Eliminar un usuario (Admin)' })
   @ApiParam({

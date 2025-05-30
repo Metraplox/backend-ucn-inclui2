@@ -1,16 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationsService } from '../notifications.service';
-import { AdjustmentNotificationType } from '../dto/adjustment-notification.dto';
 import { Types } from 'mongoose';
-import { AdjustmentStatus } from '../../adjustments/schemas/adjustment.schema';
+import { NotificationsService } from '../notifications.service';
+import { NotificationType } from '../schemas/notification.schema';
 
 @Injectable()
 export class AdjustmentNotificationsService {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  /**
-   * Crea una notificación cuando se asigna un nuevo ajuste razonable a un docente
-   */
+  private async createNotification(
+    userId: string,
+    title: string,
+    message: string,
+    type: NotificationType,
+    semester: string,
+    adjustmentId: string
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      await this.notificationsService.createSystemNotification(
+        userId,
+        title,
+        message,
+        type,
+        semester,
+        { type: 'adjustment', id: new Types.ObjectId(adjustmentId) }
+      );
+
+      return {
+        success: true,
+        message: 'Notificación enviada correctamente',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al enviar notificación: ${error.message}`,
+      };
+    }
+  }
+
   async notifyNewAdjustment(
     teacherId: string,
     adjustmentId: string,
@@ -18,23 +44,42 @@ export class AdjustmentNotificationsService {
     courseName: string,
     adjustmentType: string,
     semester: string,
-  ): Promise<void> {
-    await this.notificationsService.createSystemNotification(
+  ): Promise<{ success: boolean; message: string }> {
+    const title = 'Nuevo ajuste razonable asignado';
+    const message = `Tienes un nuevo ajuste razonable para ${studentName} en el curso ${courseName}`;
+
+    return this.createNotification(
       teacherId,
-      'Nuevo ajuste razonable asignado',
-      `Se ha asignado un nuevo ajuste razonable de tipo "${adjustmentType}" para ${studentName} en el curso ${courseName}.`,
-      AdjustmentNotificationType.NEW_ADJUSTMENT,
+      title,
+      message,
+      NotificationType.ADJUSTMENT_CREATED,
       semester,
-      {
-        type: 'adjustment',
-        id: new Types.ObjectId(adjustmentId),
-      },
+      adjustmentId
     );
   }
 
-  /**
-   * Crea una notificación cuando un ajuste razonable es aprobado
-   */
+  async notifyAdjustmentRejected(
+    teacherId: string,
+    adjustmentId: string,
+    studentName: string,
+    courseName: string,
+    adjustmentType: string,
+    semester: string,
+    reason: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const title = 'Ajuste razonable rechazado';
+    const message = `El ajuste razonable de tipo "${adjustmentType}" para ${studentName} en el curso ${courseName} ha sido rechazado. Razón: ${reason}`;
+
+    return this.createNotification(
+      teacherId,
+      title,
+      message,
+      NotificationType.ADJUSTMENT_REJECTED,
+      semester,
+      adjustmentId
+    );
+  }
+
   async notifyAdjustmentApproved(
     teacherId: string,
     adjustmentId: string,
@@ -42,99 +87,20 @@ export class AdjustmentNotificationsService {
     courseName: string,
     adjustmentType: string,
     semester: string,
-  ): Promise<void> {
-    await this.notificationsService.createSystemNotification(
+  ): Promise<{ success: boolean; message: string }> {
+    const title = 'Ajuste razonable aprobado';
+    const message = `El ajuste razonable de tipo "${adjustmentType}" para ${studentName} en el curso ${courseName} ha sido aprobado.`;
+
+    return this.createNotification(
       teacherId,
-      'Ajuste razonable aprobado',
-      `El ajuste razonable de tipo "${adjustmentType}" para ${studentName} en el curso ${courseName} ha sido aprobado.`,
-      AdjustmentNotificationType.ADJUSTMENT_APPROVED,
+      title,
+      message,
+      NotificationType.ADJUSTMENT_APPROVED,
       semester,
-      {
-        type: 'adjustment',
-        id: new Types.ObjectId(adjustmentId),
-      },
+      adjustmentId
     );
   }
 
-  /**
-   * Crea una notificación cuando un ajuste razonable es rechazado
-   */
-  async notifyAdjustmentRejected(
-    teacherId: string,
-    adjustmentId: string,
-    studentName: string,
-    courseName: string,
-    adjustmentType: string,
-    reason: string,
-    semester: string,
-  ): Promise<void> {
-    await this.notificationsService.createSystemNotification(
-      teacherId,
-      'Ajuste razonable rechazado',
-      `El ajuste razonable de tipo "${adjustmentType}" para ${studentName} en el curso ${courseName} ha sido rechazado. Motivo: ${reason}`,
-      AdjustmentNotificationType.ADJUSTMENT_REJECTED,
-      semester,
-      {
-        type: 'adjustment',
-        id: new Types.ObjectId(adjustmentId),
-      },
-    );
-  }
-
-  /**
-   * Crea una notificación cuando se solicita ayuda para un ajuste razonable
-   */
-  async notifyHelpRequested(
-    staffIds: string[],
-    teacherId: string,
-    teacherName: string,
-    adjustmentId: string,
-    studentName: string,
-    courseName: string,
-    message: string,
-    semester: string,
-  ): Promise<void> {
-    // Notificar a todo el personal de staff
-    await this.notificationsService.createBulkNotifications(
-      staffIds,
-      'Solicitud de ayuda para ajuste razonable',
-      `El docente ${teacherName} ha solicitado ayuda para implementar un ajuste razonable para ${studentName} en el curso ${courseName}: "${message}"`,
-      AdjustmentNotificationType.ADJUSTMENT_HELP_REQUESTED,
-      semester,
-      {
-        type: 'adjustment',
-        id: new Types.ObjectId(adjustmentId),
-      },
-    );
-  }
-
-  /**
-   * Crea una notificación cuando se resuelve una solicitud de ayuda
-   */
-  async notifyHelpResolved(
-    teacherId: string,
-    adjustmentId: string,
-    studentName: string,
-    courseName: string,
-    resolution: string,
-    semester: string,
-  ): Promise<void> {
-    await this.notificationsService.createSystemNotification(
-      teacherId,
-      'Respuesta a solicitud de ayuda',
-      `Su solicitud de ayuda para el ajuste razonable de ${studentName} en el curso ${courseName} ha sido atendida: "${resolution}"`,
-      AdjustmentNotificationType.ADJUSTMENT_HELP_RESOLVED,
-      semester,
-      {
-        type: 'adjustment',
-        id: new Types.ObjectId(adjustmentId),
-      },
-    );
-  }
-
-  /**
-   * Crea una notificación cuando un ajuste es marcado como implementado
-   */
   async notifyAdjustmentImplemented(
     staffIds: string[],
     teacherId: string,
@@ -143,68 +109,31 @@ export class AdjustmentNotificationsService {
     studentName: string,
     courseName: string,
     semester: string,
-  ): Promise<void> {
-    // Notificar al personal de staff
-    await this.notificationsService.createBulkNotifications(
-      staffIds,
-      'Ajuste razonable implementado',
-      `El docente ${teacherName} ha marcado como implementado un ajuste razonable para ${studentName} en el curso ${courseName}.`,
-      AdjustmentNotificationType.ADJUSTMENT_IMPLEMENTED,
-      semester,
-      {
-        type: 'adjustment',
-        id: new Types.ObjectId(adjustmentId),
-      },
-    );
-  }
+  ): Promise<{ success: boolean; message: string }> {
+    const title = 'Ajuste razonable implementado';
+    const message = `El docente ${teacherName} ha marcado como implementado un ajuste razonable para ${studentName} en el curso ${courseName}.`;
 
-  /**
-   * Crea notificaciones basadas en cambios de estado del ajuste
-   */
-  async notifyStatusChange(
-    recipientId: string,
-    adjustmentId: string,
-    studentName: string,
-    courseName: string,
-    adjustmentType: string,
-    newStatus: AdjustmentStatus,
-    comments: string,
-    semester: string,
-  ): Promise<void> {
-    let title = '';
-    let message = '';
-    let type = '';
+    try {
+      await Promise.all(staffIds.map(staffId => 
+        this.notificationsService.createSystemNotification(
+          staffId,
+          title,
+          message,
+          NotificationType.ADJUSTMENT_UPDATED,
+          semester,
+          { type: 'adjustment', id: new Types.ObjectId(adjustmentId) }
+        )
+      ));
 
-    switch (newStatus) {
-      case AdjustmentStatus.APPROVED:
-        title = 'Ajuste razonable aprobado';
-        message = `El ajuste razonable de tipo "${adjustmentType}" para ${studentName} en el curso ${courseName} ha sido aprobado.`;
-        type = AdjustmentNotificationType.ADJUSTMENT_APPROVED;
-        break;
-      case AdjustmentStatus.REJECTED:
-        title = 'Ajuste razonable rechazado';
-        message = `El ajuste razonable de tipo "${adjustmentType}" para ${studentName} en el curso ${courseName} ha sido rechazado. Motivo: ${comments || 'No especificado'}`;
-        type = AdjustmentNotificationType.ADJUSTMENT_REJECTED;
-        break;
-      case AdjustmentStatus.IMPLEMENTED:
-        title = 'Ajuste razonable implementado';
-        message = `El ajuste razonable de tipo "${adjustmentType}" para ${studentName} en el curso ${courseName} ha sido marcado como implementado.`;
-        type = AdjustmentNotificationType.ADJUSTMENT_IMPLEMENTED;
-        break;
-      default:
-        return; // No notificar para otros estados
+      return {
+        success: true,
+        message: 'Notificación de implementación de ajuste enviada correctamente',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al enviar notificación: ${error.message}`,
+      };
     }
-
-    await this.notificationsService.createSystemNotification(
-      recipientId,
-      title,
-      message,
-      type,
-      semester,
-      {
-        type: 'adjustment',
-        id: new Types.ObjectId(adjustmentId),
-      },
-    );
   }
 }

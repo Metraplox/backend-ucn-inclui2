@@ -25,6 +25,7 @@ import { UsersService } from '../../users/users.service';
 import { CoursesService } from '../../courses/courses.service';
 import { AdjustmentsService } from '../../adjustments/adjustments.service';
 import { NotificationsService } from '../../notifications/notifications.service';
+import { NotificationType } from '../../notifications/schemas/notification.schema';
 
 @ApiTags('heads')
 @Controller('heads')
@@ -549,7 +550,7 @@ export class HeadsController {
         teacherId,
         'Recordatorio: Ajustes pendientes de revisión',
         message,
-        'warning',
+        NotificationType.ADJUSTMENT_APPROVAL_NEEDED,
         semester,
       );
 

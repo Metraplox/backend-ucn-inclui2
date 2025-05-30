@@ -658,6 +658,7 @@ export class TeacherAdjustmentsController {
         throw error;
       }
       throw new InternalServerErrorException('Error al obtener solicitudes de ayuda pendientes');
+
     }
   }
 }

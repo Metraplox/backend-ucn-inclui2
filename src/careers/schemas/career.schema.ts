@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export type CareerDocument = Career & Document;
 
 @Schema({ timestamps: true })
-export class Career extends Document {
+export class Career {
   @ApiProperty({ description: 'Nombre de la carrera' })
   @Prop({ required: true, trim: true })
   name: string;

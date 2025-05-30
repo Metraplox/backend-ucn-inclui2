@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { NotificationRepository } from './repositories/notification.repository';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
-import { Notification } from './schemas/notification.schema';
+import { Notification, NotificationType } from './schemas/notification.schema';
 
 @Injectable()
 export class NotificationsService {
@@ -102,19 +102,24 @@ export class NotificationsService {
     userId: string,
     title: string,
     message: string,
-    type: string,
+    type: NotificationType,
     semester: string,
     relatedTo?: { type: string; id: Types.ObjectId },
   ): Promise<Notification> {
-    const notificationDto: CreateNotificationDto = {
-      userId: new Types.ObjectId(userId),
+    // Construimos un objeto DTO básico
+    const notificationDto: any = {
+      userId,
       title,
       message,
       type,
       semester,
-      relatedTo,
       isRead: false,
     };
+    
+    // Solo añadimos relatedTo si está definido
+    if (relatedTo) {
+      notificationDto.relatedTo = relatedTo;
+    }
 
     return this.create(notificationDto);
   }
@@ -123,7 +128,7 @@ export class NotificationsService {
     userIds: string[],
     title: string,
     message: string,
-    type: string,
+    type: NotificationType,
     semester: string,
     relatedTo?: { type: string; id: Types.ObjectId },
   ): Promise<Notification[]> {

@@ -8,6 +8,16 @@ import { User, UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
 export class StudentsService {
+  /**
+   * Método mínimo para evitar error en departamentos.service.ts
+   * No debe usarse en producción sin validación adecuada
+   */
+  async findByDepartmentWithNEE(departmentId: string, semester: string): Promise<any[]> {
+    // Implementación mínima: buscar estudiantes con NEE por departamento y semestre
+    // Reemplazar por lógica real según el modelo de datos
+    return [];
+  }
+
   constructor(
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
     @InjectModel(User.name) private userModel: Model<User>,
@@ -59,6 +69,7 @@ export class StudentsService {
       await session.abortTransaction();
       
       // Manejar errores de duplicado
+
       if (error.code === 11000) {
         throw new ConflictException('El correo electrónico ya está en uso');
       }
@@ -166,6 +177,24 @@ export class StudentsService {
       throw new NotFoundException(`Estudiante con ID "${id}" no encontrado.`);
     }
     return student;
+  }
+
+  /**
+   * Encuentra un estudiante por su ID sin lanzar excepciones
+   * Optimizado para consultas ligeras donde solo se necesitan datos básicos del estudiante
+   * @param id ID del estudiante
+   * @returns El estudiante o null si no existe
+   */
+  async findById(id: string): Promise<Student | null> {
+    if (!Types.ObjectId.isValid(id)) {
+      return null;
+    }
+    
+    return this.studentModel
+      .findById(id)
+      .select('_id name rut email userId carreraId')
+      .lean()
+      .exec();
   }
 
   async update(

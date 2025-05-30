@@ -19,7 +19,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { Notification } from './schemas/notification.schema';
+import { Notification, NotificationType } from './schemas/notification.schema';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Types } from 'mongoose';
 
@@ -161,7 +161,7 @@ export class NotificationsController {
       userIds: string[];
       title: string;
       message: string;
-      type: string;
+      type: string | NotificationType;
       semester: string;
       relatedTo?: { type: string; id: string };
     },
@@ -175,16 +175,51 @@ export class NotificationsController {
         }
       : undefined;
 
+    // Convertir el tipo string a NotificationType
+    const notificationType = this.convertToNotificationType(type);
+    
     const notifications =
       await this.notificationsService.createBulkNotifications(
         userIds,
         title,
         message,
-        type,
+        notificationType,
         semester,
         relatedToObj,
       );
 
     return { count: notifications.length };
+  }
+  
+  // Método auxiliar para convertir string a NotificationType
+  private convertToNotificationType(type: string | NotificationType): NotificationType {
+    // Si ya es un NotificationType, simplemente lo devolvemos
+    if (Object.values(NotificationType).includes(type as NotificationType)) {
+      return type as NotificationType;
+    }
+    
+    // De lo contrario, mapeamos según la información que tengamos
+    switch (type) {
+      case 'ADJUSTMENT_CREATED':
+        return NotificationType.ADJUSTMENT_CREATED;
+      case 'ADJUSTMENT_UPDATED':
+        return NotificationType.ADJUSTMENT_UPDATED;
+      case 'NEW_STUDENT':
+        return NotificationType.NEW_STUDENT;
+      case 'REMINDER':
+        return NotificationType.REMINDER;
+      case 'SYSTEM_ALERT':
+        return NotificationType.SYSTEM_ALERT;
+      case 'info':
+      case 'success':
+        return NotificationType.SYSTEM_ALERT;
+      case 'warning':
+        return NotificationType.REMINDER;
+      case 'error':
+        return NotificationType.REMINDER;
+      default:
+        // Valor predeterminado para tipos desconocidos
+        return NotificationType.SYSTEM_ALERT;
+    }
   }
 }
