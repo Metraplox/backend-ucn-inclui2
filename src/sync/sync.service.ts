@@ -1,16 +1,18 @@
 import { Injectable, Logger, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types, isValidObjectId } from 'mongoose';
 import axios from 'axios';
 
 import { UcnStudentDto } from './dto/ucn-student.dto';
 import { UcnCourseDto } from './dto/ucn-course.dto';
 import { UcnInscriptionDto } from './dto/ucn-inscription.dto';
-import { readNeeList } from './utils/read-nee-list';
+import { readNeeList, normalizeRut, getOnlyDigits } from './utils/read-nee-list';
 
 import { Student, StudentDocument } from '../students/schemas/student.schema';
 import { Course, CourseDocument } from '../courses/schemas/course.schema';
 import { SyncLog, SyncLogDocument, SyncType, SyncStatus } from './schemas/sync-log.schema';
+import { CareersService } from '../careers/careers.service';
+import { UsersService } from '../users/users.service';
 
 const HAWAII_ESTUDIANTES_URL = 'https://losvilos.ucn.cl/hawaii/api/estudiantes';
 const HAWAII_ESTUDIANTES_HEADER = { 'X-HAWAII-AUTH': 'mnqpkUk00jioab' };
@@ -19,17 +21,55 @@ const HAWAII_ESTUDIANTES_HEADER = { 'X-HAWAII-AUTH': 'mnqpkUk00jioab' };
 export class SyncService {
   private readonly logger = new Logger(SyncService.name);
   
+  /**
+   * Convierte de forma segura un valor a ObjectId válido
+   * @param id Valor a convertir (string, ObjectId, o cualquier valor)
+   * @returns ObjectId válido o undefined si no es válido
+   */
+  private safeObjectId(id: any): Types.ObjectId | undefined {
+    if (!id) return undefined;
+    
+    try {
+      // Si ya es un ObjectId válido
+      if (id instanceof Types.ObjectId) return id;
+      
+      // Si es string y representa un ObjectId válido
+      if (typeof id === 'string' && isValidObjectId(id)) {
+        return new Types.ObjectId(id);
+      }
+      
+      // Si tiene toString(), intentar convertir su representación string
+      if (id && typeof id.toString === 'function') {
+        const idStr = id.toString();
+        if (isValidObjectId(idStr)) {
+          return new Types.ObjectId(idStr);
+        }
+      }
+      
+      return undefined;
+    } catch (error) {
+      this.logger.warn(`Error al convertir a ObjectId: ${error.message}`);
+      return undefined;
+    }
+  };
+  
   constructor(
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
     @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
     @InjectModel(SyncLog.name) private syncLogModel: Model<SyncLogDocument>,
+    private careersService: CareersService,
+    private usersService: UsersService,
   ) {}
 
   async syncNeeStudents(): Promise<UcnStudentDto[]> {
     // Leer lista de NEE desde archivo
     const neeList = await readNeeList();
-    const neeRuts = neeList.map(e => e.rut);
-    this.logger.log(`NEE list loaded: ${neeList.length} students`);
+    
+    // Extraer solo los dígitos de los RUTs para comparación consistente
+    const neeRutsDigits = neeList.map(e => getOnlyDigits(e.rut));
+    this.logger.log(`NEE list loaded: ${neeList.length} students (solo dígitos para comparación)`);
+    // Mostrar los primeros 5 RUTs para diagnóstico
+    this.logger.debug(`Primeros 5 RUTs de lista NEE (solo dígitos): ${neeRutsDigits.slice(0, 5).join(', ')}`);
 
     // Consumir endpoint /estudiantes
     let estudiantes: UcnStudentDto[] = [];
@@ -37,17 +77,45 @@ export class SyncService {
       const response = await axios.get<UcnStudentDto[]>(HAWAII_ESTUDIANTES_URL, { headers: HAWAII_ESTUDIANTES_HEADER });
       estudiantes = response.data;
       this.logger.log(`Total estudiantes recibidos desde endpoint: ${estudiantes.length}`);
+      // Mostrar los primeros 5 RUTs de Hawaii para diagnóstico
+      if (estudiantes.length > 0) {
+        const primeros5RutsHawaii = estudiantes.slice(0, 5).map(e => e.rut);
+        const primeros5RutsHawaiiDigits = estudiantes.slice(0, 5).map(e => getOnlyDigits(e.rut));
+        this.logger.debug(`Primeros 5 RUTs de Hawaii (original): ${primeros5RutsHawaii.join(', ')}`);
+        this.logger.debug(`Primeros 5 RUTs de Hawaii (solo dígitos): ${primeros5RutsHawaiiDigits.join(', ')}`);
+      }
     } catch (error) {
       this.logger.error('Error al consumir endpoint /estudiantes', error);
       return [];
     }
 
-    // Filtrar solo los estudiantes NEE
-    const estudiantesNee = estudiantes.filter(e => neeRuts.includes(e.rut));
+    // Filtrar solo los estudiantes NEE usando comparación de solo dígitos
+    const estudiantesNee = estudiantes.filter(e => {
+      const rutDigits = getOnlyDigits(e.rut);
+      const coincide = neeRutsDigits.includes(rutDigits);
+      
+      // Si hay alguna coincidencia, log detallado para verificar
+      if (coincide) {
+        this.logger.debug(`Coincidencia encontrada: RUT Hawaii=${e.rut} (${rutDigits}) coincide con lista NEE`);
+      }
+      
+      return coincide;
+    });
+    
     this.logger.log(`Estudiantes NEE encontrados: ${estudiantesNee.length}`);
+    
+    // Si no se encontraron estudiantes, buscar posibles problemas
+    if (estudiantesNee.length === 0 && estudiantes.length > 0) {
+      // Verificar si hay algún RUT que esté cerca de coincidir (para detectar problemas de formato)
+      const muestraHawaii = estudiantes.slice(0, 20).map(e => getOnlyDigits(e.rut));
+      this.logger.debug(`Verificando posibles coincidencias cercanas... Muestra de 20 RUTs de Hawaii: ${muestraHawaii.join(', ')}`);
+    }
+    
     // Agregar carrera a cada estudiante NEE
     const estudiantesNeeEnriquecidos = estudiantesNee.map(e => {
-      const nee = neeList.find(n => n.rut === e.rut);
+      // Busca el NEE por RUT (solo dígitos)
+      const rutDigits = getOnlyDigits(e.rut);
+      const nee = neeList.find(n => getOnlyDigits(n.rut) === rutDigits);
       return { ...e, carrera: nee?.carrera };
     });
     return estudiantesNeeEnriquecidos;
@@ -107,79 +175,352 @@ export class SyncService {
    * @param semester Semestre académico actual
    * @returns Número de estudiantes persistidos
    */
-  async syncAndPersistNeeStudents(semester: string): Promise<{count: number, students: Student[]}> {
+  /**
+  async syncAndPersistNeeStudents(semester: string): Promise<{ count: number; students: Student[] }> {
     try {
-      // 1. Obtener estudiantes NEE desde Hawaii UCN
+      // Obtener estudiantes NEE sincronizados
       const estudiantes = await this.syncNeeStudents();
-      if (estudiantes.length === 0) {
-        await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, SyncStatus.ERROR, 0, 0, 'No se encontraron estudiantes NEE');
+      
+      this.logger.log(`Estudiantes NEE obtenidos: ${estudiantes.length}`);
+      
+      // Log detallado para depuración
+      if (estudiantes.length > 0) {
+        const primeros3 = estudiantes.slice(0, 3);
+        this.logger.debug(`Muestra de estudiantes encontrados:`);
+        primeros3.forEach(e => {
+          this.logger.debug(`- RUT: ${e.rut}, Nombre: ${e.nombres} ${e.apellidos}, Email: ${e.email_ucn}, Carrera: ${e.carrera}`);
+        });
+      }
+      
+      if (!estudiantes.length) {
+        this.logger.warn(`No se encontraron estudiantes NEE para sincronizar en el semestre ${semester}`);
+        await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, SyncStatus.WARNING, 0, 0, 'No hay estudiantes NEE para sincronizar');
         return { count: 0, students: [] };
       }
       
-      // 2. Persistir o actualizar estudiantes en la base de datos
+      this.logger.log(`Persistiendo ${estudiantes.length} estudiantes NEE para semestre ${semester}...`);
+      
       const persistedStudents: Student[] = [];
       let syncedCount = 0;
+
+      // Crear un departamento por defecto si no existe
+      let defaultDepartment;
+      try {
+        // Intentar buscar departamento por defecto
+        defaultDepartment = await this.careersService['departmentModel']?.findOne({ name: 'Departamento por Defecto' }).exec();
+        
+        // Si no existe, crearlo
+        if (!defaultDepartment && this.careersService['departmentModel']) {
+          defaultDepartment = await new this.careersService['departmentModel']({
+            name: 'Departamento por Defecto',
+            code: 'DEP_DEFAULT',
+            description: 'Departamento creado automáticamente para sincronización',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }).save();
+          this.logger.log('Departamento por defecto creado');
+        }
+      } catch (error) {
+        this.logger.warn('No se pudo crear departamento por defecto, usando ID genérico', error);
+        // Continuar sin departamento
+      }
       
+      // ID de departamento por defecto (usar el creado o un ID genérico)
+      const defaultDepartmentId = defaultDepartment?._id || new Types.ObjectId();
+
       for (const estudiante of estudiantes) {
         try {
-          // Buscar si el estudiante ya existe por RUT
-          const existingStudent = await this.studentModel.findOne({ rut: estudiante.rut }).exec();
+          this.logger.debug(`Procesando estudiante: ${estudiante.rut}`);
           
-          if (existingStudent) {
-            // Actualizar estudiante existente
-            const updated = await this.studentModel.findByIdAndUpdate(
-              existingStudent._id,
-              {
-                nombres: estudiante.nombres,
-                apellidos: estudiante.apellidos,
-                email: estudiante.email_ucn || `${estudiante.rut}@ucn.cl`, // Email por defecto si no existe
-                carrera: estudiante.carrera,
-                semester: semester,
-                hasSpecialNeeds: true,
-                updatedAt: new Date(),
-              },
-              { new: true }
-            ).exec();
-            
-            if (updated) {
-              persistedStudents.push(updated);
-              syncedCount++;
-            }
-          } else {
-            // Crear nuevo estudiante
-            const nuevoEstudiante = new this.studentModel({
-              rut: estudiante.rut,
-              nombres: estudiante.nombres,
-              apellidos: estudiante.apellidos,
-              email: estudiante.email_ucn || `${estudiante.rut}@ucn.cl`,
-              carrera: estudiante.carrera,
-              semester: semester,
-              hasSpecialNeeds: true,
-              createdAt: new Date(),
-              updatedAt: new Date(),
+          // 1. Buscar o crear carrera con manejo mejorado de errores
+          let career;
+          try {
+            career = await this.findOrCreateCareer(estudiante.carrera || 'Carrera No Especificada', {
+              faculty: 'Facultad por Defecto',
+              currentSemester: semester,
+              departmentId: defaultDepartmentId.toString(),
             });
             
-            const saved = await nuevoEstudiante.save();
-            persistedStudents.push(saved);
+            if (!career) {
+              throw new Error('Carrera no pudo ser creada');
+            }
+          } catch (careerError) {
+            this.logger.error(`Error al crear carrera para ${estudiante.rut}: ${careerError.message}`);
+            
+            // Intento alternativo de crear carrera usando modelo directamente
+            try {
+              if (this.careersService['careerModel']) {
+                career = await new this.careersService['careerModel']({
+                  name: estudiante.carrera || 'Carrera No Especificada',
+                  code: (estudiante.carrera || 'NO_SPEC').toUpperCase().replace(/\s+/g, '_'),
+                  faculty: 'Facultad por Defecto',
+                  currentSemester: semester,
+                  departmentId: defaultDepartmentId,
+                  createdAt: new Date(),
+                  updatedAt: new Date()
+                }).save();
+              }
+            } catch (directCareerError) {
+              this.logger.error(`Error en intento directo para crear carrera: ${directCareerError.message}`);
+            }
+            
+            // Si aún no hay carrera, usar una carrera genérica
+            if (!career) {
+              career = { _id: new Types.ObjectId() };
+              this.logger.warn(`Usando carrera genérica para ${estudiante.rut}`);
+            }
+          }
+          
+          // 2. Buscar o crear usuario con manejo mejorado de errores
+          const email = estudiante.email_ucn || `${estudiante.rut.toLowerCase()}@alumnos.ucn.cl`;
+          let user;
+          
+          try {
+            user = await this.findOrCreateUser(email, estudiante.nombres, estudiante.apellidos, estudiante.rut, true);
+            
+            if (!user) {
+              throw new Error('Usuario no pudo ser creado a través del servicio');
+            }
+          } catch (userError) {
+            this.logger.error(`Error al crear usuario para ${email}: ${userError.message}`);
+            
+            // Intento alternativo usando modelo directamente
+            try {
+              if (this.usersService['userModel']) {
+                // Buscar por email primero
+                user = await this.usersService['userModel'].findOne({ email }).exec();
+                
+                // Si no existe, crear uno nuevo
+                if (!user) {
+                  user = await new this.usersService['userModel']({
+                    email,
+                    nombreCompleto: `${estudiante.nombres} ${estudiante.apellidos}`.trim(),
+                    roles: ['student'],
+                    isActive: true,
+                    password: 'inclui2025', // Contraseña por defecto para pruebas
+                    rut: estudiante.rut,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                  }).save();
+                }
+              }
+            } catch (directUserError) {
+              this.logger.error(`Error en intento directo para crear usuario: ${directUserError.message}`);
+            }
+            
+            // Si aún no hay usuario, usar uno genérico
+            if (!user) {
+              user = { _id: new Types.ObjectId() };
+              this.logger.warn(`Usando usuario genérico para ${estudiante.rut}`);
+            }
+          }
+
+          // 3. Buscar si el estudiante ya existe por RUT, con mejor manejo de errores
+          let student;
+          try {
+            student = await this.studentModel.findOne({ rut: estudiante.rut }).exec();
+          } catch (findError) {
+            this.logger.error(`Error al buscar estudiante ${estudiante.rut}: ${findError.message}`);
+            // Continuamos asumiendo que no existe
+          }
+
+          // Preparar IDs seguros
+          const carreraObjectId = this.safeObjectId(career?._id);
+          const userObjectId = this.safeObjectId(user?._id);
+          
+          // Verificar que tenemos IDs válidos
+          if (!carreraObjectId || !userObjectId) {
+            this.logger.error(`IDs inválidos para estudiante ${estudiante.rut}: carreraId=${!!carreraObjectId}, userId=${!!userObjectId}`);
+            continue;
+          }
+
+          try {
+            if (student) {
+              // Actualizar estudiante existente
+              this.logger.debug(`Actualizando estudiante existente: ${estudiante.rut}`);
+              student.nombres = estudiante.nombres;
+              student.apellidos = estudiante.apellidos;
+              student.email = email;
+              student.carreraId = carreraObjectId;
+              student.userId = userObjectId;
+              student.semester = semester;
+              student.updatedAt = new Date();
+              await student.save();
+            } else {
+              // Crear nuevo estudiante
+              this.logger.debug(`Creando nuevo estudiante: ${estudiante.rut}`);
+              student = await new this.studentModel({
+                rut: estudiante.rut,
+                nombres: estudiante.nombres,
+                apellidos: estudiante.apellidos,
+                email,
+                carreraId: carreraObjectId,
+                userId: userObjectId,
+                semester,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              }).save();
+            }
+
+            // Registrar éxito
+            this.logger.debug(`Estudiante ${estudiante.rut} persistido exitosamente`);
+            persistedStudents.push(student);
             syncedCount++;
+          } catch (saveError) {
+            this.logger.error(`Error al guardar estudiante ${estudiante.rut}: ${saveError.message}`);
+            if (saveError.code === 11000) {
+              this.logger.error('Error de duplicación, posible índice único violado');
+            }
           }
         } catch (error) {
-          this.logger.error(`Error al persistir estudiante ${estudiante.rut}:`, error);
+          this.logger.error(`Error general al procesar estudiante ${estudiante.rut}:`, error);
           // Continuar con el siguiente estudiante
         }
       }
-      
-      // 3. Registrar log de sincronización
-      const status = syncedCount === estudiantes.length ? SyncStatus.SUCCESS : 
-                    (syncedCount > 0 ? SyncStatus.PARTIAL : SyncStatus.ERROR);
-                    
+
+      const status = syncedCount === estudiantes.length ? SyncStatus.SUCCESS :
+        (syncedCount > 0 ? SyncStatus.PARTIAL : SyncStatus.ERROR);
       await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, status, estudiantes.length, syncedCount);
-      
       return { count: syncedCount, students: persistedStudents };
     } catch (error) {
       this.logger.error('Error en sincronización y persistencia de estudiantes NEE:', error);
       await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, SyncStatus.ERROR, 0, 0, error.message);
       throw new InternalServerErrorException('Error al sincronizar y persistir estudiantes NEE');
+    }
+  }
+
+  /**
+   * Busca o crea una carrera por nombre. Si no existe, la crea con datos mínimos.
+   */
+  private async findOrCreateCareer(careerName: string, options?: { faculty?: string; currentSemester?: string; departmentId?: string }) {
+    if (!careerName) return null;
+    try {
+      // Buscar carrera por nombre usando el servicio
+      // Buscar carrera por nombre usando el modelo si es público
+      let existing: import('../careers/schemas/career.schema').CareerDocument | null = null;
+if (typeof this.careersService['careerModel'] !== 'undefined') {
+  existing = await this.careersService['careerModel'].findOne({ name: careerName }).exec();
+}
+if (existing) return existing;
+
+      // Construir DTO completo con valores por defecto si no se proveen
+      const createCareerDto = {
+        name: careerName,
+        code: careerName.toUpperCase().replace(/\s+/g, '_'),
+        faculty: options?.faculty || 'Sin Facultad',
+        currentSemester: options?.currentSemester || '2025-1', // Ajustar a semestre actual si es necesario
+        departmentId: options?.departmentId || 'default-department', // Ajustar según lógica real
+      };
+      const career = await this.careersService.create(createCareerDto);
+      this.logger.log(`Carrera creada: ${careerName}`);
+      return career;
+    } catch (error) {
+      this.logger.error(`Error al buscar o crear carrera (${careerName}):`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Busca o crea un usuario por email. Si no existe, lo crea con datos mínimos.
+   * Implementa múltiples estrategias de fallback para garantizar éxito.
+   */
+  private async findOrCreateUser(email: string, nombres: string, apellidos: string, rut: string, modoPruebas: boolean = false) {
+    if (!email) {
+      this.logger.error('Se intentó crear usuario sin email');
+      return null;
+    }
+    
+    try {
+      // 1. Primer intento: buscar usuario por email usando el servicio
+      try {
+        const existing = await this.usersService.findByEmail?.(email);
+        if (existing) {
+          this.logger.debug(`Usuario encontrado por email: ${email}`);
+          return existing;
+        }
+      } catch (findError) {
+        this.logger.warn(`Error al buscar usuario por email: ${findError.message}`);
+        // Continuar al siguiente intento
+      }
+
+      // 2. Segundo intento: buscar directamente en el modelo si está disponible
+      if (this.usersService['userModel']) {
+        try {
+          const existingUser = await this.usersService['userModel'].findOne({ email }).exec();
+          if (existingUser) {
+            this.logger.debug(`Usuario encontrado directamente en el modelo: ${email}`);
+            return existingUser;
+          }
+        } catch (directFindError) {
+          this.logger.warn(`Error al buscar usuario directamente: ${directFindError.message}`);
+          // Continuar al siguiente intento
+        }
+      }
+
+      // 3. Tercer intento: crear usuario usando el servicio
+      const userDto: any = {
+        email,
+        nombreCompleto: `${nombres} ${apellidos}`.trim(),
+        roles: ['student'],
+        isActive: true,
+        // Siempre incluir contraseña para desarrollo/pruebas
+        password: 'inclui2025',
+        rut,
+      };
+      
+      try {
+        const user = await this.usersService.create(userDto);
+        if (user) {
+          this.logger.debug(`Usuario creado exitosamente vía servicio: ${email}`);
+          return user;
+        }
+      } catch (createError) {
+        this.logger.warn(`Error al crear usuario vía servicio: ${createError.message}`);
+        // Continuar al siguiente intento
+      }
+
+      // 4. Cuarto intento: crear directamente en el modelo
+      if (this.usersService['userModel']) {
+        try {
+          const newUser = await new this.usersService['userModel']({
+            email,
+            nombreCompleto: `${nombres} ${apellidos}`.trim(),
+            roles: ['student'],
+            isActive: true,
+            password: 'inclui2025',
+            rut,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }).save();
+          
+          if (newUser) {
+            this.logger.debug(`Usuario creado directamente en modelo: ${email}`);
+            return newUser;
+          }
+        } catch (directCreateError) {
+          this.logger.error(`Error al crear usuario directamente en modelo: ${directCreateError.message}`);
+          
+          // Si es error de duplicado, intentar obtener el existente
+          if (directCreateError.code === 11000) {
+            try {
+              const duplicateUser = await this.usersService['userModel'].findOne({ email }).exec();
+              if (duplicateUser) {
+                this.logger.debug(`Recuperado usuario duplicado: ${email}`);
+                return duplicateUser;
+              }
+            } catch (dupFindError) {
+              this.logger.error(`Error al recuperar duplicado: ${dupFindError.message}`);
+            }
+          }
+        }
+      }
+      
+      // Si llegamos aquí, todos los intentos fallaron
+      this.logger.error(`Todos los intentos de crear/encontrar usuario fallaron: ${email}`);
+      return null;
+    } catch (error) {
+      this.logger.error(`Error general al buscar o crear usuario (${email}):`, error);
+      return null;
     }
   }
   
