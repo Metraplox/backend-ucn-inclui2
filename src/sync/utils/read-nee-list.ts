@@ -1,8 +1,14 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-// Usando el nuevo archivo CSV que tiene un formato más fácil de parsear
-const NEE_FILE_PATH = path.resolve(__dirname, '../../../../backend-ucn-inclui2/GUIA-PROYECTO/ESTUDIANTES_NEE_CSV.txt');
+// Archivos de estudiantes NEE
+const NEE_FILES = {
+  production: path.resolve(__dirname, '../../../../backend-ucn-inclui2/GUIA-PROYECTO/ESTUDIANTES_NEE_CSV.txt'),
+  test: path.resolve(__dirname, '../../../../backend-ucn-inclui2/GUIA-PROYECTO/ESTUDIANTES_NEE_TEST.txt')
+};
+
+// Usar el archivo de prueba para mejor diagnóstico
+const NEE_FILE_PATH = NEE_FILES.test;
 
 /**
  * Extrae sólo los dígitos de un RUT, eliminando puntos, guiones, espacios y letras.
