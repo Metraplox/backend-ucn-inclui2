@@ -4,7 +4,7 @@ class Course {
   final String nombre;
   final String? profesor;
   final String? semestre;
-  final List<String>? studentIds;
+  final List<String> studentIds;
 
   Course({
     required this.id,
@@ -12,7 +12,7 @@ class Course {
     required this.nombre,
     this.profesor,
     this.semestre,
-    this.studentIds,
+    required this.studentIds,
   });
 
   factory Course.fromJson(Map<String, dynamic> json) {
@@ -22,9 +22,10 @@ class Course {
       nombre: json['nombre'] ?? '',
       profesor: json['profesor'],
       semestre: json['semestre'],
-      studentIds: json['studentIds'] != null
-          ? List<String>.from(json['studentIds'])
-          : null,
+      studentIds:
+          json['estudiantes'] != null
+              ? List<String>.from(json['estudiantes'])
+              : [],
     );
   }
 
@@ -37,7 +38,7 @@ class Course {
 
     if (profesor != null) data['profesor'] = profesor;
     if (semestre != null) data['semestre'] = semestre;
-    if (studentIds != null) data['studentIds'] = studentIds;
+    if (studentIds != []) data['estudiantes'] = studentIds;
 
     return data;
   }

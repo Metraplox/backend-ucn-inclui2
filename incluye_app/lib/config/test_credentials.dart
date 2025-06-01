@@ -3,16 +3,25 @@
 
 class TestCredentials {
   // Credenciales de coordinadora (antes admin)
-  static const String coordinadoraEmail = 'admin@example.com';
-  static const String coordinadoraPassword = 'admin123';
-  
+  static const String coordinadoraEmail = 'admin@ucn.cl';
+  static const String coordinadoraPassword = 'inclui2025';
+
   // Credenciales de estudiante
   static const String studentEmail = 'estudiante1@alumnos.ucn.cl';
-  static const String studentPassword = 'password123';
-  
+  static const String studentPassword = 'inclui2025';
+
+  // Credenciales de profesor
+  static const String teacherEmail = 'docente1@ucn.cl';
+  static const String teacherPassword = 'inclui2025';
+
   // Obtener todas las credenciales como lista para probar automáticamente
   static List<Map<String, String>> get allCredentials => [
-    {'label': 'Coordinadora', 'email': coordinadoraEmail, 'password': coordinadoraPassword},
+    {
+      'label': 'Coordinadora',
+      'email': coordinadoraEmail,
+      'password': coordinadoraPassword,
+    },
     {'label': 'Estudiante', 'email': studentEmail, 'password': studentPassword},
+    {'label': 'Profesor', 'email': teacherEmail, 'password': teacherPassword},
   ];
 }

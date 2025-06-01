@@ -13,13 +13,12 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
-  
 
   static Options authHeaders(String token, {Map<String, String>? extra}) {
     return Options(
       headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
       },
     );
   }
@@ -28,7 +27,7 @@ class ApiService {
     log('[$context] Error: $error');
   }
 
-   static Future<void> initialize() async {
+  static Future<void> initialize() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
@@ -37,5 +36,3 @@ class ApiService {
     }
   }
 }
-
-

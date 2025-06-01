@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:incluye_app/services/adjustment_service';
+import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/models/adjustment_model.dart';
 import 'package:intl/intl.dart';
 

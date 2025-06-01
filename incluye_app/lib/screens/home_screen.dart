@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/screens/courses/courses_list_screen.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
+import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/app_scaffold.dart';
 import 'package:incluye_app/widgets/course_widget.dart';
@@ -8,7 +10,10 @@ import 'package:incluye_app/screens/students/student_own_profile_screen.dart';
 import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/adjustment_model.dart';
+import 'package:incluye_app/models/course_model.dart';
 import 'package:incluye_app/screens/students/student_list_screen.dart';
+
+import '../services/course_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,52 +25,61 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _isStudent = false;
   bool _isAdmin = false;
+  bool _isTeacher = false;
   String? _currentUserId;
   bool _isLoading = true;
   int _pendingAdjustmentsCount = 0;
-  
+
   // Variables para el panel de coordinadora
   List<Student> _students = [];
   int _totalStudents = 0;
   int _totalAdjustments = 0;
   int _pendingAlerts = 0;
+  //Lista de cursos para profesores.
+  List<Course> _courses = [];
 
   @override
   void initState() {
     super.initState();
     _initialize();
+    _loadCourses(); //Para que se muestre cantidad de cursos por profesor en su pantalla.
   }
-  
+
   Future<void> _initialize() async {
     await _checkRole();
-    
+
     if (_isStudent && _currentUserId != null) {
       await _checkForNotifications();
     } else if (_isAdmin) {
       // Cargar datos para el panel de coordinadora
       await _loadCoordinadoraData();
+    } else if (_isTeacher) {
+      await _checkForNotifications(); //BORRAR SI NO ES NECESARIO.
     }
-    
+
     if (mounted) {
       setState(() {
         _isLoading = false;
       });
     }
   }
-  
+
   // Método para cargar datos del panel de coordinadora
   Future<void> _loadCoordinadoraData() async {
     try {
       // Cargar lista de estudiantes
       final students = await StudentService.getAllStudents();
-      
+
       // Calcular estadísticas básicas
       final totalStudents = students.length;
-      
+
       // Simular datos de ajustes y alertas (en una implementación real vendrían de la API)
-      final totalAdjustments = totalStudents * 2; // Aproximadamente 2 ajustes por estudiante
-      final pendingAlerts = (totalStudents / 8).round(); // Aproximadamente 1 alerta por cada 8 estudiantes
-      
+      final totalAdjustments =
+          totalStudents * 2; // Aproximadamente 2 ajustes por estudiante
+      final pendingAlerts =
+          (totalStudents / 8)
+              .round(); // Aproximadamente 1 alerta por cada 8 estudiantes
+
       if (mounted) {
         setState(() {
           _students = students;
@@ -78,52 +92,62 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Error al cargar datos de coordinadora: $e');
     }
   }
-  
+
   Future<void> _checkForNotifications() async {
-  await NotificationService.checkForPendingAdjustments(
-    getPendingCount: () async {
-      final ajustes = await AdjustmentService.getAdjustmentHistory(_currentUserId!);
-
-      final count = ajustes
-        .where((a) => (a as Adjustment).isPending || 
-                    ((a as Adjustment).expirationDate != null &&
-                      DateTime.tryParse((a as Adjustment).expirationDate!)?.isAfter(DateTime.now()) == true))
-        .length;
-
-
-      if (mounted) {
-        setState(() {
-          _pendingAdjustmentsCount = count;
-        });
-      }
-
-      return count;
-    },
-    onAdjustmentsTap: () {
-      if (_currentUserId != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AdjustmentHistoryScreen(studentId: _currentUserId!),
-          ),
+    await NotificationService.checkForPendingAdjustments(
+      getPendingCount: () async {
+        final ajustes = await AdjustmentService.getAdjustmentHistory(
+          _currentUserId!,
         );
-      }
-    },
-  );
-}
 
+        final count =
+            ajustes
+                .where(
+                  (a) =>
+                      (a as Adjustment).isPending ||
+                      ((a as Adjustment).expirationDate != null &&
+                          DateTime.tryParse(
+                                (a as Adjustment).expirationDate!,
+                              )?.isAfter(DateTime.now()) ==
+                              true),
+                )
+                .length;
 
+        if (mounted) {
+          setState(() {
+            _pendingAdjustmentsCount = count;
+          });
+        }
+
+        return count;
+      },
+      onAdjustmentsTap: () {
+        if (_currentUserId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      AdjustmentHistoryScreen(studentId: _currentUserId!),
+            ),
+          );
+        }
+      },
+    );
+  }
 
   Future<void> _checkRole() async {
     final isStudent = await StudentService.isStudent();
     final isAdmin = await StudentService.isAdmin();
-    
+    final isTeacher = await StudentService.isTeacher();
+
     final userInfo = await StudentService.getCurrentUserInfo();
-    
+
     if (mounted) {
       setState(() {
         _isStudent = isStudent;
         _isAdmin = isAdmin;
+        _isTeacher = isTeacher;
         _currentUserId = userInfo?['id'];
       });
     }
@@ -132,117 +156,131 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      title: _isStudent
-          ? 'Mis Asignaturas y Ajustes'
-          : _isAdmin
+      title:
+          _isStudent
+              ? 'Mis Asignaturas y Ajustes'
+              : _isAdmin
               ? 'Panel de Coordinadora'
+              : _isTeacher
+              ? 'Panel Profesor'
               : '',
       isStudent: _isStudent,
       isAdmin: _isAdmin,
-      floatingActionButton: _isStudent && _currentUserId != null
-          ? FloatingActionButton(
-              onPressed: _viewOwnProfile,
-              tooltip: 'Ver mi perfil',
-              child: const Icon(Icons.person),
-            )
-          : null,
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator())
-          : _isStudent
+      isTeacher: _isTeacher,
+      floatingActionButton:
+          _isStudent && _currentUserId != null
+              ? FloatingActionButton(
+                onPressed: _viewOwnProfile,
+                tooltip: 'Ver mi perfil',
+                child: const Icon(Icons.person),
+              )
+              : null,
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _isStudent
               ? SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                  // Mensaje de bienvenida con opción para ver perfil
-                  Card(
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.person),
-                      ),
-                      title: const Text('Mi perfil y documentos'),
-                      subtitle: const Text('Ver ajustes y gestionar consentimientos'),
-                      trailing: const Icon(Icons.arrow_forward),
-                      onTap: _viewOwnProfile,
-                    ),
-                  ),
-                  
-                  // Mostrar tarjeta de ajustes pendientes si hay alguno
-                  if (_pendingAdjustmentsCount > 0) ...[  
-                    const SizedBox(height: 16),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Mensaje de bienvenida con opción para ver perfil
                     Card(
-                      color: Colors.blue.shade50,
                       child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blue,
-                          child: Text(_pendingAdjustmentsCount.toString()),
+                        leading: const CircleAvatar(child: Icon(Icons.person)),
+                        title: const Text('Mi perfil y documentos'),
+                        subtitle: const Text(
+                          'Ver ajustes y gestionar consentimientos',
                         ),
-                        title: Text(
-                          _pendingAdjustmentsCount == 1
-                              ? 'Tienes 1 ajuste activo'
-                              : 'Tienes $_pendingAdjustmentsCount ajustes activos'
-                        ),
-                        subtitle: const Text('Ver historial de ajustes'),
                         trailing: const Icon(Icons.arrow_forward),
-                        onTap: () {
-                          if (_currentUserId != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AdjustmentHistoryScreen(studentId: _currentUserId!),
-                              ),
-                            );
-                          }
-                        },
+                        onTap: _viewOwnProfile,
                       ),
+                    ),
+
+                    // Mostrar tarjeta de ajustes pendientes si hay alguno
+                    if (_pendingAdjustmentsCount > 0) ...[
+                      const SizedBox(height: 16),
+                      Card(
+                        color: Colors.blue.shade50,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blue,
+                            child: Text(_pendingAdjustmentsCount.toString()),
+                          ),
+                          title: Text(
+                            _pendingAdjustmentsCount == 1
+                                ? 'Tienes 1 ajuste activo'
+                                : 'Tienes $_pendingAdjustmentsCount ajustes activos',
+                          ),
+                          subtitle: const Text('Ver historial de ajustes'),
+                          trailing: const Icon(Icons.arrow_forward),
+                          onTap: () {
+                            if (_currentUserId != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => AdjustmentHistoryScreen(
+                                        studentId: _currentUserId!,
+                                      ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 20),
+
+                    // Sección de asignaturas
+                    const Text(
+                      'Mis asignaturas con ajustes',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    CourseWidget(
+                      courseName: 'Cálculo II',
+                      professor: 'Jorge Díaz',
+                      adjustments: [
+                        'Más tiempo en evaluaciones',
+                        'Letras más grandes',
+                        'Audífonos',
+                      ],
+                      onEdit: _onEditDemo,
+                    ),
+                    CourseWidget(
+                      courseName: 'Álgebra II',
+                      professor: 'Pablo Díaz',
+                      adjustments: [
+                        'Más tiempo en evaluaciones',
+                        'Letras más grandes',
+                        'Audífonos',
+                      ],
+                      onEdit: _onEditDemo,
+                    ),
+                    CourseWidget(
+                      courseName: 'Química',
+                      professor: 'Lionel Messi',
+                      adjustments: [
+                        'Más tiempo en evaluaciones',
+                        'Letras más grandes',
+                        'Audífonos',
+                      ],
+                      onEdit: _onEditDemo,
                     ),
                   ],
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Sección de asignaturas
-                  const Text(
-                    'Mis asignaturas con ajustes',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  CourseWidget(
-                    courseName: 'Cálculo II',
-                    professor: 'Jorge Díaz',
-                    adjustments: [
-                      'Más tiempo en evaluaciones',
-                      'Letras más grandes',
-                      'Audífonos',
-                    ],
-                    onEdit: _onEditDemo,
-                  ),
-                  CourseWidget(
-                    courseName: 'Álgebra II',
-                    professor: 'Pablo Díaz',
-                    adjustments: [
-                      'Más tiempo en evaluaciones',
-                      'Letras más grandes',
-                      'Audífonos',
-                    ],
-                    onEdit: _onEditDemo,
-                  ),
-                  CourseWidget(
-                    courseName: 'Química',
-                    professor: 'Lionel Messi',
-                    adjustments: [
-                      'Más tiempo en evaluaciones',
-                      'Letras más grandes',
-                      'Audífonos',
-                    ],
-                    onEdit: _onEditDemo,
-                  ),
-                ],
-              ),
-            )
-          : _isAdmin
+                ),
+              )
+              : _isAdmin
               ? _buildAdminDashboard()
+              : _isTeacher
+              ? _buildTeacherDashboard()
               : const Center(child: Text('Bienvenido, ¡debes iniciar sesión!')),
     );
   }
@@ -253,13 +291,16 @@ class _HomeScreenState extends State<HomeScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => StudentOwnProfileScreen(studentId: _currentUserId!),
+          builder:
+              (context) => StudentOwnProfileScreen(studentId: _currentUserId!),
         ),
       );
     } else {
       // Mostrar mensaje de error si el ID no está disponible
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo cargar tu perfil. Inténtalo más tarde.')),
+        const SnackBar(
+          content: Text('No se pudo cargar tu perfil. Inténtalo más tarde.'),
+        ),
       );
     }
   }
@@ -268,7 +309,59 @@ class _HomeScreenState extends State<HomeScreen> {
   static void _onEditDemo() {
     // Demo: aquí ejecutarías Navigator.push(...) a la pantalla de edición
   }
-  
+
+  void _loadCourses() async {
+    final name = await AuthService.getUserName();
+    final courses = await CourseService.getTeacherCourses(name ?? '');
+    setState(() {
+      _courses = (courses);
+    });
+  }
+
+  //Método para panel profesores
+  Widget _buildTeacherDashboard() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Alertas y notificaciones.',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          _buildAlertCard(
+            'Notificaciones sin revisar.',
+            '${(_totalStudents / 3).round()} notificaciones sin abrir.',
+            Icons.warning,
+            Colors.red,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Funcionalidad en desarrollo')),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Mis Asignaturas',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          _buildAlertCard(
+            'Asignaturas semestre actual.',
+            '${(_courses.length).round()} asignaturas a cargo actualmente.',
+            Icons.book,
+            const Color.fromARGB(255, 90, 130, 241),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CoursesListScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   // Método para construir el panel de administración de la coordinadora (Programa Incluye)
   Widget _buildAdminDashboard() {
     return SingleChildScrollView(
@@ -297,25 +390,40 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildStatCard('Estudiantes', _totalStudents.toString(), Icons.people, Colors.blue),
-                      _buildStatCard('Ajustes Activos', _totalAdjustments.toString(), Icons.settings_accessibility, Colors.green),
-                      _buildStatCard('Alertas', _pendingAlerts.toString(), Icons.notifications_active, Colors.red),
+                      _buildStatCard(
+                        'Estudiantes',
+                        _totalStudents.toString(),
+                        Icons.people,
+                        Colors.blue,
+                      ),
+                      _buildStatCard(
+                        'Ajustes Activos',
+                        _totalAdjustments.toString(),
+                        Icons.settings_accessibility,
+                        Colors.green,
+                      ),
+                      _buildStatCard(
+                        'Alertas',
+                        _pendingAlerts.toString(),
+                        Icons.notifications_active,
+                        Colors.red,
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Sección de alertas y notificaciones
           const Text(
             'Alertas y Notificaciones',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           // Alertas de nuevos ingresos
           _buildAlertCard(
             'Nuevos Ingresos',
@@ -325,13 +433,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => StudentListScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => StudentListScreen()),
               );
             },
           ),
-          
+
           // Alertas de actualización de ajustes
           _buildAlertCard(
             'Actualización de Ajustes',
@@ -342,35 +448,40 @@ class _HomeScreenState extends State<HomeScreen> {
               // Mostrar un diálogo con la lista de estudiantes que requieren actualización
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Solicitudes de Actualización'),
-                  content: SizedBox(
-                    width: double.maxFinite,
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: (_students.length * 0.1).round(),
-                      itemBuilder: (context, index) {
-                        // Mostrar estudiantes aleatorios de la lista
-                        final student = _students[index % _students.length];
-                        return ListTile(
-                          title: Text(student.nombreCompleto),
-                          subtitle: Text('${student.carrera ?? 'Sin carrera'} - ${student.rut}'),
-                          leading: const CircleAvatar(child: Icon(Icons.person)),
-                        );
-                      },
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Solicitudes de Actualización'),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: (_students.length * 0.1).round(),
+                          itemBuilder: (context, index) {
+                            // Mostrar estudiantes aleatorios de la lista
+                            final student = _students[index % _students.length];
+                            return ListTile(
+                              title: Text(student.nombreCompleto),
+                              subtitle: Text(
+                                '${student.carrera ?? 'Sin carrera'} - ${student.rut}',
+                              ),
+                              leading: const CircleAvatar(
+                                child: Icon(Icons.person),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cerrar'),
+                        ),
+                      ],
                     ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cerrar'),
-                    ),
-                  ],
-                ),
               );
             },
           ),
-          
+
           // Alertas de docentes que no han revisado ajustes
           _buildAlertCard(
             'Docentes sin revisar ajustes',
@@ -383,16 +494,16 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Sección de gestión de estudiantes
           const Text(
             'Gestión de Estudiantes',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           // Tarjeta para listar estudiantes
           _buildFeatureCard(
             'Listado de Estudiantes',
@@ -402,13 +513,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => StudentListScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => StudentListScreen()),
               );
             },
           ),
-          
+
           // Tarjeta para gestionar diagnósticos
           _buildFeatureCard(
             'Gestión de Diagnósticos',
@@ -419,53 +528,54 @@ class _HomeScreenState extends State<HomeScreen> {
               // Mostrar un diálogo con la lista de diagnósticos disponibles
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Categorías de Diagnósticos'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.category),
-                        title: const Text('Discapacidad Visual'),
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => Navigator.pop(context),
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Categorías de Diagnósticos'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.category),
+                            title: const Text('Discapacidad Visual'),
+                            trailing: const Icon(Icons.edit),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.category),
+                            title: const Text('Discapacidad Auditiva'),
+                            trailing: const Icon(Icons.edit),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.category),
+                            title: const Text('Discapacidad Motora'),
+                            trailing: const Icon(Icons.edit),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.category),
+                            title: const Text('TEA'),
+                            trailing: const Icon(Icons.edit),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.add_circle),
+                            title: const Text('Agregar nueva categoría'),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                        ],
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.category),
-                        title: const Text('Discapacidad Auditiva'),
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.category),
-                        title: const Text('Discapacidad Motora'),
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.category),
-                        title: const Text('TEA'),
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.add_circle),
-                        title: const Text('Agregar nueva categoría'),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cerrar'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cerrar'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               );
             },
           ),
-          
+
           // Tarjeta para gestionar ajustes razonables
           _buildFeatureCard(
             'Ajustes Razonables',
@@ -476,59 +586,62 @@ class _HomeScreenState extends State<HomeScreen> {
               // Mostrar un diálogo con la lista de ajustes razonables disponibles
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Categorías de Ajustes Razonables'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.access_time),
-                        title: const Text('Tiempo extra en evaluaciones'),
-                        subtitle: const Text('30 minutos adicionales'),
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => Navigator.pop(context),
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Categorías de Ajustes Razonables'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.access_time),
+                            title: const Text('Tiempo extra en evaluaciones'),
+                            subtitle: const Text('30 minutos adicionales'),
+                            trailing: const Icon(Icons.edit),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.text_fields),
+                            title: const Text('Material en formato accesible'),
+                            subtitle: const Text('Textos adaptados'),
+                            trailing: const Icon(Icons.edit),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.record_voice_over),
+                            title: const Text('Intérprete de señas'),
+                            subtitle: const Text(
+                              'Durante clases y evaluaciones',
+                            ),
+                            trailing: const Icon(Icons.edit),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.add_circle),
+                            title: const Text('Agregar nuevo ajuste'),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                        ],
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.text_fields),
-                        title: const Text('Material en formato accesible'),
-                        subtitle: const Text('Textos adaptados'),
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.record_voice_over),
-                        title: const Text('Intérprete de señas'),
-                        subtitle: const Text('Durante clases y evaluaciones'),
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.add_circle),
-                        title: const Text('Agregar nuevo ajuste'),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cerrar'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cerrar'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               );
             },
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Sección de reportes y seguimiento
           const Text(
             'Reportes y Seguimiento',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           // Tarjeta para reportes de seguimiento
           _buildFeatureCard(
             'Reportes de Seguimiento',
@@ -539,46 +652,47 @@ class _HomeScreenState extends State<HomeScreen> {
               // Mostrar un diálogo con opciones de reportes
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Reportes de Seguimiento'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.bar_chart),
-                        title: const Text('Ajustes por carrera'),
-                        onTap: () => Navigator.pop(context),
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Reportes de Seguimiento'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.bar_chart),
+                            title: const Text('Ajustes por carrera'),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.pie_chart),
+                            title: const Text('Distribución de diagnósticos'),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.trending_up),
+                            title: const Text('Implementación de ajustes'),
+                            subtitle: const Text('Seguimiento mensual'),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.people),
+                            title: const Text('Cumplimiento docente'),
+                            subtitle: const Text('Revisión de ajustes'),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                        ],
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.pie_chart),
-                        title: const Text('Distribución de diagnósticos'),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.trending_up),
-                        title: const Text('Implementación de ajustes'),
-                        subtitle: const Text('Seguimiento mensual'),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.people),
-                        title: const Text('Cumplimiento docente'),
-                        subtitle: const Text('Revisión de ajustes'),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cerrar'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cerrar'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               );
             },
           ),
-          
+
           // Tarjeta para exportar datos
           _buildFeatureCard(
             'Exportar Datos',
@@ -589,68 +703,83 @@ class _HomeScreenState extends State<HomeScreen> {
               // Mostrar un diálogo de confirmación para exportar datos
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Exportar Datos'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Seleccione el tipo de reporte a exportar:'),
-                      const SizedBox(height: 16),
-                      ListTile(
-                        leading: const Icon(Icons.people),
-                        title: const Text('Listado de estudiantes'),
-                        trailing: const Icon(Icons.download),
-                        onTap: () {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Exportando listado de estudiantes a Excel...')),
-                          );
-                        },
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Exportar Datos'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Seleccione el tipo de reporte a exportar:',
+                          ),
+                          const SizedBox(height: 16),
+                          ListTile(
+                            leading: const Icon(Icons.people),
+                            title: const Text('Listado de estudiantes'),
+                            trailing: const Icon(Icons.download),
+                            onTap: () {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Exportando listado de estudiantes a Excel...',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.settings_accessibility),
+                            title: const Text('Ajustes implementados'),
+                            trailing: const Icon(Icons.download),
+                            onTap: () {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Exportando ajustes implementados a Excel...',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.assignment),
+                            title: const Text('Reporte completo'),
+                            trailing: const Icon(Icons.download),
+                            onTap: () {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Exportando reporte completo a Excel...',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.settings_accessibility),
-                        title: const Text('Ajustes implementados'),
-                        trailing: const Icon(Icons.download),
-                        onTap: () {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Exportando ajustes implementados a Excel...')),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.assignment),
-                        title: const Text('Reporte completo'),
-                        trailing: const Icon(Icons.download),
-                        onTap: () {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Exportando reporte completo a Excel...')),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancelar'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               );
             },
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Sección de recursos
           const Text(
             'Recursos y Material de Apoyo',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           // Tarjeta para gestionar recursos
           _buildFeatureCard(
             'Gestionar Recursos',
@@ -658,7 +787,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Icons.upload_file,
             Colors.deepOrange,
           ),
-          
+
           // Tarjeta para categorías de ajustes
           _buildFeatureCard(
             'Categorías de Ajustes',
@@ -666,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Icons.category,
             Colors.blueGrey,
           ),
-          
+
           // Tarjeta para gestión de consentimientos
           _buildFeatureCard(
             'Gestión de Consentimientos',
@@ -674,16 +803,16 @@ class _HomeScreenState extends State<HomeScreen> {
             Icons.fact_check,
             Colors.brown,
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Sección de comunicación
           const Text(
             'Comunicación con Unidades de Apoyo',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           // Lista de unidades de apoyo
           Card(
             child: Padding(
@@ -691,13 +820,22 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Unidades de Apoyo', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Unidades de Apoyo',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
-                  _buildUnitItem('DEA', 'Acompañamientos académicos y psicoeducativos'),
+                  _buildUnitItem(
+                    'DEA',
+                    'Acompañamientos académicos y psicoeducativos',
+                  ),
                   _buildUnitItem('Programa AORA', 'Apoyo y orientación'),
                   _buildUnitItem('DGPRE', 'Dirección General de Pregrado'),
                   _buildUnitItem('Registro Curricular', 'Gestión académica'),
-                  _buildUnitItem('Coordinación de Salas', 'Asignación de espacios'),
+                  _buildUnitItem(
+                    'Coordinación de Salas',
+                    'Asignación de espacios',
+                  ),
                   _buildUnitItem('DPI', 'Dirección de Pregrado Institucional'),
                 ],
               ),
@@ -707,9 +845,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  
+
   // Widget para crear tarjetas de estadísticas
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -718,16 +861,25 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(icon, color: color, size: 32),
             const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             Text(title, style: const TextStyle(fontSize: 14)),
           ],
         ),
       ),
     );
   }
-  
+
   // Widget para crear tarjetas de alertas
-  Widget _buildAlertCard(String title, String description, IconData icon, Color color, {VoidCallback? onTap}) {
+  Widget _buildAlertCard(
+    String title,
+    String description,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+  }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -742,9 +894,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  
+
   // Widget para crear tarjetas de funcionalidades
-  Widget _buildFeatureCard(String title, String description, IconData icon, Color color, {VoidCallback? onTap}) {
+  Widget _buildFeatureCard(
+    String title,
+    String description,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+  }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -759,7 +917,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  
+
   // Widget para crear elementos de unidades de apoyo
   Widget _buildUnitItem(String name, String description) {
     return Padding(
@@ -773,7 +931,10 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(description, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  description,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
           ),

@@ -67,6 +67,10 @@ class StudentService {
     final roles = await getUserRoles();
     return roles.contains('administrador');
   }
+  static Future<bool> isTeacher() async {
+    final roles = await getUserRoles();
+    return roles.contains('docente');
+  }
 
   static Future<User?> getCurrentUserInfo() async {
     try {

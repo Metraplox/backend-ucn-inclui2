@@ -17,6 +17,8 @@ class AppScaffold extends StatelessWidget {
   final bool isStudent;
   // Indicador si el usuario es administrador
   final bool isAdmin;
+    // Indicador si el usuario es administrador
+  final bool isTeacher;
   // Indicador de tipo de vista horizontal
   final bool isHorizontalView;
   // Callback para cambiar entre tipos de vista
@@ -31,6 +33,7 @@ class AppScaffold extends StatelessWidget {
     required this.body,
     required this.isStudent,
     this.isAdmin = false,
+    this.isTeacher=false,
     this.isHorizontalView = false,
     this.onToggleView,
     this.floatingActionButton, // Agregado soporte para botón flotante

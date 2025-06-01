@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/course_service.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/edit_student_dialog.dart';
 import 'package:incluye_app/screens/students/student_profile_screen.dart';
 import 'package:incluye_app/screens/students/student_create_screen.dart';
 import 'package:incluye_app/screens/documents/student_documents_screen.dart'; // Importamos la pantalla de documentos
 
-class StudentListScreen extends StatefulWidget {
-  const StudentListScreen({super.key});
+class StudentSubjectListScreen extends StatefulWidget {
+  final String courseId;
+  const StudentSubjectListScreen({super.key, required this.courseId});
 
   @override
-  State<StudentListScreen> createState() => _StudentListScreenState();
+  State<StudentSubjectListScreen> createState() =>
+      _StudentSubjectListScreenState();
 }
 
-class _StudentListScreenState extends State<StudentListScreen> {
+class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
   List<dynamic> _students = [];
   List<dynamic> _filteredStudents = [];
   bool _isLoading = true;
@@ -46,7 +49,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
   }
 
   Future<void> _fetchStudents() async {
-    final students = await StudentService.getAllStudents();
+    final students = await CourseService.getStudentsBySubject(widget.courseId);
     setState(() {
       _students = students;
       _filteredStudents = students;
@@ -87,50 +90,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
             }
           }).toList();
     });
-  }
-
-  Future<void> _deleteStudent(String id) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('¿Eliminar estudiante?'),
-            content: const Text(
-              'Esta acción no se puede deshacer. ¿Estás seguro?',
-            ),
-            actions: [
-              TextButton(
-                child: const Text('Cancelar'),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
-              TextButton(
-                child: const Text('Eliminar'),
-                onPressed: () => Navigator.of(context).pop(true),
-              ),
-            ],
-          ),
-    );
-
-    // Verificar si el widget sigue montado después de mostrar el diálogo
-    if (!mounted) return;
-
-    if (confirm == true) {
-      final success = await StudentService.deleteStudent(id);
-
-      // Verificar si el widget sigue montado después de la operación asíncrona
-      if (!mounted) return;
-
-      if (success) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Estudiante eliminado')));
-        _fetchStudents();
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Error al eliminar')));
-      }
-    }
   }
 
   @override
@@ -232,43 +191,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
                                   );
                                 },
                               ),
-                              // Botón de documentos - Nuevo botón agregado
-                              IconButton(
-                                icon: const Icon(Icons.description),
-                                tooltip: 'Documentos',
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => StudentDocumentsScreen(
-                                            studentId: student['_id'],
-                                          ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              // Botón para editar estudiante
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                tooltip: 'Editar',
-                                onPressed: () async {
-                                  showDialog(
-                                    context: context,
-                                    builder:
-                                        (_) => EditStudentDialog(
-                                          student: student,
-                                          onUpdated: (_) => _fetchStudents(),
-                                        ),
-                                  );
-                                },
-                              ),
-                              // Botón para eliminar estudiante
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                tooltip: 'Eliminar',
-                                onPressed: () => _deleteStudent(student['_id']),
-                              ),
                             ],
                           ),
                         );
@@ -277,19 +199,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   ),
                 ],
               ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const StudentCreateScreen(),
-            ),
-          );
-          _fetchStudents(); // Refrescar al volver
-        },
-        tooltip: 'Crear estudiante',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
