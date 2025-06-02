@@ -15,6 +15,15 @@ export class CareersService {
     @InjectModel(Career.name) private careerModel: Model<CareerDocument>,
   ) {}
 
+  /**
+   * Busca una carrera por nombre exacto
+   * @param name Nombre exacto de la carrera
+   * @returns Career o null
+   */
+  async findByName(name: string): Promise<CareerDocument | null> {
+    return this.careerModel.findOne({ name }).exec();
+  }
+
   async create(createCareerDto: CreateCareerDto): Promise<Career> {
     const createdCareer = new this.careerModel(createCareerDto);
     return createdCareer.save();

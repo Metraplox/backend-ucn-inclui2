@@ -152,6 +152,40 @@ export class StudentsController {
     return this.studentsService.update(id, updateStudentDto);
   }
 
+  @Patch(':id/semester/:semester')
+  @Roles(Role.ADMIN, Role.STAFF)
+  @ApiOperation({
+    summary: 'Actualizar información semestral de un estudiante (Admin, Staff)',
+    description: 'Permite actualizar información relevante del estudiante para el semestre indicado. Útil para renovar o modificar datos cada semestre.'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del estudiante a actualizar',
+    type: String,
+  })
+  @ApiParam({
+    name: 'semester',
+    description: 'Semestre académico a actualizar (formato YYYY-1 o YYYY-2)',
+    type: String,
+  })
+  @ApiBody({ type: UpdateStudentDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Información semestral del estudiante actualizada exitosamente.',
+    type: Student,
+  })
+  @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
+  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  async updateSemester(
+    @Param('id') id: string,
+    @Param('semester') semester: string,
+    @Body() updateStudentDto: UpdateStudentDto,
+  ): Promise<Student> {
+    return this.studentsService.updateSemester(id, semester, updateStudentDto);
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN, Role.STAFF)
   @HttpCode(HttpStatus.NO_CONTENT) // Estándar para DELETE exitoso sin contenido de respuesta

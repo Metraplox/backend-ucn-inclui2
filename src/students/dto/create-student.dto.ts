@@ -20,13 +20,13 @@ export class CreateStudentDto {
   apellidos: string;
 
   @ApiProperty({
-    description: 'RUT del estudiante sin puntos ni guión',
-    example: '123456789',
+    description: 'RUT del estudiante, solo números y termina opcionalmente con K (sin puntos, sin guion, sin espacios)',
+    example: '12345678K',
   })
   @IsString({ message: 'El RUT debe ser una cadena de texto' })
   @IsNotEmpty({ message: 'El RUT es obligatorio' })
-  @Matches(/^[0-9]+[0-9kK]?$/, { 
-    message: 'El RUT debe contener solo números y terminar opcionalmente con K' 
+  @Matches(/^[0-9]{7,8}[0-9K]?$/, {
+    message: 'El RUT debe contener 7 u 8 dígitos y terminar opcionalmente con K, sin guion, sin puntos, sin espacios',
   })
   rut: string;
 

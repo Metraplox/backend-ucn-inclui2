@@ -51,7 +51,7 @@ async function bootstrap() {
     }),
   );
 
-  const port = configService.get('PORT') || 3000;
+  const port = configService.get('PORT') || 3002;
   await app.listen(port);
   
   logger.log(`Servidor iniciado en: http://localhost:${port}`);

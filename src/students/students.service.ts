@@ -206,7 +206,6 @@ export class StudentsService {
         id, 
         { 
           ...updateStudentDto,
-          // Si se actualiza la carrera, convertir el ID
           ...(updateStudentDto.carreraId && { 
             carreraId: new Types.ObjectId(updateStudentDto.carreraId) 
           })
@@ -226,7 +225,6 @@ export class StudentsService {
       );
     }
     
-    // Si se actualizó el email, actualizar también en el usuario
     if (updateStudentDto.email) {
       await this.userModel.findByIdAndUpdate(
         updatedStudent.userId,
@@ -234,6 +232,48 @@ export class StudentsService {
       );
     }
     
+    return updatedStudent;
+  }
+
+  async updateSemester(
+    id: string,
+    semester: string,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<Student> {
+    // Actualiza los datos relevantes y el campo semester
+    const updatedStudent = await this.studentModel
+      .findByIdAndUpdate(
+        id,
+        {
+          ...updateStudentDto,
+          semester,
+          ...(updateStudentDto.carreraId && {
+            carreraId: new Types.ObjectId(updateStudentDto.carreraId),
+          }),
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .populate('userId', 'email isActive roles')
+      .populate('carreraId', 'name code')
+      .exec();
+
+    if (!updatedStudent) {
+      throw new NotFoundException(
+        `Estudiante con ID "${id}" no encontrado para actualizar el semestre.`,
+      );
+    }
+
+    // Si se actualizó el email, actualizar también en el usuario
+    if (updateStudentDto.email) {
+      await this.userModel.findByIdAndUpdate(
+        updatedStudent.userId,
+        { email: updateStudentDto.email.toLowerCase().trim() }
+      );
+    }
+
     return updatedStudent;
   }
 

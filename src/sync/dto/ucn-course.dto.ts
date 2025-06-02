@@ -6,5 +6,5 @@ export class UcnCourseDto {
   codigo: string;
   sede: string;
   departamento: string;
-  profesores: string | null;
+  profesores?: string[];
 }

@@ -9,6 +9,7 @@ import { UcnInscriptionDto } from './dto/ucn-inscription.dto';
 import { readNeeList, normalizeRut, getOnlyDigits } from './utils/read-nee-list';
 
 import { Student, StudentDocument } from '../students/schemas/student.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
 import { Course, CourseDocument } from '../courses/schemas/course.schema';
 import { SyncLog, SyncLogDocument, SyncType, SyncStatus } from './schemas/sync-log.schema';
 import { CareersService } from '../careers/careers.service';
@@ -57,6 +58,7 @@ export class SyncService {
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
     @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
     @InjectModel(SyncLog.name) private syncLogModel: Model<SyncLogDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
     private careersService: CareersService,
     private usersService: UsersService,
   ) {}
@@ -529,6 +531,95 @@ if (existing) return existing;
    * @param semester Semestre académico
    * @returns Número de cursos persistidos
    */
+  /**
+   * Sincroniza y persiste estudiantes NEE en la base de datos para el semestre indicado
+   * @param semester Semestre académico
+   * @returns Número de estudiantes NEE persistidos
+   */
+  async syncAndPersistNeeStudents(semester: string): Promise<{count: number, students: Student[]}> {
+    try {
+      // 1. Obtener estudiantes NEE desde Hawaii y lista institucional
+      const estudiantesNee = await this.syncNeeStudents();
+      if (!estudiantesNee || estudiantesNee.length === 0) {
+        await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, SyncStatus.ERROR, 0, 0, 'No se encontraron estudiantes NEE');
+        return { count: 0, students: [] };
+      }
+
+      // 2. Persistir o actualizar estudiantes NEE en la base de datos
+      const persistedStudents: Student[] = [];
+      let syncedCount = 0;
+
+      for (const estudiante of estudiantesNee) {
+        try {
+          // Buscar si el estudiante ya existe por RUT y semestre
+          const existing = await this.studentModel.findOne({ rut: estudiante.rut, semester }).exec();
+          // Buscar o crear usuario asociado (User)
+          let userId: import('mongoose').Types.ObjectId | undefined = undefined;
+          if (estudiante.email_ucn) {
+            let user = await this.userModel.findOne({ email: estudiante.email_ucn.toLowerCase() });
+            if (!user) {
+              user = new this.userModel({
+                email: estudiante.email_ucn.toLowerCase(),
+                roles: ['STUDENT'],
+                isActive: true,
+              });
+              await user.save();
+            }
+            userId = (typeof user._id === 'string') ? new Types.ObjectId(user._id) : user._id;
+          }
+          // Buscar el id de carrera usando careersService
+          let carreraId: import('mongoose').Types.ObjectId | undefined = undefined;
+          if (estudiante.carrera) {
+            const carrera = await this.careersService.findByName(estudiante.carrera);
+            if (carrera && carrera._id) {
+              carreraId = (typeof carrera._id === 'string') ? new (require('mongoose')).Types.ObjectId(carrera._id) : carrera._id;
+            }
+          }
+          if (existing) {
+            // Actualizar datos relevantes
+            existing.nombres = estudiante.nombres;
+            existing.apellidos = estudiante.apellidos;
+            existing.email = estudiante.email_ucn || '';
+            if (carreraId) existing.carreraId = carreraId;
+            if (userId) existing.userId = userId;
+            existing.updatedAt = new Date();
+            await existing.save();
+            persistedStudents.push(existing);
+            syncedCount++;
+          } else {
+            // Crear nuevo estudiante NEE
+            const nuevoEstudiante = new this.studentModel({
+              rut: estudiante.rut,
+              nombres: estudiante.nombres,
+              apellidos: estudiante.apellidos,
+              email: estudiante.email_ucn || '',
+              userId: userId,
+              carreraId: carreraId || undefined,
+              semester,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            const saved = await nuevoEstudiante.save();
+            persistedStudents.push(saved);
+            syncedCount++;
+          }
+        } catch (error) {
+          this.logger.error(`Error al persistir estudiante NEE ${estudiante.rut}:`, error);
+        }
+      }
+
+      // 3. Registrar log de sincronización
+      const status = syncedCount === estudiantesNee.length ? SyncStatus.SUCCESS : 
+                    (syncedCount > 0 ? SyncStatus.PARTIAL : SyncStatus.ERROR);
+      await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, status, estudiantesNee.length, syncedCount);
+      return { count: syncedCount, students: persistedStudents };
+    } catch (error) {
+      this.logger.error('Error en sincronización y persistencia de estudiantes NEE:', error);
+      await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, SyncStatus.ERROR, 0, 0, error.message);
+      throw new InternalServerErrorException('Error al sincronizar y persistir estudiantes NEE');
+    }
+  }
+
   async syncAndPersistCourses(semester: string): Promise<{count: number, courses: Course[]}> {
     try {
       // 1. Obtener cursos desde Hawaii UCN

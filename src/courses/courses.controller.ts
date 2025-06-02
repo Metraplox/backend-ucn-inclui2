@@ -50,8 +50,8 @@ export class CoursesController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Obtener todos los cursos (Admin, Staff)' })
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.TEACHER)
+  @ApiOperation({ summary: 'Obtener todos los cursos (Admin, Staff, Teacher)' })
   @ApiQuery({
     name: 'semester',
     required: false,
@@ -94,8 +94,8 @@ export class CoursesController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Obtener un curso por ID (Admin, Staff)' })
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.TEACHER)
+  @ApiOperation({ summary: 'Obtener un curso por ID (Admin, Staff, Teacher)' })
   @ApiParam({ name: 'id', description: 'ID del curso' })
   @ApiResponse({ status: 200, description: 'Detalles del curso', type: Course })
   @ApiResponse({ status: 404, description: 'Curso no encontrado' })
@@ -106,9 +106,9 @@ export class CoursesController {
   }
 
   @Get(':courseId/students-with-adjustments')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.TEACHER)
   @ApiOperation({
-    summary: 'Obtener estudiantes con ajustes en un curso (Admin, Staff)',
+    summary: 'Obtener estudiantes con ajustes en un curso (Admin, Staff, Teacher)',
   })
   @ApiParam({ name: 'courseId', description: 'ID del curso' })
   @ApiResponse({
