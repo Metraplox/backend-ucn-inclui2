@@ -108,7 +108,7 @@ class AppScaffold extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => StudentOwnProfileScreen(studentId: userInfo['id']),
+                        builder: (context) => StudentOwnProfileScreen(),
                       ),
                     );
                   } else {

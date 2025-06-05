@@ -1,5 +1,4 @@
 // services/course_service.dart
-import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'api_service.dart';
 import 'package:incluye_app/models/course_model.dart';
@@ -13,7 +12,6 @@ class CourseService {
 
       final response = await ApiService.dio.get(
         '/courses/student/$studentId',
-        options: ApiService.authHeaders(token),
       );
 
       if (response.statusCode == 200) {

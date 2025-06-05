@@ -1,58 +1,60 @@
 // services/student_service.dart
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:developer';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-import 'package:incluye_app/models/user_model.dart'; // Ajusta según tu estructura
-import 'package:incluye_app/models/student_model.dart'; // Ajusta según tu estructura
+import 'package:incluye_app/models/user_model.dart';
+import 'package:incluye_app/models/student_model.dart';
+import 'api_service.dart';
 
 class StudentService {
-  static final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
 
-  static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
-  }
-
-  static void _ensureInitialized() {
-    // Si necesitas algo antes de cada llamada, ponlo aquí (ej: configuración global)
-  }
-
-  // ---------------------- USUARIO ----------------------
-
-  static Future<User?> getUserProfile() async {
+  // ---------------------- PERFIL DE ESTUDIANTE (ACTUAL) ----------------------
+  static Future<Student?> getStudentProfile() async {
+    print("StudentService: Solicitando perfil de estudiante actual (/students/profile)");
     try {
-      _ensureInitialized();
-      final token = await getToken();
-      if (token == null) return null;
-
-      final response = await _dio.get(
-        '/users/profile',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+      final response = await ApiService.dio.get('/students/profile');
+      print("StudentService: Respuesta de /students/profile - StatusCode: ${response.statusCode}");
 
       if (response.statusCode == 200) {
-        final userData = response.data;
-        userData['token'] = token;
-        return User.fromJson(userData);
+        final responseBody = response.data;
+        if (responseBody is Map && responseBody.containsKey('data') && responseBody['data'] is Map) {
+          final studentData = responseBody['data'] as Map<String, dynamic>;
+          print("StudentService: Perfil de estudiante obtenido y desanidado exitosamente.");
+          return Student.fromJson(studentData);
+        } else {
+          print("StudentService: Error - La respuesta de /students/profile no tiene la estructura esperada (falta 'data' anidado). Data: $responseBody");
+          return null;
+        }
+      } else if (response.statusCode == 404) {
+        print('StudentService: No existe un perfil de estudiante para este usuario (404).');
+        return null;
       } else {
-        log('Error al obtener perfil de usuario: ${response.statusCode}');
+        print('StudentService: Error al obtener perfil de estudiante: ${response.statusCode}, Data: ${response.data}');
         return null;
       }
-    } catch (e) {
-      log('Error al obtener perfil de usuario: $e');
+    } on DioException catch (e) {
+      print('StudentService: DioException al obtener perfil de estudiante: ${e.message}');
+      ApiService.handleApiError('getStudentProfile DioException', e);
+      return null;
+    } catch (e, s) {
+      print('StudentService: Excepción general al obtener perfil de estudiante: $e');
+      print('StudentService: Stacktrace: $s');
       return null;
     }
   }
 
+  // ---------------------- ROLES Y OTROS MÉTODOS DE USUARIO ----------------------
   static Future<List<String>> getUserRoles() async {
-    final token = await getToken();
+    final token = await ApiService.getToken();
     if (token != null) {
-      final decodedToken = JwtDecoder.decode(token);
-      final roles = decodedToken['roles'];
-      if (roles is List) {
-        return roles.map((e) => e.toString()).toList();
+      try {
+        final decodedToken = JwtDecoder.decode(token);
+        final rolesData = decodedToken['roles'];
+        if (rolesData is List) {
+          return rolesData.map((e) => e.toString()).toList();
+        }
+      } catch (e) {
+        print("StudentService: Error decodificando token para roles: $e");
       }
     }
     return [];
@@ -60,183 +62,187 @@ class StudentService {
 
   static Future<bool> isStudent() async {
     final roles = await getUserRoles();
-    return roles.contains('estudiante');
+    // Usar el método hasRole del UserModel si estuviera disponible globalmente
+    // o comparar con las variantes de nombre de rol.
+    return roles.any((r) => r.toLowerCase() == 'estudiante' || r.toLowerCase() == 'student');
   }
 
   static Future<bool> isAdmin() async {
     final roles = await getUserRoles();
-    return roles.contains('administrador');
+    return roles.any((r) => r.toLowerCase() == 'administrador' || r.toLowerCase() == 'admin');
   }
+
   static Future<bool> isTeacher() async {
     final roles = await getUserRoles();
-    return roles.contains('docente');
+    return roles.any((r) => r.toLowerCase() == 'docente' || r.toLowerCase() == 'profesor');
   }
 
+  // getCurrentUserInfo:
+  // Este método intenta construir un objeto User. Con el UserModel actualizado,
+  // necesitamos asegurarnos de pasar los parámetros correctos.
+  // La idea principal es que si el usuario es un estudiante, queremos la información
+  // más detallada del perfil del estudiante.
   static Future<User?> getCurrentUserInfo() async {
-    try {
-      final userProfile = await getUserProfile();
+    print("StudentService: Obteniendo información de usuario actual (getCurrentUserInfo)");
+    
+    // Primero, intentamos obtener el perfil completo del estudiante
+    final studentProfileData = await getStudentProfile();
+    final currentToken = await ApiService.getToken(); // Obtenemos el token actual para pasarlo al User
 
-      if (userProfile != null) {
-        if (userProfile.roles.contains('estudiante')) {
-          final studentProfile = await getStudentProfile();
-
-          if (studentProfile != null) {
-            return User(
-              id: userProfile.id,
-              email: userProfile.email,
-              nombre: '${studentProfile.nombres} ${studentProfile.apellidos}',
-              rol: 'estudiante',
-              token: userProfile.token,
-              departamento: studentProfile.carrera,
-            );
-          }
-        }
-        return userProfile;
-      }
-    } catch (e) {
-      log('Error al obtener información del usuario: $e');
+    if (studentProfileData != null && studentProfileData.userId != null) {
+      // Si tenemos un perfil de estudiante y su User anidado, usamos eso.
+      // studentProfileData.userId ES un objeto User gracias a Student.fromJson.
+      final User nestedUser = studentProfileData.userId!;
+      
+      // Creamos un nuevo objeto User con la información combinada y el token actual
+      return User(
+        id: nestedUser.id,
+        email: nestedUser.email,
+        // Usamos nombreCompleto del User anidado, ya que es la fuente autoritativa.
+        nombreCompleto: nestedUser.nombreCompleto,
+        // Usamos los roles del User anidado. Si está vacío, intentamos desde el token.
+        roles: nestedUser.roles.isNotEmpty ? nestedUser.roles : (await getUserRoles()),
+        isActive: nestedUser.isActive, // Tomamos isActive del User anidado
+        token: currentToken, // Adjuntamos el token de sesión actual
+        createdAt: nestedUser.createdAt, // Tomamos las fechas del User anidado
+        updatedAt: nestedUser.updatedAt,
+      );
     }
 
-    final token = await getToken();
-    if (token != null) {
+    // Fallback: Si no es un estudiante o no se pudo obtener el perfil de estudiante,
+    // intentamos construir un User básico a partir del token JWT.
+    print("StudentService: No se pudo obtener perfil de estudiante completo o no es estudiante, intentando desde JWT.");
+    if (currentToken != null) {
       try {
-        final decodedToken = JwtDecoder.decode(token);
-        final userId = decodedToken['sub'];
-
-        if (decodedToken['roles'].contains('estudiante')) {
-          final studentData = await getStudentById(userId);
-          if (studentData != null) {
-            return User(
-              id: userId,
-              email: decodedToken['email'] ?? '',
-              nombre: '${studentData.nombres} ${studentData.apellidos}',
-              rol: 'estudiante',
-              token: token,
-            );
-          }
+        final decodedToken = JwtDecoder.decode(currentToken);
+        final userId = decodedToken['sub']?.toString() ?? '';
+        final email = decodedToken['email']?.toString() ?? '';
+        // El token JWT podría no tener 'nombreCompleto', pero sí 'name' o un campo similar.
+        // UserModel.fromJson maneja esto, pero aquí lo construimos directamente.
+        final nombreCompleto = decodedToken['nombreCompleto']?.toString() ?? decodedToken['name']?.toString() ?? email.split('@').first; // Fallback a parte del email
+        
+        List<String> rolesFromToken = [];
+        final rolesData = decodedToken['roles'];
+        if (rolesData is List) {
+          rolesFromToken = rolesData.map((e) => e.toString()).toList();
+        } else if (rolesData is String) {
+          rolesFromToken = [rolesData];
         }
 
-        String rol = 'usuario';
-        if (decodedToken['roles'] is List && decodedToken['roles'].isNotEmpty) {
-          rol = decodedToken['roles'][0].toString();
+        if (userId.isNotEmpty && email.isNotEmpty) {
+          return User(
+            id: userId,
+            email: email,
+            nombreCompleto: nombreCompleto,
+            roles: rolesFromToken,
+            token: currentToken,
+            // isActive, createdAt, updatedAt no suelen estar en el payload del JWT,
+            // por lo que serían null aquí, lo cual es manejado por UserModel.
+          );
         }
-
-        return User(
-          id: userId,
-          email: decodedToken['email'] ?? '',
-          nombre: decodedToken['nombre'] ?? decodedToken['name'] ?? '',
-          rol: rol,
-          token: token,
-        );
       } catch (e) {
-        log('Error al obtener información del usuario desde JWT: $e');
+        print("StudentService: Error al obtener información del usuario desde JWT: $e");
       }
     }
+    
+    print("StudentService: No se pudo obtener información del usuario ni por perfil ni por JWT.");
     return null;
   }
 
-  // ---------------------- ESTUDIANTE ----------------------
-
-  static Future<Student?> getStudentProfile() async {
-    try {
-      _ensureInitialized();
-      final token = await getToken();
-      if (token == null) return null;
-
-      final response = await _dio.get(
-        '/students/profile',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-
-      if (response.statusCode == 200) {
-        return Student.fromJson(response.data);
-      } else if (response.statusCode == 404) {
-        log('No existe un perfil de estudiante para este usuario');
-        return null;
-      } else {
-        log('Error al obtener perfil académico: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      log('Error al obtener perfil académico: $e');
-      return null;
-    }
-  }
+  // ---------------------- OTROS MÉTODOS DE ESTUDIANTE (CRUD) ----------------------
+  // (Estos métodos parecen estar bien y no dependen directamente de la estructura interna de User,
+  //  ya que operan con Student o IDs. Los mantengo como estaban en tu código anterior).
 
   static Future<List<Student>> getAllStudents() async {
+    print("StudentService: Solicitando todos los estudiantes (/students)");
     try {
-      final token = await getToken();
-      final response = await _dio.get(
-        '/students',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-      final List<dynamic> data = response.data;
-      return data.map((item) => Student.fromJson(item)).toList();
+      final response = await ApiService.dio.get('/students');
+      if (response.statusCode == 200) {
+        final responseBody = response.data;
+        List<dynamic> studentList;
+        if (responseBody is Map && responseBody.containsKey('data') && responseBody['data'] is List) {
+          studentList = responseBody['data'] as List<dynamic>;
+        } else if (responseBody is List) {
+          studentList = responseBody;
+        } else {
+          print("StudentService: getAllStudents - Respuesta no es una lista o estructura esperada. Data: $responseBody");
+          return [];
+        }
+        return studentList.map((item) => Student.fromJson(item as Map<String, dynamic>)).toList();
+      } else {
+         print('StudentService: Error al obtener todos los estudiantes: ${response.statusCode}, Data: ${response.data}');
+        return [];
+      }
     } catch (e) {
-      log('Error al obtener estudiantes: $e');
+      ApiService.handleApiError('getAllStudents', e);
       return [];
     }
   }
 
   static Future<bool> deleteStudent(String id) async {
+    print("StudentService: Eliminando estudiante ID: $id");
     try {
-      final token = await getToken();
-      await _dio.delete(
-        '/students/$id',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-      return true;
+      final response = await ApiService.dio.delete('/students/$id');
+      return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      log('Error al eliminar estudiante: $e');
+      ApiService.handleApiError('deleteStudent', e);
       return false;
     }
   }
 
   static Future<Student?> getStudentById(String id) async {
+    print("StudentService: Solicitando estudiante por ID: $id");
     try {
-      final token = await getToken();
-      final response = await _dio.get(
-        '/students/$id',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-      return Student.fromJson(response.data);
+      final response = await ApiService.dio.get('/students/$id');
+       if (response.statusCode == 200) {
+        final responseBody = response.data;
+        if (responseBody is Map && responseBody.containsKey('data') && responseBody['data'] is Map) {
+          return Student.fromJson(responseBody['data'] as Map<String, dynamic>);
+        } else if (responseBody is Map<String,dynamic> && !responseBody.containsKey('success')) { 
+          return Student.fromJson(responseBody);
+        }
+        else {
+          print("StudentService: getStudentById - Estructura de respuesta inesperada. Data: $responseBody");
+          return null;
+        }
+      } else {
+        print('StudentService: Error al obtener estudiante por ID: ${response.statusCode}, Data: ${response.data}');
+        return null;
+      }
     } catch (e) {
-      log('Error al obtener estudiante: $e');
+      ApiService.handleApiError('getStudentById', e);
       return null;
     }
   }
 
   static Future<bool> updateStudent(String? id, Student student) async {
     if (id == null) {
-      log('Error: ID de estudiante es nulo');
+      print('StudentService: Error - ID de estudiante es nulo para actualizar.');
       return false;
     }
-
-    final token = await getToken();
+    print("StudentService: Actualizando estudiante ID: $id");
     try {
-      final response = await _dio.patch(
+      final response = await ApiService.dio.patch(
         '/students/$id',
-        data: student.toJson(),
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: student.toJson(), 
       );
       return response.statusCode == 200;
     } catch (e) {
-      log('Error al actualizar estudiante: $e');
+      ApiService.handleApiError('updateStudent', e);
       return false;
     }
   }
 
   static Future<bool> createStudent(Map<String, dynamic> data) async {
+    print("StudentService: Creando nuevo estudiante.");
     try {
-      final token = await getToken();
-      final response = await _dio.post(
+      final response = await ApiService.dio.post(
         '/students',
         data: data,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-      return response.statusCode == 201 || response.statusCode == 200;
+      return response.statusCode == 201;
     } catch (e) {
-      log('Error al crear estudiante: $e');
+      ApiService.handleApiError('createStudent', e);
       return false;
     }
   }

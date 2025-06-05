@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/course_service.dart';
-import 'package:incluye_app/services/student_service.dart';
-import 'package:incluye_app/widgets/edit_student_dialog.dart';
 import 'package:incluye_app/screens/students/student_profile_screen.dart';
-import 'package:incluye_app/screens/students/student_create_screen.dart';
-import 'package:incluye_app/screens/documents/student_documents_screen.dart'; // Importamos la pantalla de documentos
 
 class StudentSubjectListScreen extends StatefulWidget {
   final String courseId;

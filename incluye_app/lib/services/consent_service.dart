@@ -1,6 +1,4 @@
 // services/consent_service.dart
-import 'dart:developer';
-import 'package:dio/dio.dart';
 import 'api_service.dart';
 
 class ConsentService {
@@ -12,7 +10,6 @@ class ConsentService {
       final response = await ApiService.dio.post(
         '/consents',
         data: {'studentId': studentId},
-        options: ApiService.authHeaders(token),
       );
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {

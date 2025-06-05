@@ -1,5 +1,4 @@
 // services/document_service.dart
-import 'dart:developer';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'api_service.dart';
@@ -34,7 +33,6 @@ class DocumentService {
       final response = await ApiService.dio.post(
         endpoint,
         data: formData,
-        options: ApiService.authHeaders(token, extra: {'Content-Type': 'multipart/form-data'}),
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -66,7 +64,6 @@ class DocumentService {
       final response = await ApiService.dio.get(
         '/documents/student/$studentId',
         queryParameters: queryParams,
-        options: ApiService.authHeaders(token),
       );
 
       if (response.statusCode == 200) {
@@ -87,7 +84,6 @@ class DocumentService {
 
       final response = await ApiService.dio.get(
         '/documents/$documentId/download',
-        options: ApiService.authHeaders(token),
       );
 
       if (response.statusCode == 200 && response.data['fileUrl'] != null) {
@@ -108,7 +104,6 @@ class DocumentService {
       final response = await ApiService.dio.patch(
         '/documents/verify/$documentId',
         data: {'comments': comments},
-        options: ApiService.authHeaders(token),
       );
 
       if (response.statusCode == 200) {
@@ -129,7 +124,6 @@ class DocumentService {
       final response = await ApiService.dio.patch(
         '/documents/reject/$documentId',
         data: {'comments': comments},
-        options: ApiService.authHeaders(token),
       );
 
       if (response.statusCode == 200) {
@@ -149,7 +143,6 @@ class DocumentService {
 
       final response = await ApiService.dio.delete(
         '/documents/$documentId',
-        options: ApiService.authHeaders(token),
       );
 
       return response.statusCode == 200 || response.statusCode == 204;
@@ -166,7 +159,6 @@ class DocumentService {
 
       final response = await ApiService.dio.get(
         '/documents/templates/$templateType',
-        options: ApiService.authHeaders(token),
       );
 
       if (response.statusCode == 200) {

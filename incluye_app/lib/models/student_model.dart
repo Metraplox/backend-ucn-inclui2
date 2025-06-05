@@ -1,93 +1,104 @@
+// models/student_model.dart
+import 'user_model.dart';   // Importa tu UserModel ajustado
+import 'career_model.dart'; // Importa el CareerModel
+
 class Student {
-  final String? id;
+  final String id; // _id del documento Student
+  final String rut;
   final String nombres;
   final String apellidos;
-  final String rut;
-  final String email;
-  final String? telefono;
-  final String? carrera;
-  final int? anioIngreso;
-  final bool consentimientoFirmado;
-  final List<String>? diagnosticos;
-  final String? diagnostico; // Para compatibilidad con código existente
-  final String? fechaNacimiento;
+  final String email;        // Email del estudiante, puede o no ser el mismo que User.email
+  final User? userId;        // Objeto User completo asociado
+  final Career? carreraId;   // Objeto Career completo asociado
+  final String? semester;
+  final DateTime? fechaNacimiento;
   final String? informacionContacto;
   final String? necesidadesEducativasEspeciales;
+  // final bool hasDisability; // Eliminado
+  
+  final String? telefono;
+  final int? anioIngreso;
+  final bool consentimientoFirmado;
+  final List<String>? diagnosticosAntiguos;
 
-  // Operador de acceso por índice para mantener compatibilidad con código existente
-  dynamic operator [](String key) {
-    switch (key) {
-      case 'id': return id;
-      case '_id': return id;
-      case 'nombres': return nombres;
-      case 'apellidos': return apellidos;
-      case 'rut': return rut;
-      case 'email': return email;
-      case 'telefono': return telefono;
-      case 'carrera': return carrera;
-      case 'anioIngreso': return anioIngreso;
-      case 'consentimientoFirmado': return consentimientoFirmado;
-      case 'diagnosticos': return diagnosticos;
-      case 'diagnostico': return diagnostico;
-      case 'fechaNacimiento': return fechaNacimiento;
-      case 'informacionContacto': return informacionContacto;
-      case 'necesidadesEducativasEspeciales': return necesidadesEducativasEspeciales;
-      default: return null;
-    }
-  }
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  String get nombreCompleto => '$nombres $apellidos';
+  String? get carreraNombre => carreraId?.name;
+
 
   Student({
-    this.id,
+    required this.id,
+    required this.rut,
     required this.nombres,
     required this.apellidos,
-    required this.rut,
     required this.email,
-    this.telefono,
-    this.carrera,
-    this.anioIngreso,
-    this.consentimientoFirmado = false,
-    this.diagnosticos,
-    this.diagnostico,
+    this.userId,
+    this.carreraId,
+    this.semester,
     this.fechaNacimiento,
     this.informacionContacto,
     this.necesidadesEducativasEspeciales,
+    // required this.hasDisability, // Eliminado
+    this.telefono,
+    this.anioIngreso,
+    this.consentimientoFirmado = false,
+    this.diagnosticosAntiguos,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
     return Student(
-      id: json['_id'] ?? json['id'],
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
+      rut: json['rut'] ?? '',
       nombres: json['nombres'] ?? '',
       apellidos: json['apellidos'] ?? '',
-      rut: json['rut'] ?? '',
       email: json['email'] ?? '',
-      telefono: json['telefono'],
-      carrera: json['carrera'],
-      anioIngreso: json['anioIngreso'],
-      consentimientoFirmado: json['consentimientoFirmado'] ?? false,
-      diagnosticos: json['diagnosticos'] != null
-          ? List<String>.from(json['diagnosticos'])
+      userId: json['userId'] != null && json['userId'] is Map
+          ? User.fromJson(json['userId'] as Map<String, dynamic>)
           : null,
-      diagnostico: json['diagnostico'],
-      fechaNacimiento: json['fechaNacimiento'],
-      informacionContacto: json['informacionContacto'],
-      necesidadesEducativasEspeciales: json['necesidadesEducativasEspeciales'],
+      carreraId: json['carreraId'] != null && json['carreraId'] is Map
+          ? Career.fromJson(json['carreraId'] as Map<String, dynamic>)
+          : null,
+      semester: json['semester'] as String?,
+      fechaNacimiento: json['fechaNacimiento'] != null
+          ? DateTime.tryParse(json['fechaNacimiento'] as String)
+          : null,
+      informacionContacto: json['informacionContacto'] as String?,
+      necesidadesEducativasEspeciales: json['necesidadesEducativasEspeciales'] as String?,
+      // hasDisability: json['hasDisability'] as bool? ?? false, // Eliminado
+      
+      telefono: json['telefono'] as String?,
+      anioIngreso: json['anioIngreso'] as int?,
+      consentimientoFirmado: json['consentimientoFirmado'] as bool? ?? json['extras']?['consentimientoFirmado'] as bool? ?? false, // Intenta leer de extras si existe para compatibilidad temporal
+      diagnosticosAntiguos: json['diagnosticos'] != null && json['diagnosticos'] is List
+          ? List<String>.from(json['diagnosticos'].map((e) => e.toString()))
+          : null,
+      
+      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'] as String) : null,
+      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'] as String) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'rut': rut,
       'nombres': nombres,
       'apellidos': apellidos,
-      'rut': rut,
       'email': email,
-      'telefono': telefono,
-      'carrera': carrera,
-      'anioIngreso': anioIngreso,
+      if (userId != null) 'userId': userId!.id,
+      if (carreraId != null) 'carreraId': carreraId!.id,
+      if (semester != null) 'semester': semester,
+      if (fechaNacimiento != null) 'fechaNacimiento': fechaNacimiento!.toIso8601String(),
+      if (informacionContacto != null) 'informacionContacto': informacionContacto,
+      if (necesidadesEducativasEspeciales != null) 'necesidadesEducativasEspeciales': necesidadesEducativasEspeciales,
+      // 'hasDisability': hasDisability, // Eliminado
+      if (telefono != null) 'telefono': telefono,
+      if (anioIngreso != null) 'anioIngreso': anioIngreso,
       'consentimientoFirmado': consentimientoFirmado,
-      'diagnosticos': diagnosticos,
+      if (diagnosticosAntiguos != null) 'diagnosticos': diagnosticosAntiguos,
     };
   }
-
-  String get nombreCompleto => '$nombres $apellidos';
 }

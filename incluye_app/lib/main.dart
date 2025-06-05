@@ -4,8 +4,11 @@ import 'package:incluye_app/screens/home_screen.dart';
 import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/notification_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  await ApiService.configure(); // Configura el interceptor
+  
   runApp(const MyApp());
 }
 
