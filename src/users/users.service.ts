@@ -83,6 +83,19 @@ export class UsersService {
         }) as UserPublicData,
     );
   }
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return this.userModel.findOne({ googleId }).exec();
+  }
+  
+  async attachGoogleIdToUser(userId: string, googleId: string): Promise<User> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    user.googleId = googleId;
+    return user.save();
+  }
+    
 
   async findOneById(id: string): Promise<UserPublicData> {
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {

@@ -1,3 +1,4 @@
+// src/auth/auth.controller.ts
 import {
   Controller,
   Post,
@@ -7,14 +8,20 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
-import { User } from '../users/schemas/user.schema'; // Para el tipo de req.user
+import { User } from '../users/schemas/user.schema';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import { GoogleLoginDto } from './dto/google-login.dto';
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '90627838122-cv4i0d2124tgm1cbh06cbpotuu128b8v.apps.googleusercontent.com'; // REEMPLAZA ESTO SI ES NECESARIO
 
 @ApiTags('auth')
 @Controller('auth')
@@ -25,63 +32,100 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Iniciar sesión de usuario' })
-  @ApiBody({ type: LoginDto }) // Documentar el cuerpo esperado
-  @ApiResponse({
-    status: 200,
-    description: 'Inicio de sesión exitoso, retorna token JWT.',
-    schema: { example: { access_token: 'jwt_token_aqui' } },
-  })
-  @ApiResponse({
-    status: 400,
-    description:
-      'Solicitud incorrecta (ej. DTO inválido, aunque LocalAuthGuard podría manejarlo antes).',
-  })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso.' })
   @ApiResponse({ status: 401, description: 'Credenciales incorrectas.' })
   async login(
     @Request() req: { user: Omit<User, 'password_hash'> },
-    @Body() loginDto: LoginDto,
   ) {
-    // req.user es establecido por LocalAuthGuard/LocalStrategy. loginDto es para Swagger.
-    // El body con LoginDto es manejado automáticamente por LocalStrategy a través de LocalAuthGuard.
-    // No necesitamos loginDto como parámetro explícito aquí si LocalAuthGuard está activo.
-    // Sin embargo, para que Swagger genere la documentación del body, se puede dejar @Body() loginDto: LoginDto,
-    // pero no se usaría directamente en el código del método si LocalAuthGuard está activo.
-    // Por simplicidad y claridad con el guard, lo removemos del signature si el guard se encarga.
-    // Si se deja, asegurarse que no cause confusión.
-    // Para este caso, se deja loginDto para que Swagger lo muestre, pero no se usa en la lógica del método.
+    console.log(`BACKEND: /auth/login - Usuario autenticado por LocalAuthGuard: ${req.user.email}`);
     if (!req.user) {
-      // Doble chequeo, aunque LocalAuthGuard debería lanzar error si no hay user.
-      throw new UnauthorizedException(
-        'Usuario no autenticado después del guard.',
-      );
+      console.error('BACKEND: /auth/login - req.user es nulo después de LocalAuthGuard.');
+      throw new UnauthorizedException('Usuario no autenticado.');
     }
     return this.authService.login(req.user);
+  }
+
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Iniciar sesión con Google' })
+  @ApiBody({ type: GoogleLoginDto })
+  @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso con Google.' })
+  @ApiResponse({ status: 401, description: 'Token inválido o usuario no autorizado/registrado.' }) // Mensaje de Swagger actualizado
+  @ApiResponse({ status: 400, description: 'Solicitud incorrecta (ej. falta idToken).' })
+  async loginWithGoogle(@Body() body: GoogleLoginDto) {
+    console.log('BACKEND: Petición recibida en /auth/google.');
+    console.log('BACKEND: Body recibido:', JSON.stringify(body));
+
+    if (!body || !body.idToken) {
+      console.error('BACKEND: Error - idToken no encontrado en el body.');
+      throw new BadRequestException('idToken es requerido.');
+    }
+    console.log('BACKEND: idToken recibido (primeros 30 chars):', body.idToken.substring(0, Math.min(30, body.idToken.length)) + '...');
+    console.log('BACKEND: Usando GOOGLE_CLIENT_ID para verificación:', GOOGLE_CLIENT_ID);
+
+    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+    let payload: TokenPayload | undefined;
+
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: body.idToken,
+        audience: GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+      console.log('BACKEND: Verificación de idToken de Google exitosa. Payload:', payload);
+    } catch (error) {
+      console.error('BACKEND: Error al verificar el idToken de Google:', error.message);
+      if (error.message && (error.message.includes('Invalid token signature') || error.message.includes('Token used too late') || error.message.includes('No pem found for envelope') || error.message.includes('The OAuth client was not found'))) {
+        throw new UnauthorizedException(`Token de Google inválido o configuración de cliente incorrecta: ${error.message}`);
+      }
+      throw new UnauthorizedException(`Fallo al verificar el token de Google: ${error.message}`);
+    }
+
+    if (!payload || !payload.email || !payload.sub) {
+      console.error('BACKEND: Error - Payload de Google inválido o incompleto.');
+      throw new UnauthorizedException('Token de Google verificado pero payload incompleto.');
+    }
+
+    const email = payload.email;
+    const googleId = payload.sub;
+    const nombreCompleto = payload.name || payload.given_name || '';
+
+    console.log(`BACKEND: Intentando validar/vincular usuario con GoogleID: ${googleId}, Email: ${email}, Nombre: ${nombreCompleto}`);
+    
+    try {
+      const user = await this.authService.validateGoogleUser(googleId, email, nombreCompleto);
+      
+      if (!user) {
+        // Mensaje de error actualizado y más específico para el frontend
+        console.error('BACKEND (Controller): Usuario de Google no encontrado, no vinculado o en conflicto.');
+        throw new UnauthorizedException('Tu cuenta de Google no está registrada o no ha podido ser vinculada a una cuenta existente en el sistema. Por favor, contacta al administrador si crees que esto es un error.');
+      }
+      
+      console.log('BACKEND (Controller): Usuario de Google validado/vinculado. Procediendo a generar token API para:', user.email);
+      return this.authService.login(user); 
+
+    } catch (error) {
+        console.error('BACKEND (Controller): Error durante validateGoogleUser o authService.login posterior:', error.message, error.stack);
+        if (error instanceof UnauthorizedException || error instanceof BadRequestException) {
+            throw error; // Re-lanzar excepciones HTTP conocidas
+        }
+        // Para otros errores inesperados
+        throw new InternalServerErrorException('Error interno del servidor al procesar el inicio de sesión con Google.');
+    }
   }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
   @ApiBody({ type: CreateUserDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Usuario registrado exitosamente.',
-    type: User,
-  }) // Usar User como tipo de respuesta
-  @ApiResponse({
-    status: 400,
-    description: 'Datos de entrada inválidos (ej. email ya existe).',
-  })
+  @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente.', type: User })
+  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.'})
   @ApiResponse({ status: 409, description: 'Conflicto, el usuario ya existe.' })
   async register(
     @Body() createUserDto: CreateUserDto,
   ): Promise<UserPublicData> {
+    console.log('BACKEND: /auth/register - Petición para registrar usuario:', createUserDto.email);
     return this.authService.register(createUserDto);
   }
-
-  // Podría haber un endpoint GET /auth/profile para obtener el perfil del usuario autenticado (usando JwtAuthGuard)
-  // @UseGuards(JwtAuthGuard)
-  // @Get('profile')
-  // getProfile(@Request() req) {
-  //   return req.user; // req.user es establecido por JwtStrategy
-  // }
 }

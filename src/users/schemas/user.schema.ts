@@ -26,7 +26,7 @@ export class User extends Document {
   email: string;
 
   // password_hash no se expone en la API
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: false })
   password_hash: string; // Se almacena el hash, no la contraseña en texto plano
 
   @ApiProperty({

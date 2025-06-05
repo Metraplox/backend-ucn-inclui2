@@ -1,7 +1,9 @@
+// src/auth/auth.service.ts
 import {
   Injectable,
   UnauthorizedException,
   InternalServerErrorException,
+  ConflictException, // Importar ConflictException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -22,55 +24,112 @@ export class AuthService {
     email: string,
     pass: string,
   ): Promise<Omit<User, 'password_hash'> | null> {
-    const user = await this.usersService.findByEmail(email);
+    const userDoc = await this.usersService.findByEmail(email);
     if (
-      user &&
-      user.password_hash &&
-      (await bcrypt.compare(pass, user.password_hash))
+      userDoc &&
+      userDoc.password_hash &&
+      (await bcrypt.compare(pass, userDoc.password_hash))
     ) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password_hash, ...result } = user.toObject(); // user es un Documento Mongoose
+      const { password_hash, ...result } = userDoc.toObject();
       return result;
     }
     return null;
   }
 
-  async login(user: Omit<User, 'password_hash'> | UserPublicData) {
-    // El 'user' que llega aquí ya está validado y no tiene password_hash
-    // o es UserPublicData que tampoco lo tiene.
-    // Necesitamos el _id y los roles para el payload del JWT.
-    // Asegurémonos que 'user' tenga _id (puede ser string o ObjectId) y roles.
+  async validateGoogleUser(googleId: string, email: string, nombreCompleto: string): Promise<User | null> {
+    console.log(`BACKEND (AuthService): Validando usuario de Google. GoogleID: ${googleId}, Email: ${email}`);
 
-    // Asegurar que user._id se maneja correctamente si es ObjectId o string
-    const userIdAsString =
-      typeof user._id === 'string' ? user._id : (user._id as any).toString();
+    // 1. Intentar encontrar al usuario por su Google ID.
+    let user = await this.usersService.findByGoogleId(googleId);
+    if (user) {
+      // Usuario encontrado directamente por Google ID.
+      // Opcional: Actualizar nombre si el de Google es más reciente o completo.
+      if (nombreCompleto && user.nombreCompleto !== nombreCompleto) {
+        // Podrías añadir lógica para no sobrescribir un nombre ya bien establecido.
+        // Por ahora, actualizamos si es diferente.
+        user.nombreCompleto = nombreCompleto; 
+        await user.save();
+        console.log(`BACKEND (AuthService): Usuario ${email} encontrado por GoogleID. Nombre actualizado si es necesario.`);
+      } else {
+        console.log(`BACKEND (AuthService): Usuario ${email} encontrado por GoogleID.`);
+      }
+      return user;
+    }
+
+    // 2. Si no se encontró por Google ID, intentar encontrar por email para vincular.
+    console.log(`BACKEND (AuthService): Usuario no encontrado por GoogleID. Buscando por email: ${email} para posible vinculación.`);
+    user = await this.usersService.findByEmail(email);
+
+    if (user) {
+      // Usuario encontrado por email.
+      if (!user.googleId) {
+        // El usuario existe pero no tiene un Google ID vinculado. Vincularlo.
+        console.log(`BACKEND (AuthService): Usuario ${email} encontrado por email. Vinculando GoogleID: ${googleId}.`);
+        user.googleId = googleId;
+        if (nombreCompleto && user.nombreCompleto !== nombreCompleto) {
+            // Actualizar nombre si es relevante (ej. si el actual es genérico o vacío)
+            user.nombreCompleto = nombreCompleto;
+        }
+        await user.save();
+        return user;
+      } else if (user.googleId === googleId) {
+        // El Google ID ya está correctamente vinculado. Esto es redundante pero seguro.
+        console.log(`BACKEND (AuthService): Usuario ${email} encontrado por email, GoogleID ya estaba correctamente vinculado.`);
+        return user;
+      } else {
+        // ¡Conflicto! El email está registrado pero asociado a un Google ID DIFERENTE.
+        // Esto podría indicar un intento de tomar una cuenta o un error.
+        console.error(`BACKEND (AuthService): Conflicto de GoogleID para el email ${email}. Registrado: ${user.googleId}, Intento: ${googleId}.`);
+        // No se permite la vinculación. Se considera no autorizado.
+        // El controlador lanzará UnauthorizedException.
+        return null; 
+      }
+    }
+
+    // 3. Si no se encontró ni por Google ID ni por email, el usuario no existe en el sistema.
+    // Como no se deben crear nuevos usuarios, se devuelve null.
+    console.log(`BACKEND (AuthService): Usuario con email ${email} no encontrado en la base de datos. No se puede iniciar sesión con Google.`);
+    return null;
+  }
+
+
+  async login(user: Omit<User, 'password_hash' | 'googleId'> | UserPublicData | User) {
+    // Convertir a objeto plano si es un documento Mongoose
+    const userObject = ('toObject' in user && typeof user.toObject === 'function')
+                       ? user.toObject()
+                       : user;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password_hash, googleId, ...userSafeData } = userObject;
+
+    const userIdAsString = userSafeData._id
+      ? (typeof userSafeData._id === 'string' ? userSafeData._id : userSafeData._id.toString())
+      : ''; 
 
     const payload = {
-      email: user.email,
+      email: userSafeData.email,
       sub: userIdAsString,
-      roles: user.roles,
+      roles: userSafeData.roles,
     };
+
     return {
       access_token: this.jwtService.sign(payload),
       user: {
-        // Devolver datos públicos del usuario
         _id: userIdAsString,
-        email: user.email,
-        nombreCompleto: user.nombreCompleto,
-        roles: user.roles,
-        isActive: user.isActive,
+        email: userSafeData.email,
+        nombreCompleto: userSafeData.nombreCompleto,
+        roles: userSafeData.roles,
+        isActive: userSafeData.isActive,
+        createdAt: userSafeData.createdAt, // Incluir si es útil para el frontend
+        updatedAt: userSafeData.updatedAt, // Incluir si es útil para el frontend
       },
     };
   }
 
   async register(createUserDto: CreateUserDto): Promise<UserPublicData> {
     try {
-      // UsersService.create ya devuelve UserPublicData (sin password_hash)
       return await this.usersService.create(createUserDto);
     } catch (error) {
-      // Errores como ConflictException (email ya existe) serán lanzados por UsersService
-      // Aquí podríamos querer loggear o transformar el error si es necesario.
-      // Por ahora, dejamos que se propague.
       throw error;
     }
   }
