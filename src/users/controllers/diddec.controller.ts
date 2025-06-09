@@ -149,7 +149,7 @@ export class DIDDECController {
 
     // Estadísticas de departamentos y carreras
     const departments = await this.departmentsService.findAll();
-    const careers = await this.careersService.findAll(semester);
+    const careers = await this.careersService.findAll();
 
     return {
       semester,
@@ -712,7 +712,7 @@ export class DIDDECController {
     }
 
     // Alerta 4: Carreras sin jefe asignado
-    const careers = await this.careersService.findAll(semester);
+    const careers = await this.careersService.findAll();
     for (const career of careers) {
       if (!career.headId && career.isActive) {
         alerts.push({

@@ -52,8 +52,8 @@ export class CareersController {
     status: HttpStatus.OK,
     description: 'Lista de carreras recuperada exitosamente',
   })
-  findAll(@Query('semestre') semestre?: string) {
-    return this.careersService.findAll(semestre);
+  findAll() {
+    return this.careersService.findAll();
   }
 
   @Get(':id')

@@ -29,12 +29,9 @@ export class CareersService {
     return createdCareer.save();
   }
 
-  async findAll(semester?: string): Promise<Career[]> {
-    const query: any = { isActive: true };
-    if (semester) {
-      query.currentSemester = semester;
-    }
-    return this.careerModel.find(query).exec();
+  async findAll(/* Ya no espera el parámetro semester */): Promise<Career[]> {
+    //const query: any = { isActive: true }; // Solo filtra por carreras activas
+    return this.careerModel.find().exec();
   }
 
   async findOne(id: string): Promise<Career> {
