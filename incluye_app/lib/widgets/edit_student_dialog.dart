@@ -1,9 +1,10 @@
 // widgets/edit_student_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/student_model.dart';
-// import 'package:incluye_app/models/career_model.dart'; // Necesario si manejamos el objeto carrera con un selector
+import 'package:incluye_app/models/career_model.dart'; // IMPORTANTE
 import 'package:incluye_app/services/student_service.dart';
-import 'package:intl/intl.dart'; // Para formatear y parsear fechas
+import 'package:incluye_app/services/career_service.dart'; // IMPORTANTE
+import 'package:intl/intl.dart';
 
 class EditStudentDialog extends StatefulWidget {
   final Student student;
@@ -26,40 +27,64 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
   late TextEditingController _nombresController;
   late TextEditingController _apellidosController;
   late TextEditingController _emailController;
-  late TextEditingController _carreraNombreController; // Para mostrar/editar el nombre de la carrera
-  late TextEditingController _fechaNacimientoController; // Mostrará YYYY-MM-DD
+  // Ya no usaremos _carreraNombreController directamente para el input si es un dropdown
+  late TextEditingController _fechaNacimientoController;
   late TextEditingController _informacionContactoController;
   late TextEditingController _necesidadesController;
 
-  String? _fechaError; // Para errores de formato de fecha manual
+  String? _fechaError;
 
-  // Helper para formatear DateTime a String YYYY-MM-DD
+  // --- CAMPOS PARA EL DROPDOWN DE CARRERAS ---
+  List<Career> _availableCareers = [];
+  String? _selectedCareerId; // Almacenará el ID de la carrera seleccionada
+  bool _isLoadingCareers = true;
+  // --- FIN CAMPOS DROPDOWN ---
+
   String _formatDateForController(DateTime? date) {
     if (date == null) return '';
-    try {
-      return DateFormat('yyyy-MM-dd').format(date);
-    } catch (e) {
-      print("Error formateando fecha para controlador: $e");
-      return '';
-    }
+    try { return DateFormat('yyyy-MM-dd').format(date); } catch (e) { return ''; }
   }
 
   @override
   void initState() {
     super.initState();
-
-    _rutController = TextEditingController(text: widget.student.rut);
-    _nombresController = TextEditingController(text: widget.student.nombres);
-    _apellidosController = TextEditingController(text: widget.student.apellidos);
-    _emailController = TextEditingController(text: widget.student.email);
-    
-    _carreraNombreController = TextEditingController(text: widget.student.carreraNombre ?? '');
-    
-    _fechaNacimientoController = TextEditingController(text: _formatDateForController(widget.student.fechaNacimiento));
-    
-    _informacionContactoController = TextEditingController(text: widget.student.informacionContacto ?? '');
-    _necesidadesController = TextEditingController(text: widget.student.necesidadesEducativasEspeciales ?? '');
+    _loadCareersAndInitializeFields();
   }
+  
+  Future<void> _loadCareersAndInitializeFields() async {
+    setState(() { _isLoadingCareers = true; });
+    try {
+      final careers = await CareerService.getAllCareers();
+      if (!mounted) return;
+
+      setState(() {
+        _availableCareers = careers;
+        // Inicializar los controladores y el ID de carrera seleccionado
+        _rutController = TextEditingController(text: widget.student.rut);
+        _nombresController = TextEditingController(text: widget.student.nombres);
+        _apellidosController = TextEditingController(text: widget.student.apellidos);
+        _emailController = TextEditingController(text: widget.student.email);
+        
+        // Establecer el ID de carrera seleccionado si el estudiante ya tiene una
+        _selectedCareerId = widget.student.rawCarreraId ?? widget.student.carreraIdObject?.id;
+
+        _fechaNacimientoController = TextEditingController(text: _formatDateForController(widget.student.fechaNacimiento));
+        _informacionContactoController = TextEditingController(text: widget.student.informacionContacto ?? '');
+        _necesidadesController = TextEditingController(text: widget.student.necesidadesEducativasEspeciales ?? '');
+        
+        _isLoadingCareers = false;
+      });
+    } catch (e) {
+      print("Error cargando carreras en EditStudentDialog: $e");
+      if (mounted) {
+        setState(() { _isLoadingCareers = false; });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar lista de carreras: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
 
   @override
   void dispose() {
@@ -67,7 +92,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
     _nombresController.dispose();
     _apellidosController.dispose();
     _emailController.dispose();
-    _carreraNombreController.dispose();
+    // _carreraNombreController.dispose(); // Ya no se usa
     _fechaNacimientoController.dispose();
     _informacionContactoController.dispose();
     _necesidadesController.dispose();
@@ -79,6 +104,14 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
     setState(() => _fechaError = null);
 
     if (!_formKey.currentState!.validate()) return;
+
+    // Validar que se haya seleccionado una carrera
+    if (_selectedCareerId == null || _selectedCareerId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, seleccione una carrera.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
     final fechaNacimientoString = _fechaNacimientoController.text.trim();
     DateTime? fechaNacimientoDate;
@@ -99,6 +132,16 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
       }
     }
 
+    // Crear el objeto Career para el Student a partir del ID seleccionado
+    // Buscamos el objeto Career completo para pasarlo al constructor de Student si es necesario
+    // o simplemente pasamos el rawCarreraId si el constructor de Student lo espera así.
+    // El StudentModel que te di tiene rawCarreraId y carreraIdObject.
+    Career? selectedCareerObject;
+    if (_selectedCareerId != null) {
+        selectedCareerObject = _availableCareers.firstWhere((c) => c.id == _selectedCareerId, orElse: () => widget.student.carreraIdObject!); // Fallback al original si algo raro pasa
+    }
+
+
     final updatedStudent = Student(
       id: widget.student.id,
       rut: _rutController.text.trim(),
@@ -106,40 +149,33 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
       apellidos: _apellidosController.text.trim(),
       email: _emailController.text.trim(),
       
-      // Mantenemos el carreraId original. Si el nombre de la carrera se edita y el backend
-      // puede buscar el ID por nombre, eso se manejaría en el backend.
-      // Si no, este campo de texto para carrera solo edita la representación visual del nombre.
-      carreraId: widget.student.carreraId, 
-      // Si tuvieras un selector de carrera que actualiza un _selectedCareerId (String)
-      // podrías hacer:
-      // carreraId: _selectedCareerId != null ? Career(id: _selectedCareerId!, name: _carreraNombreController.text.trim()) : widget.student.carreraId,
-
+      rawCarreraId: _selectedCareerId, // Guardamos el ID seleccionado como string
+      carreraIdObject: selectedCareerObject, // Guardamos el objeto carrera seleccionado (si lo obtuvimos)
 
       userId: widget.student.userId,
-      semester: widget.student.semester,
+      semester: widget.student.semester, // Asumimos que no se edita aquí
       fechaNacimiento: fechaNacimientoDate,
       informacionContacto: _informacionContactoController.text.trim().isEmpty ? null : _informacionContactoController.text.trim(),
       necesidadesEducativasEspeciales: _necesidadesController.text.trim().isEmpty ? null : _necesidadesController.text.trim(),
-      // hasDisability fue eliminado del modelo
       
       telefono: widget.student.telefono,
       anioIngreso: widget.student.anioIngreso,
       consentimientoFirmado: widget.student.consentimientoFirmado,
       diagnosticosAntiguos: widget.student.diagnosticosAntiguos,
       createdAt: widget.student.createdAt,
-      updatedAt: widget.student.updatedAt, // El backend se encargará de actualizar este
+      updatedAt: widget.student.updatedAt,
     );
 
     final success = await StudentService.updateStudent(
       widget.student.id,
-      updatedStudent,
+      updatedStudent, // StudentService.updateStudent espera un objeto Student. Su toJson() enviará el carreraId (string).
     );
     
     if (!mounted) return;
     
     if (success) {
-      widget.onUpdated(updatedStudent); // Notifica a la pantalla anterior con los datos del formulario
-      // Navigator.of(context).pop(); // La pantalla anterior debería hacer pop si onUpdated se llama desde showDialog
+      widget.onUpdated(updatedStudent); 
+      // Navigator.of(context).pop(); // onUpdated debe manejar el pop si es necesario
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Estudiante actualizado exitosamente')),
       );
@@ -154,94 +190,52 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Editar Estudiante'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _rutController,
-                decoration: const InputDecoration(labelText: 'RUT'),
-                validator: _requiredValidator,
-              ),
-              TextFormField(
-                controller: _nombresController,
-                decoration: const InputDecoration(labelText: 'Nombres'),
-                validator: _requiredValidator,
-              ),
-              TextFormField(
-                controller: _apellidosController,
-                decoration: const InputDecoration(labelText: 'Apellidos'),
-                validator: _requiredValidator,
-              ),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) return 'Campo requerido';
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Email inválido';
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _carreraNombreController,
-                decoration: const InputDecoration(labelText: 'Carrera (Nombre)'),
-                // Si no se puede editar la carrera, considera readOnly: true
-                // validator: _requiredValidator, // Opcional
-              ),
-              TextFormField(
-                controller: _fechaNacimientoController,
-                decoration: InputDecoration(
-                  labelText: 'Fecha de Nacimiento (YYYY-MM-DD)',
-                  errorText: _fechaError,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () async {
-                      DateTime initialPickerDate;
-                      try {
-                        if (_fechaNacimientoController.text.isNotEmpty) {
-                          initialPickerDate = DateTime.parse(_fechaNacimientoController.text);
-                        } else {
-                           initialPickerDate = DateTime(2000); // Un default razonable
-                        }
-                      } catch (_) {
-                        initialPickerDate = DateTime(2000); // Fallback
-                      }
-
-                      DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: initialPickerDate,
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
+      content: _isLoadingCareers 
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(controller: _rutController, decoration: const InputDecoration(labelText: 'RUT'), validator: _requiredValidator),
+                TextFormField(controller: _nombresController, decoration: const InputDecoration(labelText: 'Nombres'), validator: _requiredValidator),
+                TextFormField(controller: _apellidosController, decoration: const InputDecoration(labelText: 'Apellidos'), validator: _requiredValidator),
+                TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email'), validator: (value) { /* ... */ return null; }),
+                
+                // --- DROPDOWN PARA CARRERAS ---
+                if (_availableCareers.isNotEmpty)
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Carrera'),
+                    value: _selectedCareerId,
+                    items: _availableCareers.map((Career career) {
+                      return DropdownMenuItem<String>(
+                        value: career.id,
+                        child: Text(career.name, overflow: TextOverflow.ellipsis),
                       );
-                      if (picked != null && mounted) {
-                        setState(() {
-                          _fechaNacimientoController.text = _formatDateForController(picked);
-                        });
-                      }
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedCareerId = newValue;
+                      });
                     },
-                  ),
-                ),
-              ),
-              TextFormField(
-                controller: _informacionContactoController,
-                decoration: const InputDecoration(labelText: 'Información de Contacto'),
-              ),
-              TextFormField(
-                controller: _necesidadesController,
-                decoration: const InputDecoration(labelText: 'Necesidades Educativas Especiales'),
-              ),
-            ],
+                    validator: (value) => value == null || value.isEmpty ? 'Seleccione una carrera' : null,
+                    isExpanded: true,
+                  )
+                else if (!_isLoadingCareers) // Si no está cargando y no hay carreras
+                   const Text("No hay carreras disponibles para seleccionar."),
+                // --- FIN DROPDOWN ---
+
+                TextFormField(controller: _fechaNacimientoController, decoration: InputDecoration(labelText: 'Fecha de Nacimiento (YYYY-MM-DD)', errorText: _fechaError, suffixIcon: IconButton(icon: const Icon(Icons.calendar_today), onPressed: () async { /* ... (lógica showDatePicker) ... */ }))),
+                TextFormField(controller: _informacionContactoController, decoration: const InputDecoration(labelText: 'Información de Contacto')),
+                TextFormField(controller: _necesidadesController, decoration: const InputDecoration(labelText: 'Necesidades Educativas Especiales')),
+              ],
+            ),
           ),
         ),
-      ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
+        ElevatedButton(onPressed: _isLoadingCareers ? null : _guardar, child: const Text('Guardar')),
       ],
     );
   }

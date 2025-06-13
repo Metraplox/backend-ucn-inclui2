@@ -1,7 +1,5 @@
 // screens/students/student_profile_screen.dart
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 import 'package:incluye_app/models/student_model.dart';
 // Asegúrate de que estos modelos y servicios existan y estén correctamente importados
 // import 'package:incluye_app/models/adjustment_model.dart'; // Si usas un modelo tipado para 'ajustes'
