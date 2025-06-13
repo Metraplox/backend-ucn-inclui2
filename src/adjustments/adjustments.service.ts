@@ -178,18 +178,28 @@ export class AdjustmentsService {
       .exec();
   }
 
-  async findByCourseNrc(
-    courseNrc: string,
-    semester?: string,
-  ): Promise<Adjustment[]> {
-    const query: any = { 'currentAdjustments.courseNrc': courseNrc };
-
+  async findByCourseNrc(courseNrc: string, semester?: string): Promise<Adjustment[]> {
+    console.log(courseNrc);
+    const query: any = {};
     if (semester) {
-      query.semester = semester;
-    }
-
-    return this.adjustmentModel.find(query).exec();
+      query.currentAdjustments = {
+        $elemMatch: {
+          courseNrc,
+          semester
+        }
+      };
+    } else {
+      query.currentAdjustments = {
+        $elemMatch: {
+          courseNrc
+        }
+      };
+      return this.adjustmentModel.find(query).exec();
   }
+
+  console.log('Query usada:', JSON.stringify(query, null, 2));
+  return this.adjustmentModel.find(query).exec();
+}
 
   async associateDocument(
     adjustmentId: string,

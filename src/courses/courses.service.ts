@@ -40,8 +40,9 @@ export class CoursesService {
   }
   
   async findCoursesByTeacher(teacherId: string, semester: string): Promise<Course[]> {
+    
     return this.courseModel.find({
-      teacherId: new Types.ObjectId(teacherId),
+      teacherId: teacherId,
       semestre: semester
     }).exec();
   }

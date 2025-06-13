@@ -92,6 +92,8 @@ export class TeacherAdjustmentsController {
   }> {
     // Obtener los cursos donde el docente está asignado
     const teacherCourses = await this.coursesService.findCoursesByTeacher(teacherId, semester);
+    console.log('ID DEL DOCENTE', teacherCourses);
+   
     
     // Para cada curso, verificar si tiene estudiantes con NEE
     const coursesWithNeeStudents: Array<{

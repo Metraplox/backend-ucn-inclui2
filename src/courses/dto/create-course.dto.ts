@@ -55,6 +55,16 @@ export class CreateCourseDto {
     required: false,
     type: [String],
   })
+  //agregue esto para que al obtener mycourse, se puedan obtener los cursos de un profesor, no estaba el atributo en el documento y por lo tanto retornaba lista vacía
+  @ApiProperty({
+    description: 'Id del Profesor',
+    example: 'MAT101',
+  })
+  @IsString({ message: 'El código debe ser texto' })
+  @IsNotEmpty({ message: 'El código no puede estar vacío' })
+  teacherId: string;
+
+
   @IsOptional()
   @IsArray({ message: 'Los estudiantes deben ser un array' })
   @IsMongoId({
