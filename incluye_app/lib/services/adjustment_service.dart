@@ -1,4 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:incluye_app/models/courseWithAdjustment_model.dart';
+import 'package:incluye_app/models/course_model.dart';
+import 'package:incluye_app/models/studentAdjustment.dart';
+import 'package:incluye_app/models/student_model.dart';
 import 'api_service.dart';
 import 'package:incluye_app/models/adjustment_model.dart'; // Ajusta según tu estructura
 import 'package:incluye_app/models/document_model.dart'; // Ajusta según tu estructura
@@ -167,6 +171,59 @@ class AdjustmentService {
       throw Exception(
         'Error al confirmar lectura del ajuste: ${response.data}',
       );
+    }
+  }
+
+  static Future<List<StudentAdjustment>> getCourseAdjustments(
+    String courseNrc,
+  ) async {
+    try {
+      final token = await ApiService.getToken();
+      if (token == null) throw Exception('Token nulo');
+      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+      final response = await dio.get(
+        '/teachers/adjustments/my-courses/$courseNrc',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      final List<dynamic> data = response.data['data'] ?? [];
+      return data.map((json) => StudentAdjustment.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Error al obtener cursos.$e');
+    }
+  }
+
+  static Future<List<CourseAdjustment>> getAdjustmenBySubject(
+    String IdSubject,
+  ) async {
+    try {
+      final token = await ApiService.getToken();
+      if (token == null) throw Exception('Token nulo');
+      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+      final response = await dio.get(
+        '/teachers/adjustments/my-courses/${IdSubject}',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        final List data = response.data['data'];
+
+        return data.map((json) => CourseAdjustment.fromJson(json)).toList();
+      } else {
+        throw Exception('Error al cargar los cursos');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
     }
   }
 }

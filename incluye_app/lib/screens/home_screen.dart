@@ -1,5 +1,6 @@
 // screens/home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:incluye_app/models/courseWithAdjustment_model.dart';
 import 'package:incluye_app/screens/courses/courses_list_screen.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/services/auth_service.dart';
@@ -37,10 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Student> _students = []; // Tipado como List<Student>
   int _totalStudents = 0;
   int _totalAdjustments = 0; // Esto es simulado, idealmente vendría de la API
-  int _pendingAlerts = 0;   // Esto es simulado
+  int _pendingAlerts = 0; // Esto es simulado
 
   // Lista de cursos para profesores.
-  List<Course> _courses = [];
+  List<CourseAdjustment> _courses = [];
 
   @override
   void initState() {
@@ -51,7 +52,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initialize() async {
     if (!mounted) return;
-    setState(() { _isLoading = true; });
+    setState(() {
+      _isLoading = true;
+    });
 
     await _checkRoleAndId(); // Obtiene roles y _currentUserId
 
@@ -69,7 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (mounted) {
-      setState(() { _isLoading = false; });
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -78,7 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAdminRole = await StudentService.isAdmin();
     final isTeacherRole = await StudentService.isTeacher();
 
-    User? userInfo = await StudentService.getCurrentUserInfo(); // Esto devuelve User?
+    User? userInfo =
+        await StudentService.getCurrentUserInfo(); // Esto devuelve User?
 
     if (mounted) {
       setState(() {
@@ -90,14 +96,14 @@ class _HomeScreenState extends State<HomeScreen> {
       //print("HomeScreen: Roles - Estudiante: $_isStudent, Admin: $_isAdmin, Profesor: $_isTeacher. UserID: $_currentUserId");
     }
   }
-  
+
   Future<void> _loadCoordinadoraData() async {
     try {
       final studentsData = await StudentService.getAllStudents();
       if (!mounted) return;
 
       // Simulación de datos, idealmente vendrían de la API
-      final totalAdjustmentsData = studentsData.length * 2; 
+      final totalAdjustmentsData = studentsData.length * 2;
       final pendingAlertsData = (studentsData.length / 5).round();
 
       setState(() {
@@ -110,7 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
       //print('HomeScreen: Error al cargar datos de coordinadora: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al cargar datos del panel: ${e.toString()}')),
+          SnackBar(
+            content: Text('Error al cargar datos del panel: ${e.toString()}'),
+          ),
         );
       }
     }
@@ -138,20 +146,32 @@ class _HomeScreenState extends State<HomeScreen> {
         // o que tienes una forma de obtener el Student ID si es necesario.
         // Si _currentUserId es el ID del *usuario*, y AdjustmentService espera el ID del *estudiante*,
         // esta lógica necesita cambiar para obtener primero el perfil del estudiante y luego su ID.
-        
+
         // Para simplificar, si es estudiante, usamos el endpoint de su propio perfil para obtener ajustes (si existiera)
         // o mantenemos la lógica actual si AdjustmentService lo maneja.
         // Aquí la lógica original:
-        final ajustes = await AdjustmentService.getAdjustmentHistory(_currentUserId!); // Pasa el User ID
+        final ajustes = await AdjustmentService.getAdjustmentHistory(
+          _currentUserId!,
+        ); // Pasa el User ID
 
         // CORREGIDO: Quitar el cast (a as Adjustment) si la lista ya es tipada
-        final count = ajustes.where((a) => 
-            a.isPending || 
-            (a.expirationDate != null && DateTime.tryParse(a.expirationDate!)?.isAfter(DateTime.now()) == true)
-        ).length;
+        final count =
+            ajustes
+                .where(
+                  (a) =>
+                      a.isPending ||
+                      (a.expirationDate != null &&
+                          DateTime.tryParse(
+                                a.expirationDate!,
+                              )?.isAfter(DateTime.now()) ==
+                              true),
+                )
+                .length;
 
         if (mounted) {
-          setState(() { _pendingAdjustmentsCount = count; });
+          setState(() {
+            _pendingAdjustmentsCount = count;
+          });
         }
         return count;
       },
@@ -165,14 +185,15 @@ class _HomeScreenState extends State<HomeScreen> {
               // Para este ejemplo, si eres estudiante, se asume que AdjustmentHistoryScreen
               // puede tomar el User ID y encontrar los ajustes. O necesitas pasar el Student ID.
               // Aquí pasamos _currentUserId, asumiendo que es el ID relevante para la pantalla de historial.
-              builder: (context) => AdjustmentHistoryScreen(studentId: _currentUserId!),
+              builder:
+                  (context) =>
+                      AdjustmentHistoryScreen(studentId: _currentUserId!),
             ),
           );
         }
       },
     );
   }
-
 
   Future<void> _loadCourses() async {
     String? nombreCompleto = await AuthService.getUserName();
@@ -184,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _courses = coursesData;
           print('Cursos : ${_courses.length}');
-          for(var c in _courses){
+          for (var c in _courses) {
             print('Curso: ${c.nombre}');
           }
         });
@@ -200,31 +221,46 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  static void _onEditDemo() { /* ... */ }
+  static void _onEditDemo() {
+    /* ... */
+  }
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      title: _isStudent ? 'Mis Asignaturas y Ajustes' : _isAdmin ? 'Panel de Coordinadora' : _isTeacher ? 'Panel Profesor' : 'Inicio',
+      title:
+          _isStudent
+              ? 'Mis Asignaturas y Ajustes'
+              : _isAdmin
+              ? 'Panel de Coordinadora'
+              : _isTeacher
+              ? 'Panel Profesor'
+              : 'Inicio',
       isStudent: _isStudent,
       isAdmin: _isAdmin,
       isTeacher: _isTeacher,
-      floatingActionButton: _isStudent // Solo mostrar FAB si es estudiante
-          ? FloatingActionButton(
-              onPressed: _viewOwnProfile,
-              tooltip: 'Ver mi perfil',
-              child: const Icon(Icons.person),
-            )
-          : null,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _isStudent
+      floatingActionButton:
+          _isStudent // Solo mostrar FAB si es estudiante
+              ? FloatingActionButton(
+                onPressed: _viewOwnProfile,
+                tooltip: 'Ver mi perfil',
+                child: const Icon(Icons.person),
+              )
+              : null,
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _isStudent
               ? _buildStudentDashboard() // Extraído a un método
               : _isAdmin
-                  ? _buildAdminDashboard()
-                  : _isTeacher
-                      ? _buildTeacherDashboard()
-                      : const Center(child: Text('Bienvenido. Por favor, inicia sesión o contacta al administrador si no tienes un rol asignado.')),
+              ? _buildAdminDashboard()
+              : _isTeacher
+              ? _buildTeacherDashboard()
+              : const Center(
+                child: Text(
+                  'Bienvenido. Por favor, inicia sesión o contacta al administrador si no tienes un rol asignado.',
+                ),
+              ),
     );
   }
 
@@ -248,8 +284,15 @@ class _HomeScreenState extends State<HomeScreen> {
             Card(
               color: Colors.blue.shade50,
               child: ListTile(
-                leading: CircleAvatar(backgroundColor: Colors.blue, child: Text(_pendingAdjustmentsCount.toString())),
-                title: Text(_pendingAdjustmentsCount == 1 ? 'Tienes 1 ajuste activo/pendiente' : 'Tienes $_pendingAdjustmentsCount ajustes activos/pendientes'),
+                leading: CircleAvatar(
+                  backgroundColor: Colors.blue,
+                  child: Text(_pendingAdjustmentsCount.toString()),
+                ),
+                title: Text(
+                  _pendingAdjustmentsCount == 1
+                      ? 'Tienes 1 ajuste activo/pendiente'
+                      : 'Tienes $_pendingAdjustmentsCount ajustes activos/pendientes',
+                ),
                 subtitle: const Text('Ver historial de ajustes'),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () {
@@ -259,18 +302,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Esto es una simplificación y puede necesitar que obtengas el Student ID primero.
                     // O que AdjustmentHistoryScreen pueda funcionar con el User ID.
                     // Para este ejemplo, asumimos que pasamos el User ID y la pantalla lo maneja.
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => AdjustmentHistoryScreen(studentId: _currentUserId!)));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => AdjustmentHistoryScreen(
+                              studentId: _currentUserId!,
+                            ),
+                      ),
+                    );
                   }
                 },
               ),
             ),
           ],
           const SizedBox(height: 20),
-          const Text('Mis asignaturas con ajustes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'Mis asignaturas con ajustes',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           // TODO: Cargar cursos reales del estudiante desde un servicio
-          CourseWidget(courseName: 'Cálculo II', professor: 'Jorge Díaz', adjustments: ['Más tiempo', 'Letras grandes'], onEdit: _onEditDemo),
-          CourseWidget(courseName: 'Álgebra II', professor: 'Pablo Díaz', adjustments: ['Tiempo extra'], onEdit: _onEditDemo),
+          CourseWidget(
+            courseName: 'Cálculo II',
+            professor: 'Jorge Díaz',
+            adjustments: ['Más tiempo', 'Letras grandes'],
+            onEdit: _onEditDemo,
+          ),
+          CourseWidget(
+            courseName: 'Álgebra II',
+            professor: 'Pablo Díaz',
+            adjustments: ['Tiempo extra'],
+            onEdit: _onEditDemo,
+          ),
         ],
       ),
     );
@@ -282,13 +346,38 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Alertas y notificaciones.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          _buildAlertCard('Notificaciones sin revisar.', '${(_totalStudents / 3).round()} notificaciones sin abrir.', Icons.warning, Colors.red, onTap: () { /* ... */ }),
+          const Text(
+            'Alertas y notificaciones.',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          _buildAlertCard(
+            'Notificaciones sin revisar.',
+            '${(_totalStudents / 3).round()} notificaciones sin abrir.',
+            Icons.warning,
+            Colors.red,
+            onTap: () {
+              /* ... */
+            },
+          ),
           const SizedBox(height: 24),
-          const Text('Mis Asignaturas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          _buildAlertCard('Asignaturas semestre actual.', '${_courses.length} asignaturas a cargo.', Icons.book, const Color.fromARGB(255, 90, 130, 241), onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const CoursesListScreen()));
-          }),
+          const Text(
+            'Mis Asignaturas',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          _buildAlertCard(
+            'Asignaturas semestre actual.',
+            '${_courses.length} asignaturas a cargo.',
+            Icons.book,
+            const Color.fromARGB(255, 90, 130, 241),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CoursesListScreen(),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -300,48 +389,104 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Card( /* ... (Tarjeta de bienvenida con _buildStatCard) ... */ ),
+          Card(/* ... (Tarjeta de bienvenida con _buildStatCard) ... */),
           const SizedBox(height: 24),
-          const Text('Alertas y Notificaciones', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'Alertas y Notificaciones',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
-          _buildAlertCard('Nuevos Ingresos', '${(_students.length * 0.2).round()} estudiantes nuevos requieren revisión', Icons.person_add, Colors.orange, onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentListScreen()));
-          }),
-          _buildAlertCard('Actualización de Ajustes', '${(_students.length * 0.1).round()} solicitudes de actualización', Icons.update, Colors.blue, onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Solicitudes de Actualización'),
-                content: SizedBox(
-                  width: double.maxFinite,
-                  child: _students.isEmpty 
-                    ? const Text("No hay estudiantes para mostrar.") 
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: (_students.length * 0.1).round().clamp(0, _students.length), // Asegurar que no exceda
-                        itemBuilder: (context, index) {
-                          if (_students.isEmpty) return const SizedBox.shrink(); // No debería llegar aquí si se maneja arriba
-                          final student = _students[index % _students.length]; // Para evitar errores si la lista es pequeña
-                          return ListTile(
-                            title: Text(student.nombreCompleto), // CORREGIDO
-                            subtitle: Text('${student.carreraNombre ?? 'Sin carrera'} - ${student.rut}'), // CORREGIDO
-                            leading: const CircleAvatar(child: Icon(Icons.person)),
-                          );
-                        },
-                      ),
+          _buildAlertCard(
+            'Nuevos Ingresos',
+            '${(_students.length * 0.2).round()} estudiantes nuevos requieren revisión',
+            Icons.person_add,
+            Colors.orange,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentListScreen(),
                 ),
-                actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar'))],
-              ),
-            );
-          }),
+              );
+            },
+          ),
+          _buildAlertCard(
+            'Actualización de Ajustes',
+            '${(_students.length * 0.1).round()} solicitudes de actualización',
+            Icons.update,
+            Colors.blue,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Solicitudes de Actualización'),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        child:
+                            _students.isEmpty
+                                ? const Text("No hay estudiantes para mostrar.")
+                                : ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: (_students.length * 0.1)
+                                      .round()
+                                      .clamp(
+                                        0,
+                                        _students.length,
+                                      ), // Asegurar que no exceda
+                                  itemBuilder: (context, index) {
+                                    if (_students.isEmpty)
+                                      return const SizedBox.shrink(); // No debería llegar aquí si se maneja arriba
+                                    final student =
+                                        _students[index %
+                                            _students
+                                                .length]; // Para evitar errores si la lista es pequeña
+                                    return ListTile(
+                                      title: Text(
+                                        student.nombreCompleto,
+                                      ), // CORREGIDO
+                                      subtitle: Text(
+                                        '${student.carreraNombre ?? 'Sin carrera'} - ${student.rut}',
+                                      ), // CORREGIDO
+                                      leading: const CircleAvatar(
+                                        child: Icon(Icons.person),
+                                      ),
+                                    );
+                                  },
+                                ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cerrar'),
+                        ),
+                      ],
+                    ),
+              );
+            },
+          ),
           // ... (Otras _buildAlertCard y _buildFeatureCard usando los datos de _students donde sea apropiado)
           // ... Asegúrate de usar student.nombreCompleto y student.carreraNombre
-           const SizedBox(height: 24),
-          const Text('Gestión de Estudiantes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 24),
+          const Text(
+            'Gestión de Estudiantes',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
-          _buildFeatureCard('Listado de Estudiantes', 'Ver todos los estudiantes', Icons.list_alt, Colors.indigo, onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentListScreen()));
-          }),
+          _buildFeatureCard(
+            'Listado de Estudiantes',
+            'Ver todos los estudiantes',
+            Icons.list_alt,
+            Colors.indigo,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentListScreen(),
+                ),
+              );
+            },
+          ),
           // ... más _buildFeatureCard
         ],
       ),

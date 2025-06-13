@@ -13,41 +13,65 @@ class Adjustment {
   final String? comentarios;
   final bool? requiresSemesterConfirmation;
   final String? fechaInicio;
-  
+
   // Propiedades para compatibilidad con código existente
   String get curso => courseNrc ?? '';
   String get fechaAprobacion => approvedAt ?? '';
   String get vencimiento => expirationDate ?? '';
   String get estado => status ?? 'pendiente';
   String get aprobadoPor => approvedBy ?? '';
-  
+
   // Operador de acceso por índice para mantener compatibilidad con código existente
   dynamic operator [](String key) {
     switch (key) {
-      case 'id': return id;
-      case '_id': return id;
-      case 'tipo': return tipo;
-      case 'type': return tipo;
-      case 'descripcion': return descripcion;
-      case 'description': return descripcion;
-      case 'curso': return courseNrc;
-      case 'courseNrc': return courseNrc;
-      case 'studentId': return studentId;
-      case 'studentRut': return studentRut;
-      case 'fechaAprobacion': return approvedAt;
-      case 'approvedAt': return approvedAt;
-      case 'vencimiento': return expirationDate;
-      case 'expirationDate': return expirationDate;
-      case 'fechaInicio': return fechaInicio;
-      case 'estado': return status;
-      case 'status': return status;
-      case 'aprobadoPor': return approvedBy;
-      case 'approvedBy': return approvedBy;
-      case 'documentosAsociados': return documentosAsociados;
-      case 'comentarios': return comentarios;
-      case 'comments': return comentarios;
-      case 'requiresSemesterConfirmation': return requiresSemesterConfirmation;
-      default: return null;
+      case 'id':
+        return id;
+      case '_id':
+        return id;
+      case 'tipo':
+        return tipo;
+      case 'type':
+        return tipo;
+      case 'descripcion':
+        return descripcion;
+      case 'description':
+        return descripcion;
+      case 'curso':
+        return courseNrc;
+      case 'courseNrc':
+        return courseNrc;
+      case 'studentId':
+        return studentId;
+      case 'studentRut':
+        return studentRut;
+      case 'fechaAprobacion':
+        return approvedAt;
+      case 'approvedAt':
+        return approvedAt;
+      case 'vencimiento':
+        return expirationDate;
+      case 'expirationDate':
+        return expirationDate;
+      case 'fechaInicio':
+        return fechaInicio;
+      case 'estado':
+        return status;
+      case 'status':
+        return status;
+      case 'aprobadoPor':
+        return approvedBy;
+      case 'approvedBy':
+        return approvedBy;
+      case 'documentosAsociados':
+        return documentosAsociados;
+      case 'comentarios':
+        return comentarios;
+      case 'comments':
+        return comentarios;
+      case 'requiresSemesterConfirmation':
+        return requiresSemesterConfirmation;
+      default:
+        return null;
     }
   }
 
@@ -80,9 +104,10 @@ class Adjustment {
       expirationDate: json['expirationDate'] ?? json['vencimiento'],
       status: json['status'] ?? json['estado'] ?? 'PENDIENTE',
       approvedBy: json['approvedBy'] ?? json['aprobadoPor'],
-      documentosAsociados: json['documentosAsociados'] != null 
-          ? List<String>.from(json['documentosAsociados']) 
-          : null,
+      documentosAsociados:
+          json['documentosAsociados'] != null
+              ? List<String>.from(json['documentosAsociados'])
+              : null,
       comentarios: json['comments'] ?? json['comentarios'],
       requiresSemesterConfirmation: json['requiresSemesterConfirmation'],
       fechaInicio: json['fechaInicio'],
@@ -103,30 +128,37 @@ class Adjustment {
     if (expirationDate != null) data['expirationDate'] = expirationDate;
     if (status != null) data['status'] = status;
     if (approvedBy != null) data['approvedBy'] = approvedBy;
-    if (documentosAsociados != null) data['documentosAsociados'] = documentosAsociados;
+    if (documentosAsociados != null)
+      data['documentosAsociados'] = documentosAsociados;
     if (comentarios != null) data['comments'] = comentarios;
-    if (requiresSemesterConfirmation != null) data['requiresSemesterConfirmation'] = requiresSemesterConfirmation;
+    if (requiresSemesterConfirmation != null)
+      data['requiresSemesterConfirmation'] = requiresSemesterConfirmation;
     if (fechaInicio != null) data['fechaInicio'] = fechaInicio;
 
     return data;
   }
 
   bool get isActive {
-    if (expirationDate == null) return status?.toUpperCase() == 'ACTIVO' || status?.toUpperCase() == 'ACTIVE';
-    
+    if (expirationDate == null)
+      return status?.toUpperCase() == 'ACTIVO' ||
+          status?.toUpperCase() == 'ACTIVE';
+
     try {
       final fechaVencimiento = DateTime.parse(expirationDate!);
-      return fechaVencimiento.isAfter(DateTime.now()) && 
-             (status?.toUpperCase() == 'ACTIVO' || status?.toUpperCase() == 'ACTIVE');
+      return fechaVencimiento.isAfter(DateTime.now()) &&
+          (status?.toUpperCase() == 'ACTIVO' ||
+              status?.toUpperCase() == 'ACTIVE');
     } catch (e) {
       return false;
     }
   }
-  
-  bool get isPending => status?.toUpperCase() == 'PENDIENTE' || status?.toUpperCase() == 'PENDING';
+
+  bool get isPending =>
+      status?.toUpperCase() == 'PENDIENTE' ||
+      status?.toUpperCase() == 'PENDING';
   bool get isExpired {
     if (expirationDate == null) return false;
-    
+
     try {
       final fechaVencimiento = DateTime.parse(expirationDate!);
       return fechaVencimiento.isBefore(DateTime.now());

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/models/courseWithAdjustment_model.dart';
 import 'package:incluye_app/models/course_model.dart';
 import 'package:incluye_app/screens/students/student_subject_list.dart';
 import 'package:incluye_app/services/auth_service.dart';
@@ -12,7 +13,7 @@ class CoursesListScreen extends StatefulWidget {
 }
 
 class _CoursesListScreenState extends State<CoursesListScreen> {
-  Future<List<Course>>? _coursesFuture;
+  Future<List<CourseAdjustment>>? _coursesFuture;
 
   @override
   void initState() {
@@ -23,10 +24,11 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
   void _loadCourses() async {
     final name = await AuthService.getUserName();
     final courses = await CourseService.getTeacherCourses(name ?? '');
-      for (var course in courses) {
-    print('ID del curso: ${course.id}');
-  }
-    
+    for (var course in courses) {
+      print('ID del curso: ${course.id}');
+      print('Nrc del curso ${course.nrc}');
+    }
+
     setState(() {
       _coursesFuture = Future.value(courses);
     });
@@ -58,7 +60,7 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Asignaturas a cargo')),
-      body: FutureBuilder<List<Course>>(
+      body: FutureBuilder<List<CourseAdjustment>>(
         future: _coursesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -77,7 +79,7 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
                   final course = courses[index];
                   return _buildFeatureCard(
                     course.nombre,
-                    '${course.studentIds?.length ?? 0} estudiantes con ajustes razonables.',
+                    '${course.studentsWithNeeCount} estudiantes con ajustes razonables.',
                     Icons.book_sharp,
                     const Color.fromARGB(255, 2, 72, 104),
                     onTap: () {
@@ -85,9 +87,10 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
                         context,
                         MaterialPageRoute(
                           builder:
-                              (context) =>
-                                  StudentSubjectListScreen(courseId: course.id),
-                                  
+                              (context) => StudentSubjectListScreen(
+                                courseId: course.id,
+                                courseNrc: course.nrc,
+                              ),
                         ),
                       );
                     },

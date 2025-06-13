@@ -8,7 +8,12 @@ import 'package:incluye_app/screens/students/student_profile_screen.dart';
 
 class StudentSubjectListScreen extends StatefulWidget {
   final String courseId;
-  const StudentSubjectListScreen({super.key, required this.courseId});
+  final String courseNrc;
+  const StudentSubjectListScreen({
+    super.key,
+    required this.courseId,
+    required this.courseNrc,
+  });
 
   @override
   State<StudentSubjectListScreen> createState() =>
@@ -200,6 +205,7 @@ class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
                                       (context) =>
                                           StudentAdjustmentSubjectScreen(
                                             studentId: student.id,
+                                            courseNrc: widget.courseNrc,
                                             courseId: widget.courseId,
                                           ),
                                 ),
