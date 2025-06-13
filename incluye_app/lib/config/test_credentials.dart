@@ -11,7 +11,7 @@ class TestCredentials {
   static const String studentPassword = 'inclui2025';
 
   // Credenciales de profesor
-  static const String teacherEmail = 'docente1@ucn.cl';
+  static const String teacherEmail = 'profe1@ucn.cl';
   static const String teacherPassword = 'inclui2025';
 
   // Obtener todas las credenciales como lista para probar automáticamente

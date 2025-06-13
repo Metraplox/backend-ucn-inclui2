@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/screens/courses/courses_list_screen.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
+import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/app_scaffold.dart';
 import 'package:incluye_app/widgets/course_widget.dart'; // Asumiendo que este widget está definido
@@ -86,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isTeacher = isTeacherRole;
         _currentUserId = userInfo?.id; // Obtiene el ID del objeto User
       });
-      print("HomeScreen: Roles - Estudiante: $_isStudent, Admin: $_isAdmin, Profesor: $_isTeacher. UserID: $_currentUserId");
+      //print("HomeScreen: Roles - Estudiante: $_isStudent, Admin: $_isAdmin, Profesor: $_isTeacher. UserID: $_currentUserId");
     }
   }
   
@@ -106,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _pendingAlerts = pendingAlertsData;
       });
     } catch (e) {
-      print('HomeScreen: Error al cargar datos de coordinadora: $e');
+      //print('HomeScreen: Error al cargar datos de coordinadora: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al cargar datos del panel: ${e.toString()}')),
@@ -117,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _checkForNotifications() async {
     if (_currentUserId == null) {
-      print("HomeScreen (_checkForNotifications): _currentUserId es null, no se pueden buscar notificaciones.");
+      //print("HomeScreen (_checkForNotifications): _currentUserId es null, no se pueden buscar notificaciones.");
       return;
     }
     // Asumimos que AdjustmentService.getAdjustmentHistory espera el ID del USER
@@ -174,13 +175,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Future<void> _loadCourses() async {
-    User? currentUser = await StudentService.getCurrentUserInfo();
-    if (currentUser != null && mounted) {
+    String? nombreCompleto = await AuthService.getUserName();
+
+    if (nombreCompleto != null && mounted) {
       // Usamos nombreCompleto que ahora es el campo principal en User
-      final coursesData = await CourseService.getTeacherCourses(currentUser.nombreCompleto);
+      final coursesData = await CourseService.getTeacherCourses(nombreCompleto);
       if (mounted) {
         setState(() {
           _courses = coursesData;
+          print('Cursos : ${_courses.length}');
+          for(var c in _courses){
+            print('Curso: ${c.nombre}');
+          }
         });
       }
     }

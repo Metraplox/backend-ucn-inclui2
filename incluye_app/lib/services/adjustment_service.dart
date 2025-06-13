@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'api_service.dart';
 import 'package:incluye_app/models/adjustment_model.dart'; // Ajusta según tu estructura
@@ -42,17 +41,13 @@ class AdjustmentService {
       if (token == null) throw Exception('Token nulo');
 
       final isUpdate = adjustment.id != null;
-      final endpoint = isUpdate ? '/adjustments/${adjustment.id}' : '/adjustments';
+      final endpoint =
+          isUpdate ? '/adjustments/${adjustment.id}' : '/adjustments';
 
-      final Response response = isUpdate
-          ? await ApiService.dio.put(
-              endpoint,
-              data: adjustment.toJson(),
-            )
-          : await ApiService.dio.post(
-              endpoint,
-              data: adjustment.toJson(),
-            );
+      final Response response =
+          isUpdate
+              ? await ApiService.dio.put(endpoint, data: adjustment.toJson())
+              : await ApiService.dio.post(endpoint, data: adjustment.toJson());
 
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
@@ -61,7 +56,10 @@ class AdjustmentService {
     }
   }
 
-  static Future<bool> associateDocumentToAdjustment(String adjustmentId, String documentId) async {
+  static Future<bool> associateDocumentToAdjustment(
+    String adjustmentId,
+    String documentId,
+  ) async {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
@@ -78,7 +76,9 @@ class AdjustmentService {
     }
   }
 
-  static Future<List<Document>> getAdjustmentDocuments(String adjustmentId) async {
+  static Future<List<Document>> getAdjustmentDocuments(
+    String adjustmentId,
+  ) async {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
@@ -98,7 +98,10 @@ class AdjustmentService {
     }
   }
 
-  static Future<bool> updateAdjustmentStatus(String adjustmentId, String status) async {
+  static Future<bool> updateAdjustmentStatus(
+    String adjustmentId,
+    String status,
+  ) async {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
@@ -120,9 +123,7 @@ class AdjustmentService {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
 
-      final response = await ApiService.dio.delete(
-        '/adjustments/$id',
-      );
+      final response = await ApiService.dio.delete('/adjustments/$id');
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
@@ -136,9 +137,7 @@ class AdjustmentService {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
 
-      final response = await ApiService.dio.get(
-        '/adjustments/categories',
-      );
+      final response = await ApiService.dio.get('/adjustments/categories');
 
       if (response.statusCode == 200) {
         return List<Map<String, dynamic>>.from(response.data);
@@ -147,6 +146,27 @@ class AdjustmentService {
     } catch (e) {
       ApiService.handleApiError('Obtener categorías ajustes', e);
       return [];
+    }
+  }
+
+  static Future<void> setReadAdjustment(String adjustmentId) async {
+    final token = await ApiService.getToken();
+    if (token == null) throw Exception('Token nulo');
+    final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+    final response = await dio.patch(
+      '/teachers/adjustments/${adjustmentId}/acknowledge',
+      options: Options(
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error al confirmar lectura del ajuste: ${response.data}',
+      );
     }
   }
 }

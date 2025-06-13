@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/models/adjustment_model.dart';
+import 'package:incluye_app/models/student_model.dart';
+import 'package:incluye_app/screens/students/studentAdjustmentSubject_screen.dart';
+import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/services/course_service.dart';
 import 'package:incluye_app/screens/students/student_profile_screen.dart';
 
@@ -12,10 +16,11 @@ class StudentSubjectListScreen extends StatefulWidget {
 }
 
 class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
-  List<dynamic> _students = [];
-  List<dynamic> _filteredStudents = [];
+  List<Student> _students = [];
+  List<Student> _filteredStudents = [];
   bool _isLoading = true;
-
+  Map<String, bool> _adjustmentChecked = {};
+  bool _checkLoading = true;
   // Controlador para el campo de búsqueda
   final TextEditingController _searchController = TextEditingController();
 
@@ -47,6 +52,7 @@ class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
     final students = await CourseService.getStudentsBySubject(widget.courseId);
     setState(() {
       _students = students;
+
       _filteredStudents = students;
       _isLoading = false;
     });
@@ -69,14 +75,13 @@ class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
             switch (_selectedFilter) {
               case 'Nombre':
                 final fullName =
-                    '${student['nombres']} ${student['apellidos']}'
-                        .toLowerCase();
+                    '${student.nombres} ${student.apellidos}'.toLowerCase();
                 return fullName.contains(lowerCaseQuery);
               case 'RUT':
-                return student['rut']?.toLowerCase().contains(lowerCaseQuery) ??
+                return student.rut.toLowerCase().contains(lowerCaseQuery) ??
                     false;
               case 'Carrera':
-                return student['carrera']?.toLowerCase().contains(
+                return student.carreraNombre?.toLowerCase().contains(
                       lowerCaseQuery,
                     ) ??
                     false;
@@ -84,6 +89,10 @@ class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
                 return false;
             }
           }).toList();
+      for (var student in _students) {
+        _adjustmentChecked[student.id] = false;
+      }
+      _checkLoading = false;
     });
   }
 
@@ -163,30 +172,51 @@ class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
                         return ListTile(
                           // Título con nombre y apellido del estudiante
                           title: Text(
-                            '${student['nombres']} ${student['apellidos']}',
+                            '${student.nombreCompleto} ',
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           // Subtítulo con el email del estudiante
-                          subtitle: Text(student['email']),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Botón para ver perfil del estudiante
-                              IconButton(
-                                icon: const Icon(Icons.person),
-                                tooltip: 'Ver perfil',
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => StudentProfileScreen(
-                                            studentId: student['_id'],
-                                          ),
-                                    ),
-                                  );
-                                },
+                              Text(
+                                student.email,
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w400,
+                                ),
                               ),
                             ],
+                          ),
+                          trailing: TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          StudentAdjustmentSubjectScreen(
+                                            studentId: student.id,
+                                            courseId: widget.courseId,
+                                          ),
+                                ),
+                              );
+                            },
+
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.black,
+                            ),
+                            child: Text(
+                              'Ver Ajustes',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         );
                       },

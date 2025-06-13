@@ -23,6 +23,10 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
   void _loadCourses() async {
     final name = await AuthService.getUserName();
     final courses = await CourseService.getTeacherCourses(name ?? '');
+      for (var course in courses) {
+    print('ID del curso: ${course.id}');
+  }
+    
     setState(() {
       _coursesFuture = Future.value(courses);
     });
@@ -83,6 +87,7 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
                           builder:
                               (context) =>
                                   StudentSubjectListScreen(courseId: course.id),
+                                  
                         ),
                       );
                     },

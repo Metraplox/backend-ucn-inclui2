@@ -18,13 +18,13 @@ class Course {
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
       id: json['_id'] ?? json['id'] ?? '',
-      codigo: json['codigo'] ?? '',
+      codigo: json['code'] ?? '',
       nombre: json['nombre'] ?? '',
-      profesor: json['profesor'],
+      profesor: json['teacherName'],
       semestre: json['semestre'],
       studentIds:
-          json['estudiantes'] != null
-              ? List<String>.from(json['estudiantes'])
+          json['students'] != null
+              ? List<String>.from(json['students'])
               : [],
     );
   }

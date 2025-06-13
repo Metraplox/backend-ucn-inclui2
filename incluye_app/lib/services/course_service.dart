@@ -42,11 +42,17 @@ class CourseService {
         ),
       );
       if (response.statusCode == 200) {
-        final List data = response.data;
-        return data
+        final Map<String, dynamic> responseBody= response.data;
+        if(!responseBody.containsKey('data')||responseBody['data']==null){
+          throw Exception('La respuesta no contiene datos');
+        }
+        final List<dynamic> coursesJson=responseBody['data'];
+        
+        return coursesJson
             .map((json) => Course.fromJson(json))
             .where((course) => course.profesor == teacherName)
             .toList();
+        
       } else {
         throw Exception('Error al cargar los cursos');
       }
@@ -61,7 +67,7 @@ class CourseService {
       if (token == null) throw Exception('Token nulo');
       final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
       final response = await dio.get(
-        '/courses/${IdSubject}/students',
+        '/courses/${IdSubject}/students-with-adjustments',
         options: Options(
           headers: {
             'Accept': 'application/json',
@@ -71,7 +77,7 @@ class CourseService {
         ),
       );
       if (response.statusCode == 200) {
-        final List data = response.data;
+        final List data = response.data['data'];
 
         return data.map((json) => Student.fromJson(json)).toList();
       } else {
