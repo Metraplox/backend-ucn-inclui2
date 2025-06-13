@@ -41,6 +41,13 @@ export class AdjustmentsService {
   ) {}
 
   async create(createAdjustmentDto: CreateAdjustmentDto): Promise<Adjustment> {
+      if (!createAdjustmentDto.createdAt) {
+    createAdjustmentDto.createdAt = new Date().toISOString();
+  }
+
+  if (!createAdjustmentDto.updatedAt) {
+    createAdjustmentDto.updatedAt = new Date().toISOString();
+  }
     const createdAdjustment = new this.adjustmentModel(createAdjustmentDto);
     return createdAdjustment.save();
   }
@@ -50,6 +57,7 @@ export class AdjustmentsService {
   }
 
   async findOne(id: string): Promise<Adjustment | null> {
+    console.log('buscando ajuste con id: ',id);
     return this.adjustmentModel.findById(id).exec();
   }
 
@@ -81,15 +89,13 @@ export class AdjustmentsService {
         .exec();
       
       // Si no hay resultado, devolver null
-      if (!result || !result.value) {
-        return null;
-      }
+      return result as unknown as Adjustment | null;
       
       // El objeto value contiene el documento actualizado
-      const doc = result.value;
+      //const doc = result.value;
       
       // Asegurarnos de que tenemos un documento válido
-      return doc as unknown as Adjustment;
+      //return doc as unknown as Adjustment;
     } catch (error) {
       this.logger.error(`Error al actualizar ajuste: ${error.message}`, error.stack);
       return null; // Devolver null en lugar de lanzar excepción para consistencia con comportamiento previo
@@ -295,6 +301,7 @@ export class AdjustmentsService {
     // Actualizar el estado del ajuste
     const updatePath = `currentAdjustments.${adjustmentIndex}.estado`;
     const updateData = {
+      
       [updatePath]: newStatus,
       ultimaModificacion: new Date(),
       modificadoPor: new Types.ObjectId(updatedByUserId),

@@ -102,7 +102,7 @@ export class CoursesService {
 
   async findStudentsWithAdjustments(courseId: string): Promise<any[]> {
     const course = await this.findOne(courseId);
-
+    console.log(course);
     // Encontrar todos los ajustes activos para el curso específico
     const adjustments = await this.adjustmentModel
       .find({
@@ -110,6 +110,7 @@ export class CoursesService {
         'currentAdjustments.estado': 'activo',
       })
       .exec();
+    
 
     // Obtener los IDs de estudiantes únicos de los ajustes
     const studentIds = [
@@ -122,7 +123,7 @@ export class CoursesService {
         _id: { $in: studentIds },
       })
       .exec();
-
+  
     // Crear un mapa para asociar estudiantes con sus ajustes
     const result = students.map((student) => {
       const studentAdjustments = adjustments

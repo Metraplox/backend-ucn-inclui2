@@ -225,11 +225,15 @@ export class TeacherAdjustmentsController {
       
       // Buscar el ajuste por ID
       const adjustment = await this.adjustmentsService.findOne(adjustmentId);
+      console.log(adjustment);
       
       if (!adjustment) {
         throw new NotFoundException(`No se pudo encontrar el ajuste con ID ${adjustmentId}`);
       }
-      
+      if (!adjustment.currentAdjustments || adjustment.currentAdjustments.length === 0) {
+          throw new BadRequestException('El ajuste no contiene elementos en currentAdjustments');
+    } 
+    console.log('adjustment current', adjustment.currentAdjustments);
       // Marcar como recibido (usando findOneAndUpdate directamente, ya que no existe acknowledgeAdjustment)
       const updatedAdjustment = await this.adjustmentsService.findOneAndUpdate(
         { _id: adjustmentId },
