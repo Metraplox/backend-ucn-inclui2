@@ -13,6 +13,7 @@ class Adjustment {
   final String? comentarios;
   final bool? requiresSemesterConfirmation;
   final String? fechaInicio;
+  final List<Map<String, dynamic>>? readBy;
 
   // Propiedades para compatibilidad con código existente
   String get curso => courseNrc ?? '';
@@ -84,6 +85,7 @@ class Adjustment {
     this.studentRut,
     this.approvedAt,
     this.expirationDate,
+    this.readBy,
     this.status = 'PENDIENTE',
     this.approvedBy,
     this.documentosAsociados,
@@ -111,6 +113,15 @@ class Adjustment {
       comentarios: json['comments'] ?? json['comentarios'],
       requiresSemesterConfirmation: json['requiresSemesterConfirmation'],
       fechaInicio: json['fechaInicio'],
+      readBy:
+          json['readBy'] != null
+              ? (json['readBy'] as List)
+                  .where((e) => e != null && e is Map)
+                  .map<Map<String, dynamic>>(
+                    (e) => Map<String, dynamic>.from(e),
+                  )
+                  .toList()
+              : null,
     );
   }
 

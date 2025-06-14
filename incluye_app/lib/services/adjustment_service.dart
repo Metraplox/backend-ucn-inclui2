@@ -158,7 +158,7 @@ class AdjustmentService {
     if (token == null) throw Exception('Token nulo');
     final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
     final response = await dio.patch(
-      '/teachers/adjustments/${adjustmentId}/acknowledge',
+      '/teachers/adjustments/$adjustmentId/acknowledge',
       options: Options(
         headers: {
           'Accept': 'application/json',

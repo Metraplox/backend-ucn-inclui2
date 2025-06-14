@@ -4,6 +4,7 @@ import 'package:incluye_app/models/courseWithAdjustment_model.dart';
 import 'package:incluye_app/models/studentAdjustment.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
+import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/course_service.dart';
 
 class StudentAdjustmentSubjectScreen extends StatefulWidget {
@@ -28,15 +29,29 @@ class _StudentAdjustmentSubjectScreenState
   bool _checkLoading = false;
   Map<String, bool> _adjustmentChecked = {};
   Student? student;
-  List<StudentAdjustment>? _studentAdjustments = [];
-  List<Student> _students = [];
+  String? _currentUserId;
+
   List<Adjustment> _adjustments = [];
   String? studentAdjustmentId;
-
+  List<Map<String, dynamic>> _adjustmentsWithIds = [];
   @override
   void initState() {
     super.initState();
-    _fetchStudentsAndAdjustments();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    final userId = await AuthService.getUserId();
+    setState(() {
+      _currentUserId = userId;
+    });
+    if (_currentUserId != null) {
+      _fetchStudentsAndAdjustments();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo obtener el id de usuario')),
+      );
+    }
   }
 
   Future<void> _fetchStudentsAndAdjustments() async {
@@ -50,7 +65,6 @@ class _StudentAdjustmentSubjectScreenState
       );
       final selectedStudent = students.firstWhere(
         (s) => s.id == widget.studentId,
-        orElse: () => throw Exception('Estudiante no encontrado'),
       );
 
       // Obtener ajustes por curso (lista de StudentAdjustment)
@@ -58,25 +72,24 @@ class _StudentAdjustmentSubjectScreenState
         widget.courseNrc,
       );
 
-      // Buscar el ajuste para el estudiante actual (puede no existir)
-      final selectedStudentAdjustment = studentAdjustments.firstWhere(
+      // Buscar los ajustes para el estudiante actual (puede no existir)
+      final selectedStudentAdjustment = studentAdjustments.where(
         (sa) => sa.studentId == widget.studentId,
-        orElse: () => throw Exception('no existe'),
       );
-      studentAdjustmentId = selectedStudentAdjustment.id;
+      for (var sa in selectedStudentAdjustment) {
+        if (sa.currentAdjustments != null) {
+          for (var adj in sa.currentAdjustments) {
+            _adjustmentsWithIds.add({"adjustment": adj, "saId": sa.id});
+            final yaLeido =
+                adj.readBy?.any((r) => r['userId'] == _currentUserId) ?? false;
 
-      // Obtener currentAdjustments o lista vacía si no existe
-      final currentAdjustments =
-          selectedStudentAdjustment?.currentAdjustments ?? [];
-
+            _adjustmentChecked[sa.id] = yaLeido;
+          }
+        }
+      }
       setState(() {
         student = selectedStudent;
-        _adjustments = currentAdjustments; // _adjustments es List<Adjustment>
         _isLoading = false;
-      });
-      print('Ajustes cargados:');
-      _adjustments?.forEach((a) {
-        print('Adjustment ID: ${a.id}, Tipo: ${a.tipo}');
       });
     } catch (e) {
       setState(() {
@@ -89,8 +102,6 @@ class _StudentAdjustmentSubjectScreenState
   }
 
   Future<void> _sendCheckAdjustment(String adjustmentId) async {
-    print(studentAdjustmentId);
-
     setState(() {
       _checkLoading = true;
     });
@@ -122,14 +133,15 @@ class _StudentAdjustmentSubjectScreenState
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child:
-            _adjustments!.isEmpty
+            _adjustmentsWithIds!.isEmpty
                 ? Center(child: Text('No hay ajustes para este estudiante.'))
                 : ListView.builder(
-                  itemCount: _adjustments!.length,
+                  itemCount: _adjustmentsWithIds.length,
                   itemBuilder: (context, index) {
-                    final ajuste = _adjustments![index];
-                    final isChecked =
-                        _adjustmentChecked[ajuste.id ?? ''] ?? false;
+                    final item = _adjustmentsWithIds[index];
+                    final Adjustment ajuste = item["adjustment"];
+                    final String saId = item["saId"];
+                    final isChecked = _adjustmentChecked[saId] ?? false;
 
                     return Card(
                       margin: EdgeInsets.symmetric(vertical: 8),
@@ -145,7 +157,7 @@ class _StudentAdjustmentSubjectScreenState
                           value: isChecked,
                           onChanged: (value) {
                             if (value == true && !_checkLoading) {
-                              _sendCheckAdjustment(studentAdjustmentId!);
+                              _sendCheckAdjustment(saId!);
                             }
                           },
                         ),
