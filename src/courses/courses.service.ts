@@ -103,7 +103,6 @@ export class CoursesService {
 
   async findStudentsWithAdjustments(courseId: string): Promise<any[]> {
     const course = await this.findOne(courseId);
-    console.log(course);
     // Encontrar todos los ajustes activos para el curso específico
     const adjustments = await this.adjustmentModel
       .find({

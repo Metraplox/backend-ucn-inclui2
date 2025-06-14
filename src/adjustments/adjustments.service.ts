@@ -57,7 +57,7 @@ export class AdjustmentsService {
   }
 
   async findOne(id: string): Promise<Adjustment | null> {
-    console.log('buscando ajuste con id: ',id);
+    
     return this.adjustmentModel.findById(id).exec();
   }
 
@@ -179,7 +179,6 @@ export class AdjustmentsService {
   }
 
   async findByCourseNrc(courseNrc: string, semester?: string): Promise<Adjustment[]> {
-    console.log(courseNrc);
     const query: any = {};
     if (semester) {
       query.currentAdjustments = {
@@ -197,7 +196,6 @@ export class AdjustmentsService {
       return this.adjustmentModel.find(query).exec();
   }
 
-  console.log('Query usada:', JSON.stringify(query, null, 2));
   return this.adjustmentModel.find(query).exec();
 }
 

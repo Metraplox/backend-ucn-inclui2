@@ -92,7 +92,6 @@ export class TeacherAdjustmentsController {
   }> {
     // Obtener los cursos donde el docente está asignado
     const teacherCourses = await this.coursesService.findCoursesByTeacher(teacherId, semester);
-    console.log('ID DEL DOCENTE', teacherCourses);
    
     
     // Para cada curso, verificar si tiene estudiantes con NEE
@@ -227,7 +226,11 @@ export class TeacherAdjustmentsController {
       
       // Buscar el ajuste por ID
       const adjustment = await this.adjustmentsService.findOne(adjustmentId);
-      console.log(adjustment);
+      console.log("LLAMADA A MARK READ",adjustmentId);
+      console.log(adjustment?.studentRut);
+      console.log(userId);
+
+     
       
       if (!adjustment) {
         throw new NotFoundException(`No se pudo encontrar el ajuste con ID ${adjustmentId}`);
@@ -235,15 +238,20 @@ export class TeacherAdjustmentsController {
       if (!adjustment.currentAdjustments || adjustment.currentAdjustments.length === 0) {
           throw new BadRequestException('El ajuste no contiene elementos en currentAdjustments');
     } 
-    console.log('adjustment current', adjustment.currentAdjustments);
       // Marcar como recibido (usando findOneAndUpdate directamente, ya que no existe acknowledgeAdjustment)
       const updatedAdjustment = await this.adjustmentsService.findOneAndUpdate(
         { _id: adjustmentId },
         { 
-          $set: { 
-            'currentAdjustments.$[].acknowledgedBy': new Types.ObjectId(userId),
-            'currentAdjustments.$[].acknowledgedAt': new Date() 
-          } 
+          $push: { 
+            'currentAdjustments.$[].readBy':{
+              userId: new Types.ObjectId(userId),
+              readDate:new Date(),
+              comments:'Leído por el docente',
+            },
+          } ,
+          $set:{
+            'currentAdjustments.$[].readAt':new Date(),
+          }
         },
         { new: true }
       );
