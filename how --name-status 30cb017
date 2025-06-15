@@ -1,0 +1,29 @@
+M	.env.example
+M	package-lock.json
+M	package.json
+M	src/adjustments/adjustments.service.ts
+M	src/adjustments/controllers/teacher-adjustments.controller.ts
+M	src/adjustments/dto/create-adjustment.dto.ts
+M	src/auth/auth.controller.ts
+M	src/auth/auth.service.ts
+A	src/auth/decorators/user.decorator 2.ts
+A	src/auth/dto/google-login.dto.ts
+A	src/auth/guards/department-head.guard 2.ts
+A	src/auth/guards/ws-jwt.guard 2.ts
+M	src/careers/careers.service.ts
+M	src/careers/controllers/careers.controller.ts
+M	src/courses/courses.service.ts
+A	src/courses/dto/create-academic-history.dto 2.ts
+M	src/courses/dto/create-course.dto.ts
+A	src/courses/dto/enrollment-result.dto 2.ts
+A	src/courses/dto/update-academic-history.dto 2.ts
+A	src/courses/schemas/academic-history.schema 2.ts
+A	src/departments/controllers/department-heads.controller 2.ts
+A	src/departments/dto/department-stats-response.dto 2.ts
+A	src/departments/dto/department-student-nee-response.dto 2.ts
+A	src/departments/dto/department-teachers-response.dto 2.ts
+M	src/main.ts
+A	src/notifications/dto/adjustment-notification.dto 2.ts
+M	src/users/controllers/diddec.controller.ts
+M	src/users/schemas/user.schema.ts
+M	src/users/users.service.ts
