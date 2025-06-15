@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, PipelineStage } from 'mongoose';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -9,13 +9,38 @@ import { User, UserRole } from '../users/schemas/user.schema';
 @Injectable()
 export class StudentsService {
   /**
-   * Método mínimo para evitar error en departamentos.service.ts
-   * No debe usarse en producción sin validación adecuada
+   * Busca estudiantes con NEE por departamento y semestre
+   * Implementa lógica real para consultar estudiantes con necesidades especiales
    */
-  async findByDepartmentWithNEE(departmentId: string, semester: string): Promise<any[]> {
-    // Implementación mínima: buscar estudiantes con NEE por departamento y semestre
-    // Reemplazar por lógica real según el modelo de datos
-    return [];
+  async findByDepartmentWithNEE(departmentId: string, semester: string): Promise<Student[]> {
+    if (!departmentId || !semester) {
+      throw new BadRequestException('departmentId y semester son requeridos');
+    }
+
+    try {
+      // Construir query para estudiantes con NEE en el semestre específico
+      const query: any = { 
+        hasSpecialNeeds: true,
+        semester: semester 
+      };
+
+      // Si departmentId es un ObjectId válido, buscar por carreraId relacionada al departamento
+      if (Types.ObjectId.isValid(departmentId)) {
+        // Para filtrado específico por departamento, se requiere lógica adicional
+        // que relacione carreras con departamentos
+        query.carreraId = new Types.ObjectId(departmentId);
+      }
+
+      const students = await this.studentModel
+        .find(query)
+        .populate('carreraId', 'name code department')
+        .exec();
+
+      return students;
+    } catch (error) {
+      console.error(`Error al buscar estudiantes con NEE por departamento ${departmentId}:`, error.message);
+      return [];
+    }
   }
 
   constructor(

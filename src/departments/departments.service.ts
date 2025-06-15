@@ -116,6 +116,15 @@ export class DepartmentsService {
     // Obtener ajustes del departamento
     const adjustments = await this.adjustmentsService.findByDepartment(departmentId ?? '', semester);
 
+    // Contar ajustes por estado desde currentAdjustments
+    const adjustmentsByStatus = adjustments.reduce((acc, adjustment) => {
+      adjustment.currentAdjustments?.forEach(currentAdj => {
+        const status = currentAdj.estado;
+        acc[status] = (acc[status] || 0) + 1;
+      });
+      return acc;
+    }, {} as Record<string, number>);
+
     return {
       department: {
         id: department._id,
@@ -127,10 +136,7 @@ export class DepartmentsService {
         totalCourses: courses.length,
         totalStudentsWithNEE: studentsWithNEE.length,
         totalAdjustments: adjustments.length,
-        adjustmentsByStatus: adjustments.reduce((acc, curr) => {
-          acc[curr.estado] = (acc[curr.estado] || 0) + 1;
-          return acc;
-        }, {}),
+        adjustmentsByStatus,
       },
       lastUpdated: new Date(),
     };
@@ -139,20 +145,31 @@ export class DepartmentsService {
   async getDepartmentStudentsWithNEE(departmentId: string, semester: string): Promise<any[]> {
     const students = await this.studentsService.findByDepartmentWithNEE(departmentId, semester);
     
-    return students.map(student => ({
-      id: student._id,
-      nombreCompleto: student.nombreCompleto,
-      rut: student.rut,
-      email: student.email,
-      career: student.career,
-      semester: student.semester,
-      adjustments: student.adjustments?.map(adj => ({
-        id: adj._id,
-        type: adj.type,
-        estado: adj.estado,
-        createdAt: adj.createdAt,
-      })) || [],
-    }));
+    // Para cada estudiante, buscar sus ajustes asociados
+    const studentsWithAdjustments = await Promise.all(
+      students.map(async (student) => {
+        const adjustments = await this.adjustmentsService.findByStudentId(student._id.toString());
+        
+        return {
+          id: student._id,
+          nombreCompleto: `${student.nombres} ${student.apellidos}`,
+          rut: student.rut,
+          email: student.email,
+          career: student.carreraId, // Esto puede necesitar población adicional
+          semester: student.semester,
+          adjustments: adjustments.flatMap(adjustment => 
+            adjustment.currentAdjustments.map(adj => ({
+              id: adjustment._id,
+              type: adj.type,
+              estado: adj.estado,
+              createdAt: adjustment.createdAt,
+            }))
+          ),
+        };
+      })
+    );
+    
+    return studentsWithAdjustments;
   }
 
   async getTeachersByDepartment(departmentId: string, semester?: string): Promise<any[]> {
