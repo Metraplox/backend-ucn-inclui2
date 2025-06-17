@@ -14,31 +14,13 @@ export class CoursesService {
    * Implementa lógica real para consultar en base de datos
    */
   async findByDepartment(departmentId: string, semester: string): Promise<Course[]> {
-    if (!departmentId || !semester) {
-      throw new BadRequestException('departmentId y semester son requeridos');
+    if (!Types.ObjectId.isValid(departmentId)) {
+      throw new BadRequestException('ID de departamento inválido');
     }
-
-    try {
-      // Buscar cursos por departamento y semestre
-      // Nota: departmentId puede ser nombre o ID según el esquema
-      const query: any = { semestre: semester };
-      
-      // Si departmentId es un ObjectId válido, buscar por _id
-      if (Types.ObjectId.isValid(departmentId)) {
-        query.departmentId = new Types.ObjectId(departmentId);
-      } else {
-        // Si no, buscar por nombre de departamento
-        query.departamento = departmentId;
-      }
-
-      const courses = await this.courseModel.find(query).exec();
-      this.logger.log(`Encontrados ${courses.length} cursos para departamento ${departmentId} en semestre ${semester}`);
-      
-      return courses;
-    } catch (error) {
-      this.logger.error(`Error al buscar cursos por departamento ${departmentId}: ${error.message}`);
-      return [];
-    }
+    return this.courseModel.find({ 
+      departmentId: new Types.ObjectId(departmentId), 
+      semestre: semester 
+    }).exec();
   }
 
   private readonly logger = new Logger(CoursesService.name);

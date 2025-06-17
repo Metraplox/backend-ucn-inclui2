@@ -3,14 +3,25 @@ import { Document, Types } from 'mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum UserRole {
-  ADMIN = 'administrador',
-  STAFF = 'personal', // Equivalente a coordinadora o personal de inclusión
-  STUDENT = 'estudiante',
-  TEACHER = 'docente',
-  SUPPORT_UNIT = 'unidad_apoyo', // Para roles como @dea.ucn.cl, @aora.ucn.cl
+  // Administración
+  COORDINADOR = 'coordinador', // Admin/Cliente del proyecto
+
+  // Personal Especializado
+  EDUCADORA_SOCIAL = 'educadora_social', // Entrevistas, registro usuarios
+  DIDDEC_STAFF = 'diddec_staff', // Personal DIDDEC
+
+  // Académicos con Responsabilidades
+  JEFE_CARRERA = 'jefe_carrera', // Gestión académica de carrera
+  JEFE_DEPARTAMENTO = 'jefe_departamento', // Gestión académica de departamento
+
+  // Personal Académico
+  DOCENTE = 'docente', // Profesores de asignaturas
+
+  // Estudiantes
+  ESTUDIANTE = 'estudiante', // Estudiantes con NEE
 }
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'users' })
 export class User extends Document {
   @ApiProperty({
     description: 'ID único del usuario (generado por MongoDB)',
@@ -33,12 +44,13 @@ export class User extends Document {
     description: 'Roles del usuario',
     enum: UserRole,
     isArray: true,
-    example: [UserRole.STUDENT],
+    example: [UserRole.ESTUDIANTE],
   })
   @Prop({
-    type: [{ type: String, enum: UserRole }],
+    type: [String],
     required: true,
-    default: [UserRole.STUDENT],
+    enum: Object.values(UserRole),
+    default: [UserRole.ESTUDIANTE],
   })
   roles: UserRole[];
 

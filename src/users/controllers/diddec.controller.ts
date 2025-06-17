@@ -144,8 +144,8 @@ export class DIDDECController {
     });
 
     // Estadísticas de usuarios
-    const teachers = await this.usersService.findByRole(UserRole.TEACHER);
-    const staff = await this.usersService.findByRole(UserRole.STAFF);
+    const teachers = await this.usersService.findByRole(UserRole.DOCENTE);
+    const staff = await this.usersService.findByRole(UserRole.DIDDEC_STAFF);
 
     // Estadísticas de departamentos y carreras
     const departments = await this.departmentsService.findAll();
@@ -458,7 +458,7 @@ export class DIDDECController {
     @Query('semester') semester: string = '2025-1',
     @Query('limit') limit: number = 10,
   ): Promise<any> {
-    const teachers = await this.usersService.findByRole(UserRole.TEACHER);
+    const teachers = await this.usersService.findByRole(UserRole.DOCENTE);
     const teacherStats: any[] = [];
 
     for (const teacher of teachers) {

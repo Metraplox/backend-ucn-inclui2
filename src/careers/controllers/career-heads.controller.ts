@@ -18,7 +18,7 @@ import {
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { Role } from '../../auth/enums/role.enum';
+import { UserRole } from '../../users/schemas/user.schema';
 import { CareersService } from '../careers.service';
 import { CareerHeadStatsDto, CareerHeadCareerDto } from '../dto/career-head.dto';
 import { Career } from '../schemas/career.schema';
@@ -34,7 +34,7 @@ export class CareerHeadsController {
   constructor(private readonly careersService: CareersService) {}
 
   @Get('my-career')
-  @Roles(Role.CAREER_HEAD)
+  @Roles(UserRole.JEFE_CARRERA)
   @ApiOperation({
     summary: 'Obtener información de la carrera del jefe actual',
     description: 'Devuelve los detalles de la carrera asociada al jefe de carrera autenticado',
@@ -69,7 +69,7 @@ export class CareerHeadsController {
   }
 
   @Get('statistics')
-  @Roles(Role.CAREER_HEAD)
+  @Roles(UserRole.JEFE_CARRERA)
   @ApiOperation({
     summary: 'Obtener estadísticas de la carrera',
     description: 'Proporciona estadísticas detalladas sobre la carrera del jefe autenticado, incluyendo conteo de estudiantes, ajustes por estado y distribución por semestre.',
@@ -118,7 +118,7 @@ export class CareerHeadsController {
   }
 
   @Get('students')
-  @Roles(Role.CAREER_HEAD)
+  @Roles(UserRole.JEFE_CARRERA)
   @ApiOperation({
     summary: 'Obtener estudiantes de la carrera',
     description: 'Obtiene un listado paginado de los estudiantes asociados a la carrera que dirige el jefe autenticado, con opciones de filtrado por semestre.',
@@ -175,7 +175,7 @@ export class CareerHeadsController {
   }
 
   @Get('adjustments')
-  @Roles(Role.CAREER_HEAD)
+  @Roles(UserRole.JEFE_CARRERA)
   @ApiOperation({
     summary: 'Obtener ajustes razonables de la carrera',
     description: 'Obtiene un listado detallado de los ajustes razonables de los estudiantes de la carrera, con opciones de filtrado por estado y semestre.',

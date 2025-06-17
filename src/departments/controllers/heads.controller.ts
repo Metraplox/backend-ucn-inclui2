@@ -163,7 +163,7 @@ export class HeadsController {
       }
     }
 
-    if (!isTeacherInDepartment && !user.roles.includes(UserRole.ADMIN)) {
+    if (!isTeacherInDepartment && !user.roles.includes(UserRole.COORDINADOR)) {
       throw new NotFoundException('Docente no encontrado en sus departamentos');
     }
 
@@ -489,7 +489,7 @@ export class HeadsController {
       }
     }
 
-    if (!isTeacherInDepartment && !user.roles.includes(UserRole.ADMIN)) {
+    if (!isTeacherInDepartment && !user.roles.includes(UserRole.COORDINADOR)) {
       throw new NotFoundException('Docente no encontrado en sus departamentos');
     }
 

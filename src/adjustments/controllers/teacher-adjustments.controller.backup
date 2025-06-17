@@ -52,7 +52,7 @@ export class TeacherAdjustmentsController {
   ) {}
 
   @Get('my-courses')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.DOCENTE)
   @ApiOperation({
     summary: 'Obtener todos los cursos del docente con estudiantes NEE',
   })
@@ -179,7 +179,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Get('my-courses/:courseNrc')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.DOCENTE)
   @ApiOperation({
     summary: 'Obtener ajustes de estudiantes en un curso específico',
   })
@@ -202,7 +202,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Patch(':adjustmentId/acknowledge')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.DOCENTE)
   @ApiOperation({ summary: 'Confirmar recepción de ajuste' })
   @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
   @ApiResponse({
@@ -226,12 +226,7 @@ export class TeacherAdjustmentsController {
       
       // Buscar el ajuste por ID
       const adjustment = await this.adjustmentsService.findOne(adjustmentId);
-      console.log("LLAMADA A MARK READ",adjustmentId);
-      console.log(adjustment?.studentRut);
-      console.log(userId);
 
-     
-      
       if (!adjustment) {
         throw new NotFoundException(`No se pudo encontrar el ajuste con ID ${adjustmentId}`);
       }
@@ -261,7 +256,7 @@ export class TeacherAdjustmentsController {
       }
       
       // Crear notificación para el personal de DIDDEC
-      const staffUsers = await this.usersService.findByRole(UserRole.STAFF);
+      const staffUsers = await this.usersService.findByRole(UserRole.DIDDEC_STAFF);
       const staffIds = staffUsers.map(user => user._id.toString());
       
       // Obtener datos del estudiante para notificación
@@ -289,17 +284,29 @@ export class TeacherAdjustmentsController {
         );
       }
       
+      // Notificar a la educadora social directamente
+      if (updatedAdjustment) {
+        const studentName = student ? `${student.nombres || ''} ${student.apellidos || ''}`.trim() : 'Estudiante';
+        await this.notificationsService.createSystemNotification(
+          updatedAdjustment.studentId.toString(),
+          'Ajuste acusado recibo',
+          `El docente ${userName} ha acusado recibo del ajuste para el estudiante ${studentName}.`,
+          NotificationType.REMINDER,
+          updatedAdjustment.semester || '2025-1'
+        );
+      }
+      
       return updatedAdjustment;
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof NotFoundException) {
         throw error;
       }
-      throw new InternalServerErrorException('Error al confirmar el ajuste');
+      throw new InternalServerErrorException('Ocurrió un error inesperado al confirmar el ajuste');
     }
   }
 
   @Post(':adjustmentId/current/:index/mark-as-implemented')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.DOCENTE)
   @ApiOperation({ 
     summary: 'Marcar un ajuste como implementado',
     description: 'Marca un ajuste específico como implementado por el docente.'
@@ -376,7 +383,7 @@ export class TeacherAdjustmentsController {
       const semester = updatedAdjustment.semester || '2025-1';
 
       // Notificar al personal de staff
-      const staffUsers = await this.usersService.findByRole(UserRole.STAFF);
+      const staffUsers = await this.usersService.findByRole(UserRole.DIDDEC_STAFF);
       const staffIds = staffUsers.map(user => user._id.toString());
       
       if (staffIds.length > 0) {
@@ -411,7 +418,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Patch(':adjustmentId/current/:index/mark-as-read')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.DOCENTE)
   @ApiOperation({ summary: 'Marcar un ajuste específico como leído (legacy)' })
   @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
   @ApiParam({
@@ -486,7 +493,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Post(':adjustmentId/current/:index/request-help')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.DOCENTE)
   @ApiOperation({ summary: 'Solicitar ayuda para implementar un ajuste' })
   @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
   @ApiParam({
@@ -528,7 +535,7 @@ export class TeacherAdjustmentsController {
     );
 
     // Crear notificación para el personal de DIDDEC
-    const diddecUsers = await this.usersService.findByRole(UserRole.STAFF);
+    const diddecUsers = await this.usersService.findByRole(UserRole.DIDDEC_STAFF);
 
     await this.notificationsService.createBulkNotifications(
       diddecUsers.map((user) => user._id.toString()),
@@ -546,7 +553,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Get('read-status/:courseNrc')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({
     summary: 'Obtener estado de lectura de ajustes por curso (Admin, Staff)',
   })
@@ -571,7 +578,7 @@ export class TeacherAdjustmentsController {
   }
 
   @Get('pending-help-requests')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({
     summary: 'Obtener solicitudes de ayuda pendientes (Admin, Staff)',
   })
@@ -674,5 +681,281 @@ export class TeacherAdjustmentsController {
       throw new InternalServerErrorException('Error al obtener solicitudes de ayuda pendientes');
 
     }
+  }
+
+  @Patch(':adjustmentId/mark-as-read-by/:userId')
+  @Roles(UserRole.DIDDEC_STAFF)
+  @ApiOperation({ summary: 'Marcar ajuste como leído (DIDDEC)' })
+  @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
+  @ApiParam({ name: 'userId', description: 'ID del usuario que lee' })
+  @ApiResponse({
+    status: 200,
+    description: 'Ajuste marcado como leído',
+    type: Adjustment,
+  })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  @ApiResponse({ status: 404, description: 'Ajuste no encontrado' })
+  async markAsRead(
+    @Param('adjustmentId') adjustmentId: string,
+    @Param('userId') userId: string,
+    @Body() data: { comments?: string }
+  ): Promise<Adjustment> {
+    
+    // Asumimos que el índice es 0 si no se especifica, para simplificar.
+    // En una versión futura, el frontend debería enviar el índice del ajuste específico.
+    const currentAdjustmentIndex = 0;
+    
+    return this.adjustmentsService.markAsRead(
+      adjustmentId,
+      currentAdjustmentIndex,
+      userId,
+      data.comments
+    );
+  }
+
+  @Patch(':adjustmentId/:index/implement')
+  @Roles(UserRole.DOCENTE)
+  @ApiOperation({ summary: 'Marcar un ajuste como implementado' })
+  @ApiParam({ name: 'adjustmentId', description: 'ID del documento de ajuste' })
+  @ApiParam({ name: 'index', description: 'Índice del ajuste en el array `currentAdjustments`' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        comments: {
+          type: 'string',
+          description: 'Comentarios sobre la implementación',
+          example: 'Ajuste implementado exitosamente'
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Ajuste marcado como implementado exitosamente',
+    type: Adjustment,
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Datos de entrada inválidos o índice incorrecto' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Ajuste no encontrado' 
+  })
+  async markAsImplemented(
+    @Param('adjustmentId') adjustmentId: string,
+    @Param('index') index: string,
+    @GetUser('_id') userId: string,
+    @GetUser('name') userName: string,
+    @Body() data: { comments?: string }
+  ): Promise<Adjustment> {
+    try {
+      const adjustmentIndex = parseInt(index, 10);
+      
+      const updatedAdjustment = await this.adjustmentsService.updateStatus(
+        adjustmentId,
+        adjustmentIndex,
+        AdjustmentStatus.IMPLEMENTED,
+        userId,
+        data.comments || 'Ajuste implementado por el docente'
+      );
+
+      if (!updatedAdjustment) {
+        throw new NotFoundException(`No se pudo encontrar el ajuste con ID ${adjustmentId}`);
+      }
+
+      // Verificar que el índice del ajuste sea válido
+      if (!updatedAdjustment.currentAdjustments || 
+          adjustmentIndex >= updatedAdjustment.currentAdjustments.length) {
+        throw new BadRequestException('Índice de ajuste fuera de rango');
+      }
+
+      const targetAdjustment = updatedAdjustment.currentAdjustments[adjustmentIndex];
+
+      // Obtener información del estudiante para la notificación
+      const student = await this.studentsService.findById(updatedAdjustment.studentId.toString());
+      const studentName = student ? `${student.nombres || ''} ${student.apellidos || ''}`.trim() : 'Estudiante';
+      const courseName = targetAdjustment.courseNrc || 'N/A';
+      const semester = updatedAdjustment.semester || '2025-1';
+
+      // Notificar al personal de staff
+      const staffUsers = await this.usersService.findByRole(UserRole.DIDDEC_STAFF);
+      const staffIds = staffUsers.map(user => user._id.toString());
+      
+      if (staffIds.length > 0) {
+        await this.adjustmentNotificationsService.notifyAdjustmentImplemented(
+          staffIds,
+          userId,
+          userName,
+          updatedAdjustment._id.toString(),
+          studentName,
+          courseName,
+          semester
+        );
+      }
+      
+      // Notificar al estudiante
+      await this.notificationsService.createSystemNotification(
+        updatedAdjustment.studentId.toString(),
+        'Ajuste implementado',
+        `El ajuste de tipo "${targetAdjustment.type}" ha sido implementado por el docente ${userName} en el curso ${courseName}`,
+        NotificationType.REMINDER,
+        semester
+      );
+
+      return updatedAdjustment;
+      
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al marcar el ajuste como implementado');
+    }
+  }
+
+  @Patch(':adjustmentId/:index/request-help')
+  @Roles(UserRole.DOCENTE)
+  @ApiOperation({ summary: 'Solicitar ayuda para un ajuste' })
+  @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
+  @ApiParam({ name: 'index', description: 'Índice del ajuste específico' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        description: {
+          type: 'string',
+          description: 'Descripción de la solicitud de ayuda',
+          example: 'Necesito ayuda para entender el ajuste'
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Solicitud de ayuda creada',
+    type: Adjustment,
+  })
+  @ApiResponse({ status: 404, description: 'Ajuste no encontrado' })
+  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  async requestHelp(
+    @Param('adjustmentId') adjustmentId: string,
+    @Param('index') index: string,
+    @GetUser('_id') userId: string,
+    @GetUser('name') userName: string,
+    @Body() data: { description: string }
+  ): Promise<Adjustment> {
+    const adjustmentIndex = parseInt(index, 10);
+
+    const updatedAdjustment = await this.adjustmentsService.requestHelp(
+      adjustmentId,
+      adjustmentIndex,
+      userId,
+      data.description,
+    );
+
+    // Crear notificación para el estudiante
+    await this.notificationsService.createSystemNotification(
+      updatedAdjustment.studentId.toString(),
+      'Solicitud de ayuda sobre tu ajuste',
+      `Un docente ha solicitado ayuda sobre tu ajuste en el curso ${updatedAdjustment.currentAdjustments[adjustmentIndex].courseNrc}`,
+      NotificationType.SYSTEM_ALERT,
+      updatedAdjustment.semester || '2025-1',
+    );
+
+    // Crear notificación para el personal de DIDDEC
+    const diddecUsers = await this.usersService.findByRole(UserRole.DIDDEC_STAFF);
+
+    await this.notificationsService.createBulkNotifications(
+      diddecUsers.map((user) => user._id.toString()),
+      'Solicitud de ayuda de docente',
+      `El docente ${userName} ha solicitado ayuda para implementar un ajuste en el curso ${updatedAdjustment.currentAdjustments[adjustmentIndex].courseNrc}`,
+      NotificationType.HELP_REQUEST,
+      updatedAdjustment.semester || '2025-1',
+      {
+        type: 'adjustment',
+        id: new Types.ObjectId(adjustmentId),
+      },
+    );
+
+    return updatedAdjustment;
+  }
+
+  // LEGACY METHOD - TO BE REPLACED
+  @Patch(':adjustmentId/read-by/:index')
+  @Roles(UserRole.DIDDEC_STAFF)
+  @ApiOperation({
+    summary: 'Marcar un ajuste como leído (LEGACY)',
+    description: 'Método legado para compatibilidad. Usar /acknowledge en su lugar.',
+  })
+  @ApiParam({ name: 'adjustmentId', description: 'ID del ajuste' })
+  @ApiParam({ name: 'index', description: 'Índice del ajuste' })
+  @ApiResponse({
+    status: 200,
+    description: 'Ajuste marcado como leído',
+    type: Adjustment,
+  })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  @ApiResponse({ status: 404, description: 'Ajuste no encontrado' })
+  async markAsReadLegacy(
+    @Param('adjustmentId') adjustmentId: string,
+    @Param('index') index: string,
+    @GetUser('_id') userId: string,
+    @Body() markReadDto: MarkAdjustmentReadDto,
+  ): Promise<Adjustment> {
+    const adjustmentIndex = parseInt(index, 10);
+
+    // Buscar el ajuste por ID
+  const adjustment = await this.adjustmentsService.findOne(adjustmentId);
+  
+  if (!adjustment) {
+    throw new NotFoundException(`No se pudo encontrar el ajuste con ID ${adjustmentId}`);
+  }
+  
+  // Verificar que el índice sea válido
+  if (!adjustment.currentAdjustments || adjustmentIndex >= adjustment.currentAdjustments.length) {
+    throw new BadRequestException('Índice de ajuste fuera de rango');
+  }
+  
+  // Verificar si el ajuste ya fue leído por este usuario
+  const currentAdjustment = adjustment.currentAdjustments[adjustmentIndex];
+  const readByArray = currentAdjustment.readBy || [];
+  
+  // Si no existe el usuario en readBy, agregarlo
+  if (!readByArray.some(read => read.userId.toString() === userId)) {
+    readByArray.push({
+      userId: new Types.ObjectId(userId),
+      readDate: new Date(),
+      comments: markReadDto.comments || 'Ajuste leído por el docente'
+    });
+  }
+  
+  // Actualizar el documento
+  const updatedAdjustment = await this.adjustmentsService.findOneAndUpdate(
+    { _id: adjustmentId },
+    { $set: { [`currentAdjustments.${adjustmentIndex}.readBy`]: readByArray } },
+    { new: true }
+  );
+
+    if (!updatedAdjustment) {
+      throw new NotFoundException(
+        `No se pudo encontrar el ajuste con ID ${adjustmentId}`
+      );
+    }
+
+    // Crear notificación para el estudiante
+    await this.notificationsService.createSystemNotification(
+      updatedAdjustment.studentId.toString(),
+      'Ajuste leído por docente',
+      `Tu ajuste ha sido leído por el docente en el curso ${updatedAdjustment.currentAdjustments[adjustmentIndex].courseNrc}`,
+      NotificationType.SYSTEM_ALERT,
+      updatedAdjustment.semester || '2025-1',
+    );
+
+    return updatedAdjustment;
   }
 }

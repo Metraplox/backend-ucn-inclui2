@@ -14,7 +14,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery }
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { Role } from '../../auth/enums/role.enum';
+import { UserRole } from '../../users/schemas/user.schema';
 import { CareersService } from '../careers.service';
 import { AddStudentDto } from '../dto/add-student.dto';
 
@@ -26,7 +26,7 @@ export class CareerStudentsController {
   constructor(private readonly careersService: CareersService) {}
 
   @Post(':id/students')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({ summary: 'Agregar un estudiante a una carrera' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -41,7 +41,7 @@ export class CareerStudentsController {
 
   @Delete(':id/students/:studentId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({ summary: 'Eliminar un estudiante de una carrera' })
   @ApiParam({ name: 'id', description: 'ID de la carrera' })
   @ApiParam({ name: 'studentId', description: 'ID del estudiante a eliminar de la carrera' })
@@ -61,7 +61,7 @@ export class CareerStudentsController {
   }
 
   @Get(':id/students')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({ summary: 'Obtener todos los estudiantes de una carrera' })
   @ApiParam({ name: 'id', description: 'ID de la carrera' })
   @ApiQuery({ 

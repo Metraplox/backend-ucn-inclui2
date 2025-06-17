@@ -10,7 +10,7 @@ export class DIDDECGuard implements CanActivate {
     if (!user) return false;
 
     // Admin siempre tiene acceso
-    if (user.roles && user.roles.includes(UserRole.ADMIN)) return true;
+    if (user.roles && user.roles.includes(UserRole.COORDINADOR)) return true;
 
     // Verificar si es personal DIDDEC
     const responsibilities = user.additionalResponsibilities || {};
@@ -20,7 +20,7 @@ export class DIDDECGuard implements CanActivate {
     // 2. Tener el rol STAFF (temporal mientras migramos)
     return (
       responsibilities.isDIDDECStaff ||
-      (user.roles && user.roles.includes(UserRole.STAFF))
+      (user.roles && user.roles.includes(UserRole.DIDDEC_STAFF))
     );
   }
 }

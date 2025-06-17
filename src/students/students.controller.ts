@@ -25,12 +25,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { Role } from '../auth/enums/role.enum';
 import { UserRole } from '../users/schemas/user.schema';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from './schemas/student.schema';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
+import { StudentResponseDto } from './dto/student-response.dto';
 
 @ApiTags('students')
 @ApiBearerAuth() // Indica que se requiere autenticación Bearer (JWT) para Swagger
@@ -40,7 +40,7 @@ export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Crear un nuevo estudiante',
     description: 'Crea un nuevo estudiante y lo asocia automáticamente a la carrera especificada',
@@ -48,7 +48,7 @@ export class StudentsController {
   @ApiResponse({ 
     status: 201, 
     description: 'Estudiante creado exitosamente',
-    type: Student
+    type: StudentResponseDto
   })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
@@ -59,7 +59,7 @@ export class StudentsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Obtener todos los estudiantes',
     description: 'Retorna la lista de todos los estudiantes registrados en el sistema',
@@ -72,7 +72,7 @@ export class StudentsController {
   @ApiResponse({ 
     status: 200, 
     description: 'Lista de estudiantes obtenida exitosamente',
-    type: [Student]
+    type: [StudentResponseDto]
   })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido - No tiene permisos suficientes' })
@@ -82,7 +82,7 @@ export class StudentsController {
   }
 
   @Get('profile')
-  @Roles(Role.STUDENT)
+  @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Obtener el perfil académico del estudiante actual',
     description: 'Obtiene el perfil completo del estudiante autenticado usando la relación con su cuenta de usuario'
@@ -90,7 +90,7 @@ export class StudentsController {
   @ApiResponse({
     status: 200,
     description: 'Perfil académico del estudiante.',
-    type: Student,
+    type: StudentResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -104,8 +104,8 @@ export class StudentsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Obtener un estudiante por su ID (Admin, Staff)' })
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @ApiOperation({ summary: 'Obtener un estudiante por su ID (Coordinador, Educadora Social)' })
   @ApiParam({
     name: 'id',
     description: 'ID único del estudiante (ObjectId)',
@@ -114,7 +114,7 @@ export class StudentsController {
   @ApiResponse({
     status: 200,
     description: 'Detalles del estudiante.',
-    type: Student,
+    type: StudentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
@@ -125,9 +125,9 @@ export class StudentsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Actualizar un estudiante existente (Admin, Staff)',
+    summary: 'Actualizar un estudiante existente (Coordinador, Educadora Social)',
   })
   @ApiParam({
     name: 'id',
@@ -138,7 +138,7 @@ export class StudentsController {
   @ApiResponse({
     status: 200,
     description: 'Estudiante actualizado exitosamente.',
-    type: Student,
+    type: StudentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
@@ -153,9 +153,9 @@ export class StudentsController {
   }
 
   @Patch(':id/semester/:semester')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Actualizar información semestral de un estudiante (Admin, Staff)',
+    summary: 'Actualizar información semestral de un estudiante (Coordinador, Educadora Social)',
     description: 'Permite actualizar información relevante del estudiante para el semestre indicado. Útil para renovar o modificar datos cada semestre.'
   })
   @ApiParam({
@@ -172,7 +172,7 @@ export class StudentsController {
   @ApiResponse({
     status: 200,
     description: 'Información semestral del estudiante actualizada exitosamente.',
-    type: Student,
+    type: StudentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
@@ -187,9 +187,9 @@ export class StudentsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @HttpCode(HttpStatus.NO_CONTENT) // Estándar para DELETE exitoso sin contenido de respuesta
-  @ApiOperation({ summary: 'Eliminar un estudiante (Admin, Staff)' })
+  @ApiOperation({ summary: 'Eliminar un estudiante (Coordinador, Educadora Social)' })
   @ApiParam({
     name: 'id',
     description: 'ID único del estudiante a eliminar',

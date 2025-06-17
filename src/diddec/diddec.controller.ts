@@ -4,7 +4,7 @@ import { DiddecService } from './diddec.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../auth/enums/role.enum';
+import { UserRole } from '../users/schemas/user.schema';
 
 @ApiTags('DIDDEC')
 @Controller('diddec')
@@ -14,7 +14,7 @@ export class DiddecController {
   constructor(private readonly diddecService: DiddecService) {}
 
   @Get('statistics')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener estadísticas generales' })
   @ApiQuery({ name: 'semester', required: true, type: String, description: 'Semestre académico (formato YYYY-P)' })
   @ApiResponse({ status: 200, description: 'Estadísticas generales del sistema para el semestre especificado' })
@@ -23,7 +23,7 @@ export class DiddecController {
   }
 
   @Get('reports/semester/:semester')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener informe detallado por semestre' })
   @ApiParam({ name: 'semester', required: true, description: 'Semestre académico (formato YYYY-P)' })
   @ApiResponse({ status: 200, description: 'Informe detallado para el semestre especificado' })
@@ -32,7 +32,7 @@ export class DiddecController {
   }
 
   @Get('students/all')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener todos los estudiantes con NEE' })
   @ApiQuery({ name: 'semester', required: true, type: String, description: 'Semestre académico (formato YYYY-P)' })
   @ApiResponse({ status: 200, description: 'Lista de todos los estudiantes con NEE para el semestre especificado' })
@@ -41,7 +41,7 @@ export class DiddecController {
   }
 
   @Get('adjustments/trends')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener tendencias de ajustes a lo largo del tiempo' })
   @ApiQuery({ name: 'years', required: false, type: Number, description: 'Número de años a analizar (por defecto: 3)' })
   @ApiResponse({ status: 200, description: 'Tendencias de ajustes por semestre en el período especificado' })
@@ -50,7 +50,7 @@ export class DiddecController {
   }
 
   @Get('adjustments/compliance')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener tasa de cumplimiento de ajustes por departamento' })
   @ApiQuery({ name: 'semester', required: true, type: String, description: 'Semestre académico (formato YYYY-P)' })
   @ApiResponse({ status: 200, description: 'Tasas de cumplimiento de ajustes por departamento para el semestre especificado' })

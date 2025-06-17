@@ -7,35 +7,33 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Response } from 'express';
 
-export interface Response<T> {
+export interface ApiResponse<T> {
   success: boolean;
   statusCode: number;
-  message: string;
   data: T;
-  timestamp: string;
-  path: string;
 }
 
 @Injectable()
-export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
+export class ResponseInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<Response<T>> {
+  ): Observable<ApiResponse<T>> {
     const ctx = context.switchToHttp();
-    const response = ctx.getResponse();
-    const request = ctx.getRequest();
-    const statusCode = response.statusCode || HttpStatus.OK;
+    const response = ctx.getResponse<Response>();
     
+    // Para endpoints que no devuelven contenido (ej. DELETE 204), no interceptar.
+    if (response.statusCode === HttpStatus.NO_CONTENT) {
+      return next.handle();
+    }
+
     return next.handle().pipe(
       map((data) => ({
-        success: statusCode >= 200 && statusCode < 300,
-        statusCode,
-        message: data?.message || 'Operation completed successfully',
-        data: data?.data || data || null,
-        timestamp: new Date().toISOString(),
-        path: request.url,
+        success: true,
+        statusCode: response.statusCode,
+        data: data, // Asignar directamente la data del controlador
       })),
     );
   }

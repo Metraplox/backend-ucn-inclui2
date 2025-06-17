@@ -43,7 +43,7 @@ export class UpdateUserDto {
     description: 'Nuevos roles asignados al usuario.',
     enum: UserRole,
     isArray: true,
-    example: [UserRole.ADMIN, UserRole.STAFF],
+    example: [UserRole.COORDINADOR, UserRole.DIDDEC_STAFF],
     required: false,
   })
   @IsArray({ message: 'Los roles deben ser un arreglo.' })

@@ -6,12 +6,16 @@ import {
   IsDateString,
   IsBoolean,
   IsOptional,
+  IsMongoId,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CurrentAdjustmentDto {
-  @ApiProperty({ description: 'Tipo de ajuste', example: 'tiempo_extra' })
-  @IsString()
+  @ApiProperty({
+    description: 'ID de la categoría del ajuste',
+    example: '605c72ef9167f86c2cabc456',
+  })
+  @IsMongoId()
   type: string;
 
   @ApiProperty({

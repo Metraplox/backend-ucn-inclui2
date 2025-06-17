@@ -3,18 +3,9 @@ import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../users/schemas/user.schema';
 import { Student } from '../../students/schemas/student.schema';
+import { Category } from '../../categories/schemas/category.schema';
 
 export type AdjustmentDocument = Adjustment & Document;
-
-export enum AdjustmentType {
-  TIEMPO_EXTRA = 'tiempo_extra',
-  FORMATO_ALTERNATIVO = 'formato_alternativo',
-  ASISTENCIA_ESPECIAL = 'asistencia_especial',
-  UBICACION_PREFERENTE = 'ubicacion_preferente',
-  MATERIAL_ADAPTADO = 'material_adaptado',
-  EVALUACION_DIFERENCIADA = 'evaluacion_diferenciada',
-  OTRO = 'otro',
-}
 
 export enum AdjustmentStatus {
   PENDING = 'pendiente',
@@ -30,12 +21,12 @@ export enum AdjustmentStatus {
 @Schema({ _id: false })
 class CurrentAdjustment {
   @ApiProperty({
-    example: AdjustmentType.TIEMPO_EXTRA,
-    description: 'Tipo de ajuste razonable',
-    enum: AdjustmentType,
+    example: '605c72ef9167f86c2cabc456',
+    description: 'ID de la categoría del ajuste razonable',
+    type: String,
   })
-  @Prop({ required: true, type: String, enum: AdjustmentType })
-  type: AdjustmentType;
+  @Prop({ type: Types.ObjectId, ref: Category.name, required: true })
+  type: Types.ObjectId;
 
   @ApiProperty({
     example: 'MAT101-1',

@@ -20,7 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { Role } from '../../auth/enums/role.enum';
+import { UserRole } from '../../users/schemas/user.schema';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { User } from '../../auth/decorators/user.decorator';
 import { Response } from 'express';
@@ -33,7 +33,7 @@ export class DiddecResourcesController {
   constructor(private readonly resourcesService: ResourcesService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new support resource for adjustments' })
@@ -76,7 +76,7 @@ export class DiddecResourcesController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC, Role.TEACHER)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'List all support resources with optional filters' })
   @ApiQuery({ name: 'semester', required: false, description: 'Filter by semester (YYYY-P)' })
   @ApiQuery({ name: 'resourceType', required: false, description: 'Filter by resource type' })
@@ -95,7 +95,7 @@ export class DiddecResourcesController {
   }
 
   @Get('search')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC, Role.TEACHER)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Search resources by term' })
   @ApiQuery({ name: 'term', required: true, description: 'Search term' })
   @ApiQuery({ name: 'semester', required: false, description: 'Filter by semester (YYYY-P)' })
@@ -114,7 +114,7 @@ export class DiddecResourcesController {
   }
 
   @Get('adjustment-type/:id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC, Role.TEACHER)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Get resources by adjustment type ID' })
   @ApiResponse({
     status: 200,
@@ -125,7 +125,7 @@ export class DiddecResourcesController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC, Role.TEACHER)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Get a resource by ID' })
   @ApiResponse({
     status: 200,
@@ -137,7 +137,7 @@ export class DiddecResourcesController {
   }
 
   @Get(':id/download')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC, Role.TEACHER)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Download a resource file' })
   @ApiResponse({ status: 200, description: 'File downloaded successfully' })
   @ApiResponse({ status: 404, description: 'Resource or file not found' })
@@ -147,7 +147,7 @@ export class DiddecResourcesController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Update a resource' })
   @ApiResponse({
     status: 200,
@@ -162,7 +162,7 @@ export class DiddecResourcesController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Delete a resource' })
   @ApiResponse({ status: 200, description: 'The resource has been successfully deleted' })
   @ApiResponse({ status: 404, description: 'Resource not found' })

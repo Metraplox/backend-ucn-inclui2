@@ -6,7 +6,7 @@ import { ExportService } from '../services/export.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { Role } from '../../auth/enums/role.enum';
+import { UserRole } from '../../users/schemas/user.schema';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -18,7 +18,7 @@ export class DiddecReportsController {
   constructor(private readonly exportService: ExportService) {}
 
   @Post('export')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO)
   @ApiOperation({ summary: 'Generate a report export file' })
   @ApiResponse({ status: 201, description: 'Report has been generated successfully' })
   async exportReport(@Body() exportReportDto: ExportReportDto) {
@@ -35,7 +35,7 @@ export class DiddecReportsController {
   }
 
   @Get('download/:filename')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO)
   @ApiOperation({ summary: 'Download a generated report' })
   @ApiResponse({ status: 200, description: 'File downloaded successfully' })
   @ApiResponse({ status: 404, description: 'File not found' })

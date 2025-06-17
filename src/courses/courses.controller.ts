@@ -26,6 +26,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
+import { CourseResponseDto } from './dto/course-response.dto';
+import { StudentWithAdjustmentsDto } from './dto/student-with-adjustments.dto';
 
 @ApiTags('courses')
 @ApiBearerAuth()
@@ -35,12 +37,12 @@ export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Crear un nuevo curso (Admin, Staff)' })
+  @Roles(UserRole.COORDINADOR)
+  @ApiOperation({ summary: 'Crear un nuevo curso (Coordinador)' })
   @ApiResponse({
     status: 201,
     description: 'Curso creado exitosamente',
-    type: Course,
+    type: CourseResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
@@ -50,14 +52,14 @@ export class CoursesController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.TEACHER)
-  @ApiOperation({ summary: 'Obtener todos los cursos (Admin, Staff, Teacher)' })
+  @Roles(UserRole.COORDINADOR, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE)
+  @ApiOperation({ summary: 'Obtener todos los cursos (Coordinador, Jefes, Docente)' })
   @ApiQuery({
     name: 'semester',
     required: false,
     description: 'Filtrar por semestre (ej: 2025-1)',
   })
-  @ApiResponse({ status: 200, description: 'Lista de cursos', type: [Course] })
+  @ApiResponse({ status: 200, description: 'Lista de cursos', type: [CourseResponseDto] })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
   async findAll(@Query('semester') semester?: string): Promise<Course[]> {
@@ -68,9 +70,9 @@ export class CoursesController {
   }
 
   @Get('student/:studentId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.STUDENT)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary: 'Obtener cursos de un estudiante (Admin, Staff, Student)',
+    summary: 'Obtener cursos de un estudiante (Coordinador, Educadora, Estudiante)',
   })
   @ApiParam({ name: 'studentId', description: 'ID del estudiante' })
   @ApiQuery({
@@ -81,7 +83,7 @@ export class CoursesController {
   @ApiResponse({
     status: 200,
     description: 'Lista de cursos del estudiante',
-    type: [Course],
+    type: [CourseResponseDto],
   })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
@@ -94,10 +96,10 @@ export class CoursesController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.TEACHER)
-  @ApiOperation({ summary: 'Obtener un curso por ID (Admin, Staff, Teacher)' })
+  @Roles(UserRole.COORDINADOR, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE)
+  @ApiOperation({ summary: 'Obtener un curso por ID (Coordinador, Jefes, Docente)' })
   @ApiParam({ name: 'id', description: 'ID del curso' })
-  @ApiResponse({ status: 200, description: 'Detalles del curso', type: Course })
+  @ApiResponse({ status: 200, description: 'Detalles del curso', type: CourseResponseDto })
   @ApiResponse({ status: 404, description: 'Curso no encontrado' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
@@ -106,14 +108,15 @@ export class CoursesController {
   }
 
   @Get(':courseId/students-with-adjustments')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.TEACHER)
+  @Roles(UserRole.COORDINADOR, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE)
   @ApiOperation({
-    summary: 'Obtener estudiantes con ajustes en un curso (Admin, Staff, Teacher)',
+    summary: 'Obtener estudiantes con ajustes en un curso (Coordinador, Jefes, Docente)',
   })
   @ApiParam({ name: 'courseId', description: 'ID del curso' })
   @ApiResponse({
     status: 200,
     description: 'Lista de estudiantes con ajustes activos en el curso',
+    type: [StudentWithAdjustmentsDto],
   })
   @ApiResponse({ status: 404, description: 'Curso no encontrado' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
@@ -125,13 +128,13 @@ export class CoursesController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Actualizar un curso (Admin, Staff)' })
+  @Roles(UserRole.COORDINADOR)
+  @ApiOperation({ summary: 'Actualizar un curso (Coordinador)' })
   @ApiParam({ name: 'id', description: 'ID del curso' })
   @ApiResponse({
     status: 200,
     description: 'Curso actualizado exitosamente',
-    type: Course,
+    type: CourseResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Curso no encontrado' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
@@ -145,8 +148,8 @@ export class CoursesController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Eliminar un curso (Admin)' })
+  @Roles(UserRole.COORDINADOR)
+  @ApiOperation({ summary: 'Eliminar un curso (Coordinador)' })
   @ApiParam({ name: 'id', description: 'ID del curso' })
   @ApiResponse({ status: 204, description: 'Curso eliminado exitosamente' })
   @ApiResponse({ status: 404, description: 'Curso no encontrado' })

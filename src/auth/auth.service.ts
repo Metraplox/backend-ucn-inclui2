@@ -37,8 +37,6 @@ export class AuthService {
   }
 
   async validateGoogleUser(googleId: string, email: string, nombreCompleto: string): Promise<User | null> {
-    console.log(`BACKEND (AuthService): Validando usuario de Google. GoogleID: ${googleId}, Email: ${email}`);
-
     // 1. Intentar encontrar al usuario por su Google ID.
     let user = await this.usersService.findByGoogleId(googleId);
     if (user) {
@@ -49,22 +47,17 @@ export class AuthService {
         // Por ahora, actualizamos si es diferente.
         user.nombreCompleto = nombreCompleto; 
         await user.save();
-        console.log(`BACKEND (AuthService): Usuario ${email} encontrado por GoogleID. Nombre actualizado si es necesario.`);
-      } else {
-        console.log(`BACKEND (AuthService): Usuario ${email} encontrado por GoogleID.`);
       }
       return user;
     }
 
     // 2. Si no se encontró por Google ID, intentar encontrar por email para vincular.
-    console.log(`BACKEND (AuthService): Usuario no encontrado por GoogleID. Buscando por email: ${email} para posible vinculación.`);
     user = await this.usersService.findByEmail(email);
 
     if (user) {
       // Usuario encontrado por email.
       if (!user.googleId) {
         // El usuario existe pero no tiene un Google ID vinculado. Vincularlo.
-        console.log(`BACKEND (AuthService): Usuario ${email} encontrado por email. Vinculando GoogleID: ${googleId}.`);
         user.googleId = googleId;
         if (nombreCompleto && user.nombreCompleto !== nombreCompleto) {
             // Actualizar nombre si es relevante (ej. si el actual es genérico o vacío)
@@ -74,7 +67,6 @@ export class AuthService {
         return user;
       } else if (user.googleId === googleId) {
         // El Google ID ya está correctamente vinculado. Esto es redundante pero seguro.
-        console.log(`BACKEND (AuthService): Usuario ${email} encontrado por email, GoogleID ya estaba correctamente vinculado.`);
         return user;
       } else {
         // ¡Conflicto! El email está registrado pero asociado a un Google ID DIFERENTE.
@@ -88,7 +80,6 @@ export class AuthService {
 
     // 3. Si no se encontró ni por Google ID ni por email, el usuario no existe en el sistema.
     // Como no se deben crear nuevos usuarios, se devuelve null.
-    console.log(`BACKEND (AuthService): Usuario con email ${email} no encontrado en la base de datos. No se puede iniciar sesión con Google.`);
     return null;
   }
 

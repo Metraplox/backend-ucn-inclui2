@@ -55,7 +55,7 @@ export class UsersService {
       email,
       password_hash: hashedPassword,
       nombreCompleto,
-      roles: roles || [UserRole.STUDENT],
+      roles: roles || [UserRole.ESTUDIANTE],
       isActive: isActive === undefined ? true : isActive,
     });
 

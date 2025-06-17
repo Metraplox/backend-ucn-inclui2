@@ -45,7 +45,7 @@ export class CreateUserDto {
       'Roles asignados al usuario. Si no se provee, se asigna "estudiante" por defecto.',
     enum: UserRole,
     isArray: true,
-    example: [UserRole.STAFF],
+    example: [UserRole.DIDDEC_STAFF],
     required: false,
   })
   @IsArray({ message: 'Los roles deben ser un arreglo.' })

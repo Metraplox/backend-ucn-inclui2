@@ -13,32 +13,53 @@ export class StudentsService {
    * Implementa lógica real para consultar estudiantes con necesidades especiales
    */
   async findByDepartmentWithNEE(departmentId: string, semester: string): Promise<Student[]> {
-    if (!departmentId || !semester) {
-      throw new BadRequestException('departmentId y semester son requeridos');
+    if (!Types.ObjectId.isValid(departmentId)) {
+      throw new BadRequestException('ID de departamento inválido');
     }
 
+    const departmentObjectId = new Types.ObjectId(departmentId);
+
+    const aggregation: PipelineStage[] = [
+      // Filtrar estudiantes con NEE en el semestre correcto
+      {
+        $match: {
+          hasSpecialNeeds: true,
+          semester: semester,
+        },
+      },
+      // Unir con la colección de carreras
+      {
+        $lookup: {
+          from: 'careers',
+          localField: 'carreraId',
+          foreignField: '_id',
+          as: 'careerInfo',
+        },
+      },
+      // Desenrollar el array de carrera (debería ser solo uno)
+      {
+        $unwind: '$careerInfo',
+      },
+      // Filtrar por el departamento de la carrera
+      {
+        $match: {
+          'careerInfo.departmentId': departmentObjectId,
+        },
+      },
+      // Proyectar los campos deseados del estudiante
+      {
+        $project: {
+          // Excluir la información de la carrera unida si no se necesita
+          careerInfo: 0,
+        },
+      },
+    ];
+
     try {
-      // Construir query para estudiantes con NEE en el semestre específico
-      const query: any = { 
-        hasSpecialNeeds: true,
-        semester: semester 
-      };
-
-      // Si departmentId es un ObjectId válido, buscar por carreraId relacionada al departamento
-      if (Types.ObjectId.isValid(departmentId)) {
-        // Para filtrado específico por departamento, se requiere lógica adicional
-        // que relacione carreras con departamentos
-        query.carreraId = new Types.ObjectId(departmentId);
-      }
-
-      const students = await this.studentModel
-        .find(query)
-        .populate('carreraId', 'name code department')
-        .exec();
-
+      const students = await this.studentModel.aggregate(aggregation).exec();
       return students;
     } catch (error) {
-      console.error(`Error al buscar estudiantes con NEE por departamento ${departmentId}:`, error.message);
+      console.error(`Error al buscar estudiantes con NEE por departamento ${departmentId}:`, error);
       return [];
     }
   }
@@ -58,7 +79,7 @@ export class StudentsService {
       const user = new this.userModel({
         email: createStudentDto.email.toLowerCase(),
         nombreCompleto: `${createStudentDto.nombres} ${createStudentDto.apellidos}`.trim(),
-        roles: [UserRole.STUDENT],
+        roles: [UserRole.ESTUDIANTE],
         isActive: true,
         isProfileComplete: false, // El perfil se completará con la autenticación de Google
         password_hash: null, // Se establecerá con Google Auth

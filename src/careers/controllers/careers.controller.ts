@@ -18,6 +18,8 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UserRole } from '../../users/schemas/user.schema';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { CareerResponseDto } from '../dto/career-response.dto';
+import { StudentResponseDto } from '../../students/dto/student-response.dto';
 
 @ApiTags('careers')
 @ApiBearerAuth()
@@ -27,11 +29,12 @@ export class CareersController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Crear una nueva carrera' })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'La carrera ha sido creada exitosamente',
+    type: CareerResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -51,6 +54,7 @@ export class CareersController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de carreras recuperada exitosamente',
+    type: [CareerResponseDto],
   })
   findAll() {
     return this.careersService.findAll();
@@ -62,6 +66,7 @@ export class CareersController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Carrera recuperada exitosamente',
+    type: CareerResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -73,11 +78,12 @@ export class CareersController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Actualizar una carrera' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Carrera actualizada exitosamente',
+    type: CareerResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -93,7 +99,7 @@ export class CareersController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Eliminar una carrera' })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
@@ -113,11 +119,12 @@ export class CareersController {
 
   @Get(':id/students')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Obtener estudiantes de una carrera' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de estudiantes recuperada exitosamente',
+    type: [StudentResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,

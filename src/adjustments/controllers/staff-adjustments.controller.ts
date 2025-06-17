@@ -25,16 +25,7 @@ import { UserRole } from '../../users/schemas/user.schema';
 import { AdjustmentStatus } from '../schemas/adjustment.schema';
 import { NotificationType } from '../../notifications/schemas/notification.schema';
 
-// Define roles compatible with the decorator
-enum Role {
-  ADMIN = 'admin',
-  STAFF = 'staff',
-  STUDENT = 'student',
-  TEACHER = 'teacher',
-  CAREER_HEAD = 'career_head',
-  DEPARTMENT_HEAD = 'department_head',
-  DIDDEC = 'diddec'
-}
+// Removed local Role enum - using UserRole from schema
 import { AdjustmentsService } from '../adjustments.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { Types } from 'mongoose';
@@ -50,7 +41,7 @@ export class StaffAdjustmentsController {
   ) {}
 
   @Get('help-requests')
-  @Roles(Role.STAFF, Role.ADMIN)
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({
     summary: 'Obtener todas las solicitudes de ayuda pendientes',
   })
@@ -113,7 +104,7 @@ export class StaffAdjustmentsController {
   }
 
   @Get('help-requests/:adjustmentId/:adjustmentIndex')
-  @Roles(Role.STAFF, Role.ADMIN)
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({
     summary: 'Obtener detalle de una solicitud de ayuda específica',
   })
@@ -151,7 +142,7 @@ export class StaffAdjustmentsController {
   }
 
   @Patch('help-requests/:adjustmentId/:adjustmentIndex/status')
-  @Roles(Role.STAFF, Role.ADMIN)
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Actualizar el estado de una solicitud de ayuda' })
   @ApiResponse({
     status: 200,
@@ -217,7 +208,7 @@ export class StaffAdjustmentsController {
   }
 
   @Post(':id/:index/approve')
-  @Roles(Role.STAFF, Role.ADMIN)
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Aprobar un ajuste razonable' })
   @ApiParam({ name: 'id', description: 'ID del ajuste' })
   @ApiParam({ name: 'index', description: 'Índice del ajuste en el array de ajustes actuales' })
@@ -246,7 +237,7 @@ export class StaffAdjustmentsController {
   }
 
   @Post(':id/:index/reject')
-  @Roles(Role.STAFF, Role.ADMIN)
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Rechazar un ajuste razonable' })
   @ApiParam({ name: 'id', description: 'ID del ajuste' })
   @ApiParam({ name: 'index', description: 'Índice del ajuste en el array de ajustes actuales' })
@@ -292,7 +283,7 @@ export class StaffAdjustmentsController {
   }
 
   @Get('pending')
-  @Roles(Role.STAFF, Role.ADMIN)
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Obtener ajustes pendientes de aprobación' })
   @ApiQuery({ name: 'semester', required: false, description: 'Semestre académico (formato YYYY-P)' })
   @ApiResponse({ status: 200, description: 'Lista de ajustes pendientes' })
@@ -317,7 +308,7 @@ export class StaffAdjustmentsController {
   }
 
   @Get('read-statistics')
-  @Roles(Role.STAFF, Role.ADMIN)
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Obtener estadísticas de lectura de ajustes' })
   @ApiResponse({ status: 200, description: 'Estadísticas de lectura' })
   @ApiQuery({
@@ -372,7 +363,7 @@ export class StaffAdjustmentsController {
   }
 
   @Get('unread-by-teacher')
-  @Roles(Role.STAFF, Role.ADMIN)
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Obtener ajustes no leídos agrupados por docente' })
   @ApiResponse({
     status: 200,

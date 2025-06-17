@@ -8,4 +8,5 @@ export interface UserPublicData {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  studentId?: string; // ID del perfil de estudiante, si el usuario es un estudiante
 }

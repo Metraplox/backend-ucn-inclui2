@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -21,6 +22,8 @@ import {
   VerifyDocumentDto,
 } from './dto';
 import { Student } from '../students/schemas/student.schema';
+import { UserPublicData } from '../users/interfaces/user-public-data.interface';
+import { UserRole } from '../users/schemas/user.schema';
 
 // Configuración básica de almacenamiento (se puede mover a un archivo de config)
 const UPLOAD_LOCATION =
@@ -39,6 +42,27 @@ export class DocumentsService {
     // Asegurar que los directorios existan
     fs.mkdir(UPLOAD_LOCATION, { recursive: true }).catch(console.error);
     fs.mkdir(TEMPLATES_LOCATION, { recursive: true }).catch(console.error);
+  }
+
+  async authorizeAccess(documentId: string, user: UserPublicData): Promise<void> {
+    const document = await this.getDocumentById(documentId);
+
+    const isAdminRole = user.roles.some(role =>
+      [UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF].includes(role)
+    );
+
+    if (isAdminRole) {
+      return; // Los roles administrativos tienen acceso
+    }
+
+    if (user.roles.includes(UserRole.ESTUDIANTE)) {
+      // Verificar que el studentId del documento coincida con el studentId asociado al usuario
+      if (document.studentId.toString() === user.studentId) {
+        return; // El estudiante es el propietario del documento
+      }
+    }
+
+    throw new ForbiddenException('No tiene permiso para acceder a este documento.');
   }
 
   async uploadForStudentByStaff(

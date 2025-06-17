@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../auth/enums/role.enum';
+import { UserRole } from '../users/schemas/user.schema';
 import { HawaiiSyncService } from './hawaii-sync.service';
 
 @ApiTags('hawaii-sync')
@@ -16,7 +16,7 @@ export class HawaiiSyncController {
   constructor(private readonly hawaiiSyncService: HawaiiSyncService) {}
 
   @Post('students')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Sincronizar estudiantes NEE desde Hawaii API' })
   @ApiResponse({ 
     status: 200, 
@@ -36,7 +36,7 @@ export class HawaiiSyncController {
   }
 
   @Post('courses-enrollments')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Sincronizar cursos e inscripciones de estudiantes NEE' })
   @ApiResponse({ 
     status: 200, 
@@ -56,7 +56,7 @@ export class HawaiiSyncController {
   }
 
   @Post('all')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Sincronizar todos los datos NEE desde Hawaii API' })
   @ApiResponse({ 
     status: 200, 
@@ -87,7 +87,7 @@ export class HawaiiSyncController {
   }
 
   @Get('status')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(UserRole.COORDINADOR)
   @ApiOperation({ summary: 'Obtener estado de la sincronización Hawaii' })
   @ApiResponse({ 
     status: 200, 

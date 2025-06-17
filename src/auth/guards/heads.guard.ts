@@ -13,7 +13,7 @@ export class HeadsGuard implements CanActivate {
     if (!user) return false;
 
     // Admin siempre tiene acceso
-    if (user.roles && user.roles.includes(UserRole.ADMIN)) return true;
+    if (user.roles && user.roles.includes(UserRole.COORDINADOR)) return true;
 
     // Verificar tipos específicos de jefatura si están definidos
     const requiredHeadTypes = this.reflector.get<string[]>(

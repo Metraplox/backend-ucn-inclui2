@@ -38,7 +38,6 @@ export class AuthController {
   async login(
     @Request() req: { user: Omit<User, 'password_hash'> },
   ) {
-    console.log(`BACKEND: /auth/login - Usuario autenticado por LocalAuthGuard: ${req.user.email}`);
     if (!req.user) {
       console.error('BACKEND: /auth/login - req.user es nulo después de LocalAuthGuard.');
       throw new UnauthorizedException('Usuario no autenticado.');
@@ -54,15 +53,10 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Token inválido o usuario no autorizado/registrado.' }) // Mensaje de Swagger actualizado
   @ApiResponse({ status: 400, description: 'Solicitud incorrecta (ej. falta idToken).' })
   async loginWithGoogle(@Body() body: GoogleLoginDto) {
-    console.log('BACKEND: Petición recibida en /auth/google.');
-    console.log('BACKEND: Body recibido:', JSON.stringify(body));
-
     if (!body || !body.idToken) {
       console.error('BACKEND: Error - idToken no encontrado en el body.');
       throw new BadRequestException('idToken es requerido.');
     }
-    console.log('BACKEND: idToken recibido (primeros 30 chars):', body.idToken.substring(0, Math.min(30, body.idToken.length)) + '...');
-    console.log('BACKEND: Usando GOOGLE_CLIENT_ID para verificación:', GOOGLE_CLIENT_ID);
 
     const client = new OAuth2Client(GOOGLE_CLIENT_ID);
     let payload: TokenPayload | undefined;
@@ -73,7 +67,6 @@ export class AuthController {
         audience: GOOGLE_CLIENT_ID,
       });
       payload = ticket.getPayload();
-      console.log('BACKEND: Verificación de idToken de Google exitosa. Payload:', payload);
     } catch (error) {
       console.error('BACKEND: Error al verificar el idToken de Google:', error.message);
       if (error.message && (error.message.includes('Invalid token signature') || error.message.includes('Token used too late') || error.message.includes('No pem found for envelope') || error.message.includes('The OAuth client was not found'))) {
@@ -91,8 +84,6 @@ export class AuthController {
     const googleId = payload.sub;
     const nombreCompleto = payload.name || payload.given_name || '';
 
-    console.log(`BACKEND: Intentando validar/vincular usuario con GoogleID: ${googleId}, Email: ${email}, Nombre: ${nombreCompleto}`);
-    
     try {
       const user = await this.authService.validateGoogleUser(googleId, email, nombreCompleto);
       
@@ -102,7 +93,6 @@ export class AuthController {
         throw new UnauthorizedException('Tu cuenta de Google no está registrada o no ha podido ser vinculada a una cuenta existente en el sistema. Por favor, contacta al administrador si crees que esto es un error.');
       }
       
-      console.log('BACKEND (Controller): Usuario de Google validado/vinculado. Procediendo a generar token API para:', user.email);
       return this.authService.login(user); 
 
     } catch (error) {
@@ -125,7 +115,6 @@ export class AuthController {
   async register(
     @Body() createUserDto: CreateUserDto,
   ): Promise<UserPublicData> {
-    console.log('BACKEND: /auth/register - Petición para registrar usuario:', createUserDto.email);
     return this.authService.register(createUserDto);
   }
 }

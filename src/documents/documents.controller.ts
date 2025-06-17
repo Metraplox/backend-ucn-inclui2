@@ -48,6 +48,7 @@ import {
   VerifyDocumentDto,
 } from './dto';
 import { DocumentEntity, DocumentStatus } from './schemas/document.schema';
+import { DocumentResponseDto } from './dto/document-response.dto';
 
 // Configuración básica de almacenamiento (debería coincidir o ser gestionada centralmente con el servicio)
 const UPLOAD_LOCATION =
@@ -64,7 +65,7 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post('upload')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @UseInterceptors(FileInterceptor('file', { dest: UPLOAD_LOCATION }))
   @ApiOperation({
     summary: 'Subir un nuevo documento para un estudiante (Admin, Staff)',
@@ -92,7 +93,7 @@ export class DocumentsController {
   @ApiResponse({
     status: 201,
     description: 'Documento subido y metadatos guardados.',
-    type: DocumentEntity,
+    type: DocumentResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -118,7 +119,7 @@ export class DocumentsController {
   }
 
   @Get('student/:studentId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF)
   @ApiOperation({
     summary:
       'Obtener todos los documentos de un estudiante específico (Admin, Staff)',
@@ -131,7 +132,7 @@ export class DocumentsController {
   @ApiResponse({
     status: 200,
     description: 'Lista de documentos del estudiante.',
-    type: [DocumentEntity],
+    type: [DocumentResponseDto],
   })
   @ApiResponse({ status: 400, description: 'ID de estudiante inválido.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
@@ -146,9 +147,9 @@ export class DocumentsController {
   }
 
   @Get(':documentId/metadata')
-  @Roles(UserRole.ADMIN, UserRole.STAFF) // Estudiantes podrían tener acceso si el documento les pertenece
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary: 'Obtener los metadatos de un documento específico (Admin, Staff)',
+    summary: 'Obtener los metadatos de un documento específico',
   })
   @ApiParam({
     name: 'documentId',
@@ -158,7 +159,7 @@ export class DocumentsController {
   @ApiResponse({
     status: 200,
     description: 'Metadatos del documento.',
-    type: DocumentEntity,
+    type: DocumentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
   @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
@@ -166,18 +167,19 @@ export class DocumentsController {
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async getDocumentMetadata(
     @Param('documentId') documentId: string,
+    @Req() req: Request & { user: UserPublicData },
   ): Promise<DocumentEntity> {
     if (!Types.ObjectId.isValid(documentId)) {
       throw new BadRequestException('ID de documento inválido.');
     }
-    // TODO: Considerar si un estudiante puede ver metadatos de sus propios documentos.
+    await this.documentsService.authorizeAccess(documentId, req.user);
     return this.documentsService.getDocumentById(documentId);
   }
 
   @Get(':documentId/download')
-  @Roles(UserRole.ADMIN, UserRole.STAFF) // Estudiantes podrían tener acceso si el documento les pertenece
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary: 'Descargar un archivo de documento específico (Admin, Staff)',
+    summary: 'Descargar un archivo de documento específico',
   })
   @ApiParam({
     name: 'documentId',
@@ -195,16 +197,13 @@ export class DocumentsController {
   async downloadDocument(
     @Param('documentId') documentId: string,
     @Res({ passthrough: true }) res: Response,
-    // @Req() req: Request & { user: UserPublicData }, // Para verificar permisos si un estudiante descarga
+    @Req() req: Request & { user: UserPublicData },
   ): Promise<StreamableFile> {
     if (!Types.ObjectId.isValid(documentId)) {
       throw new BadRequestException('ID de documento inválido.');
     }
-    // TODO: Lógica de autorización para estudiantes si pueden descargar sus propios documentos.
-    // const documentOwnerId = await this.documentsService.getDocumentOwner(documentId);
-    // if (req.user.roles.includes(UserRole.STUDENT) && req.user.studentRelatedId !== documentOwnerId) {
-    //   throw new ForbiddenException('No tienes permiso para descargar este documento.');
-    // }
+    
+    await this.documentsService.authorizeAccess(documentId, req.user);
 
     const document =
       await this.documentsService.getDocumentFileDetails(documentId);
@@ -227,7 +226,7 @@ export class DocumentsController {
   }
 
   @Patch(':documentId/metadata')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary:
       'Actualizar los metadatos de un documento existente (Admin, Staff)',
@@ -241,7 +240,7 @@ export class DocumentsController {
   @ApiResponse({
     status: 200,
     description: 'Metadatos actualizados exitosamente.',
-    type: DocumentEntity,
+    type: DocumentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
   @ApiResponse({
@@ -261,11 +260,13 @@ export class DocumentsController {
   }
 
   @Delete(':documentId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary:
       'Eliminar un documento (metadatos y archivo físico) (Admin, Staff)',
+    description:
+      'Elimina un documento y su archivo físico del sistema. Esta acción es irreversible.',
   })
   @ApiParam({
     name: 'documentId',
@@ -288,14 +289,17 @@ export class DocumentsController {
   }
 
   @Patch('verify/:documentId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Verificar un documento (Admin, Staff)' })
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @ApiOperation({
+    summary: 'Verificar un documento (Admin, Staff)',
+    description: 'Verifica la verificación de un documento',
+  })
   @ApiParam({ name: 'documentId', description: 'ID del documento a verificar' })
   @ApiBody({ type: VerifyDocumentDto })
   @ApiResponse({
     status: 200,
     description: 'Documento verificado exitosamente',
-    type: DocumentEntity,
+    type: DocumentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Documento no encontrado' })
   @ApiResponse({
@@ -317,14 +321,17 @@ export class DocumentsController {
   }
 
   @Patch('reject/:documentId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Rechazar un documento (Admin, Staff)' })
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @ApiOperation({
+    summary: 'Rechazar un documento (Admin, Staff)',
+    description: 'Rechaza la verificación de un documento',
+  })
   @ApiParam({ name: 'documentId', description: 'ID del documento a rechazar' })
   @ApiBody({ type: VerifyDocumentDto })
   @ApiResponse({
     status: 200,
     description: 'Documento rechazado exitosamente',
-    type: DocumentEntity,
+    type: DocumentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Documento no encontrado' })
   @ApiResponse({
@@ -407,7 +414,7 @@ export class DocumentsController {
 
   // Endpoint para que los estudiantes suban sus propios documentos
   @Post('student/upload')
-  @Roles(UserRole.STUDENT)
+  @Roles(UserRole.ESTUDIANTE)
   @UseInterceptors(FileInterceptor('file', { dest: UPLOAD_LOCATION }))
   @ApiOperation({
     summary: 'Subir un nuevo documento (Solo Estudiantes Autenticados)',
@@ -439,7 +446,7 @@ export class DocumentsController {
   @ApiResponse({
     status: 201,
     description: 'Documento subido y metadatos guardados.',
-    type: DocumentEntity,
+    type: DocumentResponseDto,
   })
   @ApiResponse({
     status: 400,

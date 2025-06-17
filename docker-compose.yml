@@ -8,9 +8,6 @@ services:
       - "3000:3000"
     env_file:
       - .env
-    environment:
-      # Las variables MONGODB_URI y JWT_SECRET se cargan desde .env
-      # Agrega otras variables de entorno necesarias aquí si no están en .env
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules # Evita que node_modules local sobreescriba el del contenedor

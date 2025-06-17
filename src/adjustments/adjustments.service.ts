@@ -26,28 +26,11 @@ export class AdjustmentsService {
    * Implementa lógica real consultando por cursos del departamento
    */
   async findByDepartment(departmentId: string, semester: string): Promise<Adjustment[]> {
-    if (!Types.ObjectId.isValid(departmentId)) {
-      throw new BadRequestException('ID de departamento inválido');
-    }
-
-    try {
-      // Buscar ajustes que pertenezcan al semestre específico
-      // y que tengan cursos relacionados con el departamento
-      const query: any = { semester };
-      
-      const adjustments = await this.adjustmentModel
-        .find(query)
-        .populate('studentId', 'nombres apellidos rut carreraId')
-        .exec();
-
-      // Filtrar por departamento si es necesario
-      // Nota: Para filtrado más específico por departamento, 
-      // se recomienda usar DepartmentStatsService que tiene lógica completa
-      return adjustments;
-    } catch (error) {
-      this.logger.error(`Error al buscar ajustes por departamento ${departmentId}: ${error.message}`);
-      return [];
-    }
+    return this.adjustmentModel.find({
+      'student.department': departmentId,
+      semester: semester,
+      status: { $ne: 'archived' }
+    }).populate('student').exec();
   }
 
   private readonly logger = new Logger(AdjustmentsService.name);

@@ -2,7 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { AdjustmentsService } from './adjustments.service';
 import { AdjustmentsServiceExtension } from './adjustments.service.extension';
 import { AdjustmentsController } from './adjustments.controller';
-import { TeacherAdjustmentsController } from './controllers/teacher-adjustments.controller';
+// import { TeacherAdjustmentsController } from './controllers/teacher-adjustments.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Adjustment, AdjustmentSchema } from './schemas/adjustment.schema';
 import {
@@ -25,7 +25,7 @@ import { StudentsModule } from '../students/students.module';
     forwardRef(() => UsersModule),
     forwardRef(() => StudentsModule),
   ],
-  controllers: [AdjustmentsController, TeacherAdjustmentsController],
+  controllers: [AdjustmentsController], // TeacherAdjustmentsController
   providers: [AdjustmentsService, AdjustmentsServiceExtension],
   exports: [AdjustmentsService, AdjustmentsServiceExtension],
 })

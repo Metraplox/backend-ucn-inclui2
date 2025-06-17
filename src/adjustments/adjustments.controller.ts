@@ -31,14 +31,17 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
 import { Types } from 'mongoose';
+import { AdjustmentResponseDto } from './dto/adjustment-response.dto';
 
 @ApiTags('adjustments')
-@ApiBearerAuth() // Para autenticación JWT (opcional)
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('adjustments')
 export class AdjustmentsController {
   constructor(private readonly adjustmentsService: AdjustmentsService) {}
 
   @Post()
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Crear nuevo ajuste razonable',
     description:
@@ -47,7 +50,7 @@ export class AdjustmentsController {
   @ApiResponse({
     status: 201,
     description: 'Ajuste creado exitosamente',
-    type: Adjustment,
+    type: AdjustmentResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos o faltantes' })
   @ApiResponse({
@@ -81,6 +84,7 @@ export class AdjustmentsController {
   }
 
   @Get()
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE)
   @ApiOperation({
     summary: 'Listar todos los ajustes',
     description:
@@ -101,13 +105,14 @@ export class AdjustmentsController {
   @ApiResponse({
     status: 200,
     description: 'Lista de ajustes encontrados',
-    type: [Adjustment],
+    type: [AdjustmentResponseDto],
   })
   async findAll(): Promise<Adjustment[]> {
     return this.adjustmentsService.findAll();
   }
 
   @Get(':id')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE, UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Obtener ajuste por ID',
     description: 'Recupera un ajuste específico usando su ID de MongoDB',
@@ -120,21 +125,30 @@ export class AdjustmentsController {
   @ApiResponse({
     status: 200,
     description: 'Ajuste encontrado',
-    type: Adjustment,
+    type: AdjustmentResponseDto,
   })
   @ApiResponse({
     status: 404,
     description: 'Ajuste no encontrado',
   })
-  async findOne(@Param('id') id: string): Promise<Adjustment> {
+  async findOne(@Param('id') id: string, @Req() req: Request & { user: UserPublicData }): Promise<Adjustment> {
     const adjustment = await this.adjustmentsService.findOne(id);
     if (!adjustment) {
       throw new NotFoundException(`Adjustment with ID "${id}" not found`);
     }
+
+    // Autorización: un estudiante solo puede ver sus propios ajustes
+    if (req.user.roles.includes(UserRole.ESTUDIANTE)) {
+      if (adjustment.studentId.toString() !== req.user.studentId) {
+        throw new NotFoundException('Ajuste no encontrado o no autorizado');
+      }
+    }
+
     return adjustment;
   }
 
   @Patch(':id')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Actualizar ajuste existente',
     description: 'Actualiza parcialmente un ajuste razonable',
@@ -147,7 +161,7 @@ export class AdjustmentsController {
   @ApiResponse({
     status: 200,
     description: 'Ajuste actualizado',
-    type: Adjustment,
+    type: AdjustmentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Ajuste no encontrado' })
   @ApiBody({
@@ -169,6 +183,7 @@ export class AdjustmentsController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Eliminar ajuste',
     description: 'Elimina permanentemente un ajuste razonable',
@@ -194,8 +209,7 @@ export class AdjustmentsController {
   }
 
   @Get('student/:studentId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.STUDENT)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Obtener ajustes por estudiante',
     description:
@@ -215,7 +229,7 @@ export class AdjustmentsController {
   @ApiResponse({
     status: 200,
     description: 'Lista de ajustes del estudiante',
-    type: [Adjustment],
+    type: [AdjustmentResponseDto],
   })
   @ApiResponse({
     status: 404,
@@ -233,23 +247,55 @@ export class AdjustmentsController {
 
     // Si el usuario es un estudiante, verificar que esté accediendo a sus propios ajustes
     if (
-      req.user.roles.includes(UserRole.STUDENT) &&
-      req.user._id !== studentId
+      req.user.roles.includes(UserRole.ESTUDIANTE) &&
+      req.user.studentId !== studentId
     ) {
-      throw new BadRequestException(
-        'No puedes acceder a los ajustes de otro estudiante',
-      );
+      throw new NotFoundException('Ajustes no encontrados o no autorizados');
     }
 
     return this.adjustmentsService.findByStudentId(studentId, status);
   }
 
-  @Get('course/:courseId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Get('department/:departmentId')
+  @Roles(UserRole.JEFE_DEPARTAMENTO)
   @ApiOperation({
-    summary: 'Obtener ajustes por curso',
-    description: 'Recupera todos los ajustes asociados a un curso específico',
+    summary: 'Obtener ajustes por ID de departamento',
+    description:
+      'Recupera todos los ajustes para estudiantes que pertenecen a un departamento específico',
+  })
+  @ApiParam({
+    name: 'departmentId',
+    description: 'ID del departamento',
+    example: '507f1f77bcf86cd799439011',
+  })
+  @ApiQuery({
+    name: 'semester',
+    required: true,
+    description: 'Filtrar por semestre académico (ej. 2025-1)',
+    example: '2025-1',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de ajustes del departamento',
+    type: [AdjustmentResponseDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Departamento no encontrado',
+  })
+  async findByDepartment(
+    @Param('departmentId') departmentId: string,
+    @Query('semester') semester: string,
+  ): Promise<Adjustment[]> {
+    return this.adjustmentsService.findByDepartment(departmentId, semester);
+  }
+
+  @Get('course/:courseId')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DOCENTE)
+  @ApiOperation({
+    summary: 'Obtener ajustes por ID de curso',
+    description:
+      'Recupera todos los ajustes asociados a un curso específico, accesible para docentes del mismo curso',
   })
   @ApiParam({
     name: 'courseId',
@@ -259,44 +305,33 @@ export class AdjustmentsController {
   @ApiResponse({
     status: 200,
     description: 'Lista de ajustes del curso',
-    type: [Adjustment],
+    type: [AdjustmentResponseDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Curso no encontrado',
   })
   async findByCourse(
     @Param('courseId') courseId: string,
   ): Promise<Adjustment[]> {
-    // Validar que el ID sea un ObjectId válido
-    if (!Types.ObjectId.isValid(courseId)) {
-      throw new BadRequestException('ID de curso inválido');
-    }
     return this.adjustmentsService.findByCourseId(courseId);
   }
 
-  @Patch(':id/associate-document/:documentId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Post(':id/documents/:documentId')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Asociar documento a un ajuste',
-    description: 'Asocia un documento existente a un ajuste académico',
+    summary: 'Asociar documento a ajuste',
+    description:
+      'Vincula un documento existente a un ajuste razonable específico',
   })
-  @ApiParam({
-    name: 'id',
-    description: 'ID del ajuste',
-    example: '507f1f77bcf86cd799439011',
-  })
-  @ApiParam({
-    name: 'documentId',
-    description: 'ID del documento a asociar',
-    example: '507f1f77bcf86cd799439011',
-  })
+  @ApiParam({ name: 'id', description: 'ID del ajuste' })
+  @ApiParam({ name: 'documentId', description: 'ID del documento' })
   @ApiResponse({
     status: 200,
-    description: 'Documento asociado correctamente',
-    type: Adjustment,
+    description: 'Documento asociado exitosamente',
+    type: AdjustmentResponseDto,
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Ajuste o documento no encontrado',
-  })
+  @ApiResponse({ status: 404, description: 'Ajuste o documento no encontrado' })
   async associateDocument(
     @Param('id') id: string,
     @Param('documentId') documentId: string,
@@ -309,8 +344,7 @@ export class AdjustmentsController {
   }
 
   @Patch(':id/status/:status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.JEFE_CARRERA)
   @ApiOperation({
     summary: 'Actualizar estado de un ajuste',
     description: 'Cambia el estado de un ajuste académico',
@@ -325,10 +359,29 @@ export class AdjustmentsController {
     description: 'Nuevo estado del ajuste',
     enum: AdjustmentStatus,
   })
+  @ApiQuery({
+    name: 'adjustmentIndex',
+    required: true,
+    description: 'Índice del ajuste específico en el array de ajustes del estudiante',
+    example: 0,
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        comments: {
+          type: 'string',
+          description: 'Comentarios opcionales sobre el cambio de estado',
+          example: 'Aprobado por junta académica.',
+        },
+      },
+    },
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Estado actualizado correctamente',
-    type: Adjustment,
+    type: AdjustmentResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -337,20 +390,81 @@ export class AdjustmentsController {
   async updateStatus(
     @Param('id') id: string,
     @Param('status') status: AdjustmentStatus,
+    @Query('adjustmentIndex') adjustmentIndex: number,
+    @Body('comments') comments: string,
+    @Req() req: Request & { user: UserPublicData },
+  ): Promise<Adjustment> {
+    if (typeof adjustmentIndex !== 'number' || adjustmentIndex < 0) {
+      throw new BadRequestException('El parámetro "adjustmentIndex" es requerido y debe ser un número positivo.');
+    }
+    return this.adjustmentsService.updateStatus(
+      id,
+      adjustmentIndex,
+      status,
+      req.user._id,
+      comments,
+    );
+  }
+
+  @Patch(':id/read')
+  @Roles(UserRole.DOCENTE)
+  @ApiOperation({
+    summary: 'Marcar ajuste como leído por docente',
+    description:
+      'Permite marcar un ajuste como leído por el docente',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID del ajuste',
+    example: '507f1f77bcf86cd799439011',
+  })
+  @ApiQuery({
+    name: 'adjustmentIndex',
+    required: true,
+    description: 'Índice del ajuste específico en el array de ajustes del estudiante',
+    example: 0,
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        comments: {
+          type: 'string',
+          description: 'Comentarios opcionales del docente',
+          example: 'Recibido y entendido.',
+        },
+      },
+    },
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Ajuste marcado como leído',
+    type: AdjustmentResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Ajuste no encontrado',
+  })
+  async markAsRead(
+    @Param('id') id: string,
+    @Query('adjustmentIndex') adjustmentIndex: number,
+    @Body('comments') comments: string,
     @Req() req: Request & { user: UserPublicData },
   ): Promise<Adjustment> {
     // Validar que el ID sea un ObjectId válido
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('ID de ajuste inválido');
     }
-
-    // Validar que el estado sea válido
-    if (!Object.values(AdjustmentStatus).includes(status)) {
-      throw new BadRequestException('Estado de ajuste inválido');
+    if (typeof adjustmentIndex !== 'number' || adjustmentIndex < 0) {
+      throw new BadRequestException('El parámetro "adjustmentIndex" es requerido y debe ser un número positivo.');
     }
 
-    // Suponiendo que adjustmentIndex viene en el body o query, aquí lo obtendremos de req.body.adjustmentIndex
-const adjustmentIndex = (req.body && (req.body as any).adjustmentIndex) ?? 0;
-return this.adjustmentsService.updateStatus(id, adjustmentIndex, status, req.user._id);
+    return this.adjustmentsService.markAsRead(
+      id,
+      adjustmentIndex,
+      req.user._id,
+      comments,
+    );
   }
 }

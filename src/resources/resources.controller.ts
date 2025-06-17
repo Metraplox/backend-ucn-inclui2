@@ -20,7 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../auth/enums/role.enum';
+import { UserRole } from '../users/schemas/user.schema';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { Resource } from './schemas/resource.schema';
 import { User } from '../auth/decorators/user.decorator';
@@ -36,7 +36,7 @@ export class ResourcesController {
   constructor(private readonly resourcesService: ResourcesService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new resource with file upload' })
@@ -157,7 +157,7 @@ export class ResourcesController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Update a resource' })
   @ApiResponse({
     status: 200,
@@ -173,7 +173,7 @@ export class ResourcesController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.DIDDEC)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Delete a resource' })
   @ApiResponse({ status: 200, description: 'The resource has been successfully deleted' })
   @ApiResponse({ status: 404, description: 'Resource not found' })

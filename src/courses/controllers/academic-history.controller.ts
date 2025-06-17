@@ -29,7 +29,7 @@ export class AcademicHistoryController {
   constructor(private readonly academicHistoryService: AcademicHistoryService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Crear un nuevo registro de historial académico' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -44,7 +44,7 @@ export class AcademicHistoryController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener todos los registros de historial académico' })
   @ApiQuery({
     name: 'semester',
@@ -63,7 +63,7 @@ export class AcademicHistoryController {
   }
 
   @Get('student/:studentId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener historial académico de un estudiante' })
   @ApiParam({ name: 'studentId', description: 'ID del estudiante' })
   @ApiQuery({
@@ -84,7 +84,7 @@ export class AcademicHistoryController {
   }
 
   @Get('course/:courseId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener historial académico de un curso' })
   @ApiParam({ name: 'courseId', description: 'ID del curso' })
   @ApiQuery({
@@ -105,7 +105,7 @@ export class AcademicHistoryController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Obtener un registro específico de historial académico' })
   @ApiParam({ name: 'id', description: 'ID del registro de historial académico' })
   @ApiResponse({
@@ -119,7 +119,7 @@ export class AcademicHistoryController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Actualizar un registro de historial académico' })
   @ApiParam({ name: 'id', description: 'ID del registro a actualizar' })
   @ApiResponse({
@@ -137,7 +137,7 @@ export class AcademicHistoryController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Eliminar un registro de historial académico' })
   @ApiParam({ name: 'id', description: 'ID del registro a eliminar' })
   @ApiResponse({

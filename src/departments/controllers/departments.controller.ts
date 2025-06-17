@@ -26,6 +26,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { Department } from '../schemas/department.schema';
+import { DepartmentResponseDto } from '../dto/department-response.dto';
 
 // Test comment to trigger re-lint
 @ApiTags('departments')
@@ -36,13 +37,13 @@ export class DepartmentsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF) // Solo admin y staff pueden crear departamentos
+  @Roles(UserRole.COORDINADOR)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Crear un nuevo departamento' })
+  @ApiOperation({ summary: 'Crear un nuevo departamento (Coordinador)' })
   @ApiResponse({
     status: 201,
     description: 'Departamento creado exitosamente.',
-    type: Department,
+    type: DepartmentResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
@@ -50,8 +51,6 @@ export class DepartmentsController {
   async create(
     @Body() createDepartmentDto: CreateDepartmentDto,
   ): Promise<Department> {
-    console.log('--- DTO Recibido en DepartmentsController.create ---');
-    console.log(JSON.stringify(createDepartmentDto, null, 2));
     return this.departmentsService.create(createDepartmentDto);
   }
 
@@ -66,7 +65,7 @@ export class DepartmentsController {
   @ApiResponse({
     status: 200,
     description: 'Lista de departamentos.',
-    type: [Department],
+    type: [DepartmentResponseDto],
   })
   async findAll(@Query('semester') semester?: string): Promise<Department[]> {
     if (semester) {
@@ -78,7 +77,7 @@ export class DepartmentsController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Obtener un departamento por ID' })
-  @ApiResponse({ status: 200, description: 'Departamento encontrado.', type: Department })
+  @ApiResponse({ status: 200, description: 'Departamento encontrado.', type: DepartmentResponseDto })
   @ApiResponse({ status: 404, description: 'Departamento no encontrado.' })
   async findOne(@Param('id') id: string): Promise<Department> {
     return this.departmentsService.findOne(id);
@@ -86,9 +85,9 @@ export class DepartmentsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
-  @ApiOperation({ summary: 'Actualizar un departamento' })
-  @ApiResponse({ status: 200, description: 'Departamento actualizado.', type: Department })
+  @Roles(UserRole.COORDINADOR)
+  @ApiOperation({ summary: 'Actualizar un departamento (Coordinador)' })
+  @ApiResponse({ status: 200, description: 'Departamento actualizado.', type: DepartmentResponseDto })
   @ApiResponse({ status: 404, description: 'Departamento no encontrado.' })
   async update(
     @Param('id') id: string,
@@ -99,9 +98,9 @@ export class DepartmentsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.COORDINADOR)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un departamento (solo Admin)' })
+  @ApiOperation({ summary: 'Eliminar un departamento (Coordinador)' })
   @ApiResponse({ status: 204, description: 'Departamento eliminado.' })
   @ApiResponse({ status: 404, description: 'Departamento no encontrado.' })
   async remove(@Param('id') id: string): Promise<void> {

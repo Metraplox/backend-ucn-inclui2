@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '../../users/enums/role.enum';
+import { UserRole } from '../../users/schemas/user.schema';
 
 /**
  * Guard que verifica si el usuario es jefe de departamento o administrador
@@ -28,13 +28,13 @@ export class DepartmentHeadGuard implements CanActivate {
     }
 
     // El administrador siempre tiene acceso
-    if (user.roles.includes(Role.ADMIN)) {
+    if (user.roles.includes(UserRole.COORDINADOR)) {
       this.logger.debug(`Acceso concedido a administrador: ${user.userId}`);
       return true;
     }
 
     // Verificar si el usuario es jefe de departamento
-    if (user.roles.includes(Role.DEPARTMENT_HEAD)) {
+    if (user.roles.includes(UserRole.JEFE_DEPARTAMENTO)) {
       // Verificar que tenga un departamento asignado
       if (!user.departmentId) {
         this.logger.warn(`Jefe de departamento sin departamento asignado: ${user.userId}`);

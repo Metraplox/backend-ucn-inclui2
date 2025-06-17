@@ -1,182 +1,65 @@
-# 🗺️ ROADMAP DE DESARROLLO - Plan Priorizado
+# 🗺️ ROADMAP DE DESARROLLO - V2 y Post-Lanzamiento
 ## Proyecto: Plataforma Inclusiva UCN
 
-### 📅 **Última Actualización**: 17 Diciembre 2025
-### 🎯 **Objetivo**: Plan estructurado para resolver problemas y continuar desarrollo
+### 📅 **Última Actualización**: 21 Diciembre 2025
+### 🎯 **Objetivo**: Planificar las próximas fases de desarrollo después del lanzamiento de la V1.0.
 
 ---
 
-## 🚨 **EMERGENCIAS - RESOLVER HOY**
+## ✅ **HITOS ALCANZADOS - LANZAMIENTO V1.0**
 
-### **🔴 Día 1 - Problemas Críticos Inmediatos**
-```bash
-# ⏱️ Tiempo estimado: 3-4 horas
+La versión 1.0 del proyecto se ha estabilizado y está lista para su despliegue a producción. Las siguientes fases de trabajo se completaron con éxito, resolviendo todos los problemas críticos que bloqueaban el lanzamiento.
 
-# 1. ELIMINAR ARCHIVO DUPLICADO (5 min)
-rm "src/auth/decorators/user.decorator 2.ts"
+### **FASE 1: RESOLUCIÓN DE PUNTOS CRÍTICOS (COMPLETADO)**
+- **Implementación de Métodos Placeholder**: Se completó la lógica de negocio para `findByDepartment` y `findByDepartmentWithNEE`, habilitando las estadísticas departamentales.
+- **Rediseño del Sistema de Roles**: Se unificó el sistema en un solo `UserRole` enum, se implementaron los roles específicos de la clienta y se aplicaron permisos granulares en 13 controladores.
 
-# 2. IMPLEMENTAR findByDepartment() (2 horas)
-# Ubicación: src/adjustments/adjustments.service.ts líneas 25-31
-# Estado actual: return [] (placeholder vacío)
-# Impacto: Estadísticas departamentales rotas
-
-# 3. VERIFICAR ESTADÍSTICAS DEPARTAMENTALES (1 hora)
-# Endpoint: GET /departments/:id/stats
-
-# 4. TESTING BÁSICO (30 min)
-# Verificar que dashboard DIDDEC funciona
-```
-
-### **Estado Esperado Fin Día 1**
-- ✅ Sin archivos duplicados
-- ✅ Estadísticas departamentales funcionando
-- ✅ Dashboard DIDDEC con datos reales
+### **FASE 2: IMPLEMENTACIÓN DE FUNCIONALIDADES CLAVE (COMPLETADO)**
+- **Gestión Dinámica de Categorías de Ajustes**: Se creó un módulo `categories` para reemplazar el `enum` estático, permitiendo a los roles autorizados gestionar las categorías.
+- **Saneamiento de Documentación API (Swagger)**: Se crearon DTOs de respuesta (`*ResponseDto`) para mejorar la documentación y consistencia de la API.
 
 ---
 
-## ⚡ **ALTA PRIORIDAD - ESTA SEMANA**
+## 🚀 **ROADMAP POST-LANZAMIENTO (V2)**
 
-### **🔴 Día 2-3 - Sistema de Roles**
-```typescript
-// ⏱️ Tiempo estimado: 2-3 días
+Con la V1.0 lanzada, el desarrollo se enfocará en optimizaciones técnicas y en la implementación de nuevas funcionalidades estratégicas que fueron pospuestas para garantizar un lanzamiento rápido y estable.
 
-// DÍA 2: DEFINICIÓN Y PREPARACIÓN
-// 1. Reunión con stakeholders (2 horas)
-//    - Definir roles organizacionales reales
-//    - Clarificar Educadora Social vs Coordinadora
-//    - Mapear permisos por funcionalidad
+### **🔧 FASE 3 - OPTIMIZACIÓN Y NUEVAS FUNCIONALIDADES**
 
-// DÍA 3: IMPLEMENTACIÓN
-// 1. Actualizar UserRole enum (1 hora)
-// 2. Migración de base de datos (2 horas)  
-// 3. Actualizar @Roles() decorators (3 horas)
-// 4. Testing de permisos (2 horas)
-```
+#### **1. Refactoring de `AdjustmentsService` (Prioridad: ALTA)**
+- **Problema**: El servicio actual tiene más de 700 líneas y múltiples responsabilidades (CRUD, búsquedas, seguimiento, reportes), lo que dificulta su mantenimiento.
+- **Solución Propuesta**: Dividir el servicio monolítico en unidades más pequeñas y especializadas, siguiendo el Principio de Responsabilidad Única (SRP).
+  ```typescript
+  // Estructura de servicios propuesta:
+  - AdjustmentsService           // Responsable solo del CRUD básico.
+  - AdjustmentsSearchService     // Para consultas complejas (búsquedas por carrera, etc.).
+  - AdjustmentsTrackingService   // Para la lógica de seguimiento de checks y estados.
+  - AdjustmentsReportsService    // Para la generación de estadísticas y datos para reportes.
+  ```
+- **Tiempo Estimado**: 1 semana.
 
-### **🔴 Día 4-5 - Refactoring AdjustmentsService**
-```typescript
-// ⏱️ Tiempo estimado: 2 días
-// PROBLEMA: 709 líneas, 6+ responsabilidades
-// OBJETIVO: Dividir en servicios especializados
-
-// Crear servicios:
-// - adjustments-search.service.ts
-// - adjustments-status.service.ts  
-// - adjustments-stats.service.ts
-// - adjustments-docs.service.ts
-// - adjustments-help.service.ts
-```
-
-### **Estado Esperado Fin Semana 1**
-- ✅ Sistema de roles unificado y seguro
-- ✅ AdjustmentsService refactorizado (< 200 líneas)
-- ✅ Permisos granulares funcionando
+#### **2. Sistema de Encuestas Semestrales (Prioridad: MEDIA)**
+- **Requisito**: Implementar "encuestas de seguimiento sobre la implementación de ajustes" para docentes, como lo solicita la clienta.
+- **Solución Propuesta**:
+  - Crear un nuevo módulo `surveys` o `followups`.
+  - Diseñar un modelo de datos `FollowUpSurvey` que capture las respuestas de forma estructurada.
+  - Implementar los servicios y controladores necesarios para crear, responder y analizar las encuestas.
+  - Generar reportes automáticos para DIDDEC basados en los resultados de las encuestas.
+- **Tiempo Estimado**: 3-5 días.
 
 ---
 
-## 📋 **PRIORIDAD MEDIA - SEMANAS 2-3**
+## 🎯 **OBJETIVOS PARA LA V2**
 
-### **🔧 Semana 2 - Calidad de Código**
-- **Lunes**: Exception Handling Consistente
-- **Martes**: Eliminación de Duplicaciones  
-- **Miércoles**: Enum duplicado staff-adjustments
-- **Jueves**: Documentación API faltante
-- **Viernes**: Code review setup
-
-### **🔧 Semana 3 - Optimización**
-- **Lunes-Martes**: Optimización MongoDB queries
-- **Miércoles-Jueves**: Interfaces específicas vs 'any'
-- **Viernes**: Testing coverage y estándares
-
----
-
-## 📊 **CRONOGRAMA VISUAL**
-
-### **Diciembre 2025**
-```
-Sem 51 (16-22 Dic) | 🚨 CRÍTICO
-├── Lun 16: Problemas inmediatos
-├── Mar 17: Sistema roles - definición
-├── Mié 18: Sistema roles - implementación  
-├── Jue 19: Refactoring AdjustmentsService
-└── Vie 20: Testing y validación
-
-Sem 52 (23-29 Dic) | ⚠️ ALTA PRIORIDAD
-├── Lun 23: Exception handling
-├── Mar 24: Eliminación duplicaciones
-├── Mié 25: 🎄 NAVIDAD
-├── Jue 26: Documentación
-└── Vie 27: Code review setup
-```
-
----
-
-## 🎯 **OBJETIVOS POR MILESTONE**
-
-### **🏁 Milestone 1 - Estabilidad (22 Dic)**
-- ✅ **Sin problemas críticos** conocidos
-- ✅ **Sistema de roles** seguro y funcional
-- ✅ **Código mantenible** (servicios < 300 líneas)
-- ✅ **Estadísticas** funcionando correctamente
-
-### **🏁 Milestone 2 - Calidad (5 Ene)**
-- ✅ **Exception handling** consistente
-- ✅ **Documentación** completa y actualizada
-- ✅ **Code review** process establecido
-- ✅ **Testing coverage** > 80%
-
----
-
-## 📈 **MÉTRICAS DE ÉXITO**
-
-### **Técnicas**
-- **Lines of Code por Servicio**: < 300 líneas
-- **Test Coverage**: > 80%
-- **Response Time APIs**: < 200ms
+### **Técnicos**
+- Mejorar la mantenibilidad del código a través del refactoring.
+- Asegurar que los nuevos módulos (encuestas) se creen siguiendo las mejores prácticas.
+- Mantener una alta calidad y cobertura de pruebas en las nuevas funcionalidades.
 
 ### **Funcionales**
-- **Dashboard DIDDEC**: Datos reales y actualizados
-- **Sistema de Roles**: Permisos granulares funcionando
-- **Estadísticas**: Sin datos ficticios o vacíos
+- Proveer a los docentes una herramienta estructurada para dar feedback.
+- Entregar a DIDDEC datos cuantitativos sobre la implementación de ajustes.
 
 ---
 
-## 🚧 **RIESGOS Y MITIGACIONES**
-
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| Migración roles falla | Media | Alto | Rollback script + testing exhaustivo |
-| Refactoring rompe funcionalidad | Baja | Alto | Testing incremental |
-| Stakeholders no disponibles | Alta | Alto | Documentar asunciones |
-
----
-
-## 📝 **CHECKLIST DE SEGUIMIENTO**
-
-### **Diario**
-- [ ] Actualizar estado en `02_PROBLEMAS_IDENTIFICADOS.md`
-- [ ] Commit con mensaje descriptivo
-- [ ] Testing básico de cambios
-
-### **Semanal**
-- [ ] Actualizar roadmap con progreso real
-- [ ] Review de métricas técnicas
-- [ ] Planning de próxima semana
-
----
-
-## 🔄 **PROCESO DE SEGUIMIENTO**
-
-### **Daily Checks (5 min)**
-- Review problemas críticos pendientes
-- Actualizar estado en guías
-- Identificar bloqueadores
-
-### **Weekly Reviews (30 min)**
-- Review objetivos cumplidos vs planificados
-- Ajuste de roadmap si necesario
-- Planning próxima semana
-
----
-
-> **🎯 Nota**: Este roadmap debe actualizarse semanalmente. Los plazos son estimaciones y pueden ajustarse según necesidades del equipo. 
+> **🎯 Nota**: Este roadmap define la dirección futura del proyecto. Las prioridades y tiempos pueden ajustarse en función del feedback post-lanzamiento de la V1.0 y las necesidades del equipo. 

@@ -16,9 +16,9 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { Role } from '../auth/enums/role.enum';
 import { UserRole, User } from './schemas/user.schema'; // Import User schema for response types
 import { UserPublicData } from './interfaces/user-public-data.interface';
+import { UserPublicDataDto } from './dto/user-public-data.dto'; // Importar el nuevo DTO
 import {
   ApiTags,
   ApiOperation,
@@ -38,7 +38,7 @@ export class UsersController {
   // El endpoint de creación directa de usuarios (si es necesario) también estaría aquí
   // y protegido por roles. Por ahora, el registro es vía AuthController.
   // @Post()
-  // @Roles(Role.ADMIN)
+  // @Roles(UserRole.COORDINADOR)
   // @HttpCode(HttpStatus.CREATED)
   // @ApiOperation({ summary: 'Crear un nuevo usuario (Admin)' })
   // @ApiBody({ type: CreateUserDto })
@@ -51,9 +51,15 @@ export class UsersController {
   // }
 
   @Get()
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Obtener todos los usuarios (Admin)' })
-  @ApiResponse({ status: 200, description: 'Lista de usuarios.', type: [User] })
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @ApiOperation({
+    summary: 'Obtener todos los usuarios (Coordinador/Educadora Social)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de usuarios con datos públicos.',
+    type: [UserPublicDataDto],
+  })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
   async findAll(): Promise<UserPublicData[]> {
@@ -65,7 +71,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Perfil del usuario actual.',
-    type: User,
+    type: UserPublicDataDto,
   })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   async getProfile(
@@ -76,8 +82,10 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN) // Solo admin puede ver perfiles de otros usuarios por ID
-  @ApiOperation({ summary: 'Obtener un usuario por su ID (Admin)' })
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @ApiOperation({
+    summary: 'Obtener un usuario por su ID (Coordinador/Educadora Social)',
+  })
   @ApiParam({
     name: 'id',
     description: 'ID único del usuario (ObjectId)',
@@ -86,7 +94,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Detalles del usuario.',
-    type: User,
+    type: UserPublicDataDto,
   })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
@@ -96,8 +104,10 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN) // Por ahora, solo admin.
-  @ApiOperation({ summary: 'Actualizar un usuario existente (Admin)' })
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @ApiOperation({
+    summary: 'Actualizar un usuario existente (Coordinador/Educadora Social)',
+  })
   @ApiParam({
     name: 'id',
     description: 'ID único del usuario a actualizar',
@@ -107,7 +117,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Usuario actualizado exitosamente.',
-    type: User,
+    type: UserPublicDataDto,
   })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
@@ -121,9 +131,9 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.COORDINADOR)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un usuario (Admin)' })
+  @ApiOperation({ summary: 'Eliminar un usuario (Coordinador)' })
   @ApiParam({
     name: 'id',
     description: 'ID único del usuario a eliminar',

@@ -37,7 +37,7 @@ export class ConsentController {
   constructor(private readonly consentService: ConsentService) {}
 
   @Post()
-  @Roles(UserRole.STUDENT)
+  @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
     summary:
       'Otorgar o actualizar el consentimiento para un documento (Solo Estudiantes)',
@@ -75,7 +75,7 @@ export class ConsentController {
   }
 
   @Get('document/:documentId')
-  @Roles(UserRole.STUDENT)
+  @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
     summary:
       'Obtener el estado de consentimiento para un documento específico (Solo Estudiantes)',
@@ -111,7 +111,7 @@ export class ConsentController {
   }
 
   @Get('student/my-consents')
-  @Roles(UserRole.STUDENT)
+  @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
     summary:
       'Obtener todos los consentimientos otorgados por el estudiante autenticado (Solo Estudiantes)',

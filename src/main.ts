@@ -3,6 +3,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -38,6 +39,9 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document); // Endpoint para la UI: /api
+
+  // Registrar interceptor de respuesta globalmente
+  app.useGlobalInterceptors(new ResponseInterceptor());
 
   // Habilitar ValidationPipe globalmente
   app.useGlobalPipes(

@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from '../../users/users.service';
 import { UserPublicData } from '../../users/interfaces/user-public-data.interface';
+import { User, UserRole } from '../../users/schemas/user.schema';
 // Importar ConfigService para acceder a JWT_SECRET desde .env
 // import { ConfigService } from '@nestjs/config';
 
@@ -25,15 +26,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any): Promise<UserPublicData> {
-    // payload contendrá { email, sub (userId), roles, iat, exp }
-    // Usamos 'sub' (userId) para buscar al usuario y asegurar que existe y está activo.
+  async validate(payload: { sub: string; email: string }): Promise<any> {
     const user = await this.usersService.findOneById(payload.sub);
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException('Token inválido o usuario inactivo.');
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado o token inválido.');
     }
-    // Devolvemos los datos públicos del usuario.
-    // findOneById ya devuelve UserPublicData.
-    return user;
+
+    // Devolvemos un objeto de usuario "limpio" y enriquecido
+    // que estará disponible en `req.user` en todos los controladores protegidos.
+    return {
+      _id: user._id.toString(),
+      email: user.email,
+      nombreCompleto: user.nombreCompleto,
+      roles: user.roles,
+      studentId: user.studentId?.toString(), // Añadimos el studentId
+    };
   }
 }

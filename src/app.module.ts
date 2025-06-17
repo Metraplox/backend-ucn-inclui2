@@ -20,6 +20,7 @@ import { HawaiiModule } from './hawaii/hawaii.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { SyncModule } from './sync/sync.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -62,7 +63,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     DiddecModule,
     ResourcesModule,
     SyncModule,
-    HawaiiModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [
