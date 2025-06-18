@@ -3,7 +3,7 @@ import {
   Post,
   Body,
   Get,
-  Param,
+  Patch,
   Req,
   Ip,
   UseGuards,
@@ -13,13 +13,10 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiParam,
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Request as ExpressRequest } from 'express'; // Renombrado para evitar conflicto con @Req
-import { Types } from 'mongoose';
-
+import { Request as ExpressRequest } from 'express';
 import { ConsentService } from './consent.service';
 import { CreateConsentDto } from './dto/create-consent.dto';
 import { Consent } from './schemas/consent.schema';
@@ -39,8 +36,7 @@ export class ConsentController {
   @Post()
   @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary:
-      'Otorgar o actualizar el consentimiento para un documento (Solo Estudiantes)',
+    summary: 'Otorgar o actualizar el consentimiento general para compartir información (Solo Estudiantes)',
   })
   @ApiBody({ type: CreateConsentDto })
   @ApiResponse({
@@ -50,85 +46,114 @@ export class ConsentController {
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({
-    status: 403,
-    description: 'Prohibido. Rol no permitido o ID de estudiante no coincide.',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Estudiante o Documento no encontrado.',
-  })
-  async giveOrUpdateConsent(
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ status: 404, description: 'Estudiante no encontrado.' })
+  async createOrUpdateConsent(
     @Body() createConsentDto: CreateConsentDto,
     @Req() req: ExpressRequest & { user: UserPublicData },
     @Ip() ipAddress: string,
   ): Promise<Consent> {
-    const authenticatedStudentUserId = req.user._id; // User._id del estudiante autenticado
-
+    const authenticatedUserId = req.user._id;
     const userAgent = req.headers['user-agent'];
-    return this.consentService.giveOrUpdateConsent(
-      authenticatedStudentUserId.toString(), // Asegurar que es string
+    
+    return this.consentService.createOrUpdateConsent(
+      authenticatedUserId.toString(),
       createConsentDto,
       ipAddress,
       userAgent,
     );
   }
 
-  @Get('document/:documentId')
+  @Get('my-consent')
   @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary:
-      'Obtener el estado de consentimiento para un documento específico (Solo Estudiantes)',
-  })
-  @ApiParam({
-    name: 'documentId',
-    description: 'ID del documento',
-    type: String,
+    summary: 'Obtener mi consentimiento actual (Solo Estudiantes)',
   })
   @ApiResponse({
     status: 200,
-    description: 'Estado del consentimiento (puede ser nulo si no existe).',
+    description: 'Consentimiento actual del estudiante (puede ser nulo si no existe).',
     type: Consent,
   })
-  @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
-  @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
-  async getConsentForDocument(
-    @Param('documentId') documentId: string,
+  async getMyConsent(
     @Req() req: ExpressRequest & { user: UserPublicData },
   ): Promise<Consent | null> {
-    const authenticatedStudentUserId = req.user._id;
-
-    if (!Types.ObjectId.isValid(documentId)) {
-      throw new BadRequestException('ID de documento inválido.');
-    }
-
-    return this.consentService.getConsentForDocumentByStudent(
-      authenticatedStudentUserId.toString(),
-      documentId,
-    );
+    const authenticatedUserId = req.user._id;
+    return this.consentService.getConsentByUserId(authenticatedUserId.toString());
   }
 
-  @Get('student/my-consents')
+  @Patch('revoke')
   @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary:
-      'Obtener todos los consentimientos otorgados por el estudiante autenticado (Solo Estudiantes)',
+    summary: 'Revocar mi consentimiento (Solo Estudiantes)',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        reason: {
+          type: 'string',
+          description: 'Razón para revocar el consentimiento',
+          example: 'Prefiero mantener mi información privada'
+        }
+      }
+    }
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de consentimientos.',
+    description: 'Consentimiento revocado exitosamente.',
+    type: Consent,
+  })
+  @ApiResponse({ status: 404, description: 'No se encontró consentimiento activo.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  async revokeMyConsent(
+    @Body('reason') reason: string,
+    @Req() req: ExpressRequest & { user: UserPublicData },
+  ): Promise<Consent> {
+    const authenticatedUserId = req.user._id;
+    return this.consentService.revokeConsent(authenticatedUserId.toString(), reason);
+  }
+
+  // Endpoints administrativos
+  @Get('all')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @ApiOperation({
+    summary: 'Listar todos los consentimientos (Solo Coordinador y Educadora Social)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de todos los consentimientos.',
     type: [Consent],
   })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
   @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
-  async getMyConsents(
-    @Req() req: ExpressRequest & { user: UserPublicData },
-  ): Promise<Consent[]> {
-    const authenticatedStudentUserId = req.user._id;
-    return this.consentService.getConsentsByStudent(
-      authenticatedStudentUserId.toString(),
-    );
+  async getAllConsents(): Promise<Consent[]> {
+    return this.consentService.findAll();
+  }
+
+  @Get('stats')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF)
+  @ApiOperation({
+    summary: 'Obtener estadísticas de consentimientos (Solo personal autorizado)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Estadísticas de consentimientos.',
+    schema: {
+      type: 'object',
+      properties: {
+        total: { type: 'number', description: 'Total de estudiantes con registro' },
+        withConsent: { type: 'number', description: 'Estudiantes que autorizaron compartir' },
+        withoutConsent: { type: 'number', description: 'Estudiantes que no autorizaron' },
+        percentageWithConsent: { type: 'number', description: 'Porcentaje que autorizó' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  async getConsentStats() {
+    return this.consentService.getConsentStats();
   }
 }

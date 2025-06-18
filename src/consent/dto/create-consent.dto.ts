@@ -1,27 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId, IsNotEmpty, IsBoolean } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateConsentDto {
   @ApiProperty({
-    description:
-      'ID del documento para el cual se otorga/modifica el consentimiento.',
-    example: '60c72b2f9b1d8c001f8e4a3c',
-  })
-  @IsMongoId({ message: 'El ID del documento debe ser un MongoID válido.' })
-  @IsNotEmpty({ message: 'El ID del documento no puede estar vacío.' })
-  documentId: string;
-
-  @ApiProperty({
-    description:
-      'Estado del consentimiento (true para otorgado, false para no otorgado/revocado).',
+    description: 'Si el estudiante autoriza compartir su diagnóstico con docentes y otras áreas',
     example: true,
   })
-  @IsBoolean({
-    message: 'El estado del consentimiento debe ser un valor booleano.',
-  })
-  @IsNotEmpty({ message: 'El estado del consentimiento no puede estar vacío.' })
-  isConsentGiven: boolean;
+  @IsBoolean({ message: 'allowsDataSharing debe ser un valor booleano.' })
+  allowsDataSharing: boolean;
 
-  // studentId se tomará del usuario autenticado.
-  // ipAddress y userAgent se pueden capturar en el servicio/controlador desde el objeto Request.
+  @ApiProperty({
+    description: 'Comentarios adicionales del estudiante sobre su decisión',
+    example: 'Autorizo compartir mi información para recibir mejor apoyo académico',
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: 'Los comentarios deben ser texto.' })
+  @MaxLength(500, { message: 'Los comentarios no pueden exceder 500 caracteres.' })
+  comments?: string;
+
+  // studentId se tomará del usuario autenticado
+  // Los datos del estudiante (RUT, nombre, carrera) se extraerán automáticamente
+  // ipAddress y userAgent se capturan desde la request
+  // registeredBy será el usuario autenticado
 }

@@ -8,77 +8,63 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Consent, ConsentDocument } from './schemas/consent.schema';
 import { CreateConsentDto } from './dto/create-consent.dto';
-import {
-  DocumentEntity,
-  DocumentDocument,
-} from '../documents/schemas/document.schema';
-import { Student, StudentDocument } from '../students/schemas/student.schema'; // Para verificar existencia
+import { Student, StudentDocument } from '../students/schemas/student.schema';
+import { UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
 export class ConsentService {
   constructor(
     @InjectModel(Consent.name) private consentModel: Model<ConsentDocument>,
-    @InjectModel(DocumentEntity.name)
-    private documentModel: Model<DocumentDocument>,
-    @InjectModel(Student.name) private studentModel: Model<StudentDocument>, // Para verificar que el estudiante existe
+    @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
   ) {}
 
-  async giveOrUpdateConsent(
-    authenticatedStudentId: string,
+  /**
+   * Crear o actualizar el consentimiento general de un estudiante
+   */
+  async createOrUpdateConsent(
+    authenticatedUserId: string,
     createConsentDto: CreateConsentDto,
     ipAddress?: string,
     userAgent?: string,
   ): Promise<ConsentDocument> {
-    const { documentId, isConsentGiven } = createConsentDto;
+    const { allowsDataSharing, comments } = createConsentDto;
 
-    if (
-      !Types.ObjectId.isValid(authenticatedStudentId) ||
-      !Types.ObjectId.isValid(documentId)
-    ) {
-      throw new BadRequestException('ID de estudiante o documento inválido.');
+    if (!Types.ObjectId.isValid(authenticatedUserId)) {
+      throw new BadRequestException('ID de usuario inválido.');
     }
 
-    // 1. Verificar que el estudiante exista (aunque si está autenticado, debería existir)
+    // 1. Buscar el estudiante asociado al usuario autenticado
     const student = await this.studentModel
-      .findById(authenticatedStudentId)
+      .findOne({ userId: new Types.ObjectId(authenticatedUserId) })
+      .populate('carreraId', 'name')
       .exec();
+
     if (!student) {
       throw new NotFoundException(
-        `Estudiante con ID "${authenticatedStudentId}" no encontrado.`,
+        'No se encontró un estudiante asociado a este usuario.',
       );
     }
 
-    // 2. Verificar que el documento exista y pertenezca al estudiante
-    const document = await this.documentModel.findById(documentId).exec();
-    if (!document) {
-      throw new NotFoundException(
-        `Documento con ID "${documentId}" no encontrado.`,
-      );
-    }
+    // 2. Preparar datos del consentimiento
+    const consentData = {
+      studentId: student._id,
+      allowsDataSharing,
+      consentDate: new Date(),
+      studentRut: student.rut,
+      studentName: `${student.nombres} ${student.apellidos}`,
+      studentCareer: (student.carreraId as any)?.name || 'Carrera no especificada',
+      comments,
+      registeredBy: new Types.ObjectId(authenticatedUserId),
+      ipAddress,
+      userAgent,
+      isActive: true,
+    };
 
-    // Asegurarse que el documento pertenece al estudiante que da el consentimiento
-    // La propiedad `studentId` en `DocumentEntity` es Types.ObjectId
-    if (document.studentId.toString() !== authenticatedStudentId) {
-      throw new ForbiddenException(
-        'No tienes permiso para dar consentimiento sobre este documento.',
-      );
-    }
-
-    // 3. Crear o actualizar el consentimiento (Upsert)
+    // 3. Upsert: actualizar existente o crear nuevo
     const consent = await this.consentModel
       .findOneAndUpdate(
-        {
-          studentId: new Types.ObjectId(authenticatedStudentId),
-          documentId: new Types.ObjectId(documentId),
-        },
-        {
-          $set: {
-            isConsentGiven,
-            consentDate: new Date(),
-            ipAddress: ipAddress, // Opcional
-            userAgent: userAgent, // Opcional
-          },
-        },
+        { studentId: student._id },
+        { $set: consentData },
         { new: true, upsert: true, runValidators: true },
       )
       .exec();
@@ -86,36 +72,181 @@ export class ConsentService {
     return consent;
   }
 
-  async getConsentForDocumentByStudent(
-    authenticatedStudentId: string,
-    documentId: string,
-  ): Promise<ConsentDocument | null> {
-    if (
-      !Types.ObjectId.isValid(authenticatedStudentId) ||
-      !Types.ObjectId.isValid(documentId)
-    ) {
-      throw new BadRequestException('ID de estudiante o documento inválido.');
+  /**
+   * Obtener el consentimiento activo de un estudiante por su ID de usuario
+   */
+  async getConsentByUserId(userId: string): Promise<ConsentDocument | null> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID de usuario inválido.');
     }
 
-    // Opcional: verificar existencia de estudiante y documento como en giveOrUpdateConsent si se quiere ser extra seguro.
-    // Por ahora, se asume que si se busca un consentimiento, las entidades relacionadas deberían existir.
+    const student = await this.studentModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .exec();
+
+    if (!student) {
+      return null;
+    }
 
     return this.consentModel
-      .findOne({
-        studentId: new Types.ObjectId(authenticatedStudentId),
-        documentId: new Types.ObjectId(documentId),
-      })
+      .findOne({ studentId: student._id, isActive: true })
       .exec();
   }
 
-  async getConsentsByStudent(
-    authenticatedStudentId: string,
-  ): Promise<ConsentDocument[]> {
-    if (!Types.ObjectId.isValid(authenticatedStudentId)) {
+  /**
+   * Obtener el consentimiento activo de un estudiante por su Student ID
+   */
+  async getConsentByStudentId(studentId: string): Promise<ConsentDocument | null> {
+    if (!Types.ObjectId.isValid(studentId)) {
       throw new BadRequestException('ID de estudiante inválido.');
     }
+
     return this.consentModel
-      .find({ studentId: new Types.ObjectId(authenticatedStudentId) })
+      .findOne({ studentId: new Types.ObjectId(studentId), isActive: true })
+      .exec();
+  }
+
+  /**
+   * Verificar si un usuario puede ver información sensible de un estudiante
+   */
+  async canViewSensitiveData(
+    studentId: string,
+    viewerRole: UserRole,
+    viewerUserId?: string
+  ): Promise<boolean> {
+    // Coordinadora y Educadora Social: SIEMPRE pueden ver información sensible
+    if (viewerRole === UserRole.COORDINADOR || viewerRole === UserRole.EDUCADORA_SOCIAL) {
+      return true;
+    }
+
+    // El propio estudiante siempre puede ver su información
+    if (viewerRole === UserRole.ESTUDIANTE && viewerUserId) {
+      const student = await this.studentModel
+        .findOne({ userId: new Types.ObjectId(viewerUserId) })
+        .exec();
+      if (student && student._id.toString() === studentId) {
+        return true;
+      }
+    }
+
+    // Para otros roles (docentes, jefes, etc.): verificar consentimiento
+    const consent = await this.getConsentByStudentId(studentId);
+    return consent?.allowsDataSharing || false;
+  }
+
+  /**
+   * Verificar si un usuario puede ver documentos de un estudiante
+   */
+  async canViewDocuments(
+    studentId: string,
+    viewerRole: UserRole,
+    viewerUserId?: string
+  ): Promise<boolean> {
+    // Solo Coordinadora y Educadora Social pueden ver documentos
+    // Y solo si el estudiante tiene consentimiento activo
+    if (viewerRole === UserRole.COORDINADOR || viewerRole === UserRole.EDUCADORA_SOCIAL) {
+      const consent = await this.getConsentByStudentId(studentId);
+      return consent?.allowsDataSharing || false;
+    }
+
+    // El propio estudiante siempre puede ver sus documentos
+    if (viewerRole === UserRole.ESTUDIANTE && viewerUserId) {
+      const student = await this.studentModel
+        .findOne({ userId: new Types.ObjectId(viewerUserId) })
+        .exec();
+      return student && student._id.toString() === studentId;
+    }
+
+    return false;
+  }
+
+  /**
+   * Verificar si un usuario puede ver ajustes académicos de un estudiante
+   */
+  async canViewAdjustments(
+    studentId: string,
+    viewerRole: UserRole,
+    viewerUserId?: string
+  ): Promise<boolean> {
+    // Coordinadora y Educadora Social: SIEMPRE pueden ver ajustes
+    if (viewerRole === UserRole.COORDINADOR || viewerRole === UserRole.EDUCADORA_SOCIAL) {
+      return true;
+    }
+
+    // Docentes: SIEMPRE pueden ver ajustes (sin necesidad de consentimiento)
+    // Pero solo pueden ver diagnóstico si hay consentimiento
+    if (viewerRole === UserRole.DOCENTE) {
+      return true;
+    }
+
+    // Jefes de carrera y departamento: pueden ver ajustes
+    if (viewerRole === UserRole.JEFE_CARRERA || viewerRole === UserRole.JEFE_DEPARTAMENTO) {
+      return true;
+    }
+
+    // El propio estudiante siempre puede ver sus ajustes
+    if (viewerRole === UserRole.ESTUDIANTE && viewerUserId) {
+      const student = await this.studentModel
+        .findOne({ userId: new Types.ObjectId(viewerUserId) })
+        .exec();
+      return student && student._id.toString() === studentId;
+    }
+
+    return false;
+  }
+
+  /**
+   * Revocar el consentimiento de un estudiante
+   */
+  async revokeConsent(
+    authenticatedUserId: string,
+    reason?: string,
+  ): Promise<ConsentDocument> {
+    const consent = await this.getConsentByUserId(authenticatedUserId);
+    
+    if (!consent) {
+      throw new NotFoundException('No se encontró un consentimiento activo.');
+    }
+
+    consent.allowsDataSharing = false;
+    consent.revokedAt = new Date();
+    consent.revocationReason = reason;
+    
+    return consent.save();
+  }
+
+  /**
+   * Obtener estadísticas de consentimientos (para reportes administrativos)
+   */
+  async getConsentStats(): Promise<{
+    total: number;
+    withConsent: number;
+    withoutConsent: number;
+    percentageWithConsent: number;
+  }> {
+    const total = await this.consentModel.countDocuments({ isActive: true });
+    const withConsent = await this.consentModel.countDocuments({ 
+      isActive: true, 
+      allowsDataSharing: true 
+    });
+    const withoutConsent = total - withConsent;
+    const percentageWithConsent = total > 0 ? (withConsent / total) * 100 : 0;
+
+    return {
+      total,
+      withConsent,
+      withoutConsent,
+      percentageWithConsent: Math.round(percentageWithConsent * 100) / 100,
+    };
+  }
+
+  /**
+   * Listar todos los consentimientos (para administradores)
+   */
+  async findAll(): Promise<ConsentDocument[]> {
+    return this.consentModel
+      .find({ isActive: true })
+      .sort({ consentDate: -1 })
       .exec();
   }
 }
