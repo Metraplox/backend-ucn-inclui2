@@ -1,5 +1,6 @@
 import { Injectable, Logger, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 import { Model, Types, isValidObjectId } from 'mongoose';
 import axios from 'axios';
 
@@ -64,6 +65,7 @@ export class SyncService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private careersService: CareersService,
     private usersService: UsersService,
+    private configService: ConfigService,
     // 🎯 Inyectar servicio de caché Hawaii (opcional para retrocompatibilidad)
     private hawaiiCacheService?: HawaiiCacheService,
   ) {}
@@ -160,7 +162,7 @@ export class SyncService {
           codigo: course.codigo,
           sede: course.sede,
           departamento: course.departamento,
-          profesores: course.profesores,
+          profesores: course.profesores ? [course.profesores] : [],
         })) as UcnCourseDto[];
         
         this.logger.log(`✅ Cursos obtenidos desde caché: ${cursos.length}`);
@@ -442,7 +444,7 @@ export class SyncService {
                     nombreCompleto: `${estudiante.nombres} ${estudiante.apellidos}`.trim(),
                     roles: ['student'],
                     isActive: true,
-                    password: 'inclui2025', // Contraseña por defecto para pruebas
+                    password: this.configService.get('DEFAULT_USER_PASSWORD', 'inclui2025'),
                     rut: estudiante.rut,
                     createdAt: new Date(),
                     updatedAt: new Date()
@@ -608,8 +610,8 @@ if (existing) return existing;
         nombreCompleto: `${nombres} ${apellidos}`.trim(),
         roles: ['student'],
         isActive: true,
-        // Siempre incluir contraseña para desarrollo/pruebas
-        password: 'inclui2025',
+        // Usar variable de entorno para contraseña por defecto
+        password: this.configService.get('DEFAULT_USER_PASSWORD', 'inclui2025'),
         rut,
       };
       
@@ -632,7 +634,7 @@ if (existing) return existing;
             nombreCompleto: `${nombres} ${apellidos}`.trim(),
             roles: ['student'],
             isActive: true,
-            password: 'inclui2025',
+            password: this.configService.get('DEFAULT_USER_PASSWORD', 'inclui2025'),
             rut,
             createdAt: new Date(),
             updatedAt: new Date()

@@ -4,15 +4,37 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: nestjs_app_ucn_dge
+    networks:
+      - ucn_network
     ports:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      - DATABASE_URL=mongodb://mongodb_prod:27017/ucn_inclui2_test
+      - MONGODB_URI=mongodb://mongodb_prod:27017/ucn_inclui2_test
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules # Evita que node_modules local sobreescriba el del contenedor
       - /usr/src/app/dist # Evita que dist local sobreescriba el del contenedor
+    depends_on:
+      - mongodb_prod
     # command: npm run start:dev # Descomenta para desarrollo con hot-reloading
 
-# El servicio mongo local ha sido eliminado ya que la app usa Atlas
-# El volumen mongo-data ha sido eliminado
+  mongodb_prod:
+    image: mongo:7.0
+    container_name: mongodb_prod
+    networks:
+      - ucn_network
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    command: mongod --noauth
+
+networks:
+  ucn_network:
+    external: true
+
+volumes:
+  mongo_data:

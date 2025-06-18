@@ -24,6 +24,20 @@ interface ValidationCheck {
   details?: string;
 }
 
+interface SyncResult {
+  success: boolean;
+  operation: string;
+  timestamp: Date;
+  duration: number;
+  stats?: {
+    studentsProcessed?: number;
+    coursesProcessed?: number;
+    enrollmentsProcessed?: number;
+    [key: string]: any;
+  };
+  error?: string;
+}
+
 @ApiTags('Semester Sync')
 @Controller('semester-sync')
 @UseGuards(JwtAuthGuard)
@@ -74,7 +88,7 @@ export class SemesterSyncController {
       }
       
       // 2. Ejecutar sincronización completa
-      const results = await this.semesterSchedulerService.forceSemesterSync(semester);
+      const results = await this.semesterSchedulerService.executeFullSemesterSync(semester);
       
       const duration = Date.now() - startTime;
       
@@ -83,9 +97,9 @@ export class SemesterSyncController {
         semester,
         duration: `${duration}ms`,
         results: {
-          students: results.students,
-          courses: results.courses,
-          enrollments: results.enrollments || { count: 0, message: 'Pendiente de implementar' }
+          students: results.stats?.studentsProcessed || 0,
+          courses: results.stats?.coursesProcessed || 0,
+          enrollments: results.stats?.enrollmentsProcessed || 0
         },
         timestamp: new Date().toISOString(),
         type: 'MANUAL_FULL_SYNC'
@@ -328,7 +342,7 @@ export class SemesterSyncController {
   })
   @ApiParam({ name: 'semester', required: false, description: 'Semestre (ej: 202510)' })
   @ApiResponse({ status: 200, description: 'Sincronización ejecutada exitosamente' })
-  async triggerManualSync(@Param('semester') semester?: string) {
+  async triggerManualSync(@Param('semester') semester?: string): Promise<any> {
     this.logger.log(`🔄 Iniciando sincronización manual para semestre: ${semester || 'actual'}`);
     
     try {
@@ -488,13 +502,8 @@ export class SemesterSyncController {
     return 'CRITICAL';
   }
 
-  private async performPreChecks(semester: string): Promise<Array<{
-    name: string;
-    description: string;
-    passed: boolean;
-    details?: string;
-  }>> {
-    const checks = [];
+  private async performPreChecks(semester: string): Promise<ValidationCheck[]> {
+    const checks: ValidationCheck[] = [];
 
     try {
       // Check 1: Verificar formato de semestre
