@@ -1,8 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { Logger } from '@nestjs/common';
 import { connect, connection } from 'mongoose';
 import { Student, StudentDocument, StudentSchema } from '../students/schemas/student.schema';
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+
+const logger = new Logger('ImportStudentsScript');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/inclui2';
 
@@ -14,7 +17,7 @@ async function extractStudents(): Promise<any[]> {
   try {
     data = JSON.parse(raw);
   } catch (e) {
-    console.error('Error parsing students file:', e);
+    logger.error('❌ Error parsing students file:', e);
     process.exit(1);
   }
   // Solo campos reales, nunca ficticios
@@ -37,30 +40,30 @@ async function main() {
   let inserted = 0;
   for (const student of students) {
     if (!student.rut || !student.apellidos || !student.nombres) {
-      console.log(`[SKIP] Faltan campos obligatorios para estudiante:`, student);
+      logger.warn(`⏭️ [SKIP] Faltan campos obligatorios para estudiante:`, student);
       continue;
     }
     // Validar formato de RUT si es necesario (ejemplo: solo números y K)
     if (!/^\d{7,8}-?[\dkK]$/.test(student.rut)) {
-      console.log(`[SKIP] RUT inválido: ${student.rut}`);
+      logger.warn(`⏭️ [SKIP] RUT inválido: ${student.rut}`);
       continue;
     }
     // Evitar duplicados
     const exists = await studentModel.findOne({ rut: student.rut });
     if (exists) {
-      console.log(`[SKIP] Estudiante ya existe: ${student.rut}`);
+      logger.warn(`⏭️ [SKIP] Estudiante ya existe: ${student.rut}`);
       continue;
     }
     const doc = new studentModel(student);
     await doc.save();
     inserted++;
-    console.log(`[OK] Insertado: ${student.nombres} ${student.apellidos} (${student.rut})`);
+    logger.log(`✅ [OK] Insertado: ${student.nombres} ${student.apellidos} (${student.rut})`);
   }
-  console.log(`\nTotal estudiantes insertados: ${inserted}`);
+  logger.log(`📊 Total estudiantes insertados: ${inserted}`);
   process.exit(0);
 }
 
 main().catch((err) => {
-  console.error('Error en importación:', err);
+  logger.error('❌ Error en importación:', err);
   process.exit(1);
 });

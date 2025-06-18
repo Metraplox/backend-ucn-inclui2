@@ -6,17 +6,20 @@
  */
 
 import { connect, connection } from 'mongoose';
+import { Logger } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 
 // Cargar variables de entorno
 dotenv.config();
+
+const logger = new Logger('MigrateSemesterScript');
 
 async function migrateSemesterField() {
   try {
     // Conectar a MongoDB
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/inclui2';
     await connect(mongoUri);
-    console.log('Conectado a MongoDB');
+    logger.log('✅ Conectado a MongoDB');
 
     // Verificar que la conexión a la base de datos esté establecida
     if (!connection.db) {
@@ -31,7 +34,7 @@ async function migrateSemesterField() {
       semestre: { $exists: true }
     }).toArray();
     
-    console.log(`Se encontraron ${studentsWithSemestre.length} estudiantes con campo 'semestre' para migrar a 'semester'`);
+    logger.log(`📊 Se encontraron ${studentsWithSemestre.length} estudiantes con campo 'semestre' para migrar a 'semester'`);
     
     // Actualizar cada estudiante para convertir 'semestre' a 'semester'
     let migratedSemestreCount = 0;
@@ -45,7 +48,7 @@ async function migrateSemesterField() {
       migratedSemestreCount++;
     }
     
-    console.log(`Migración 'semestre' a 'semester' completada. ${migratedSemestreCount} estudiantes actualizados.`);
+    logger.log(`✅ Migración 'semestre' a 'semester' completada. ${migratedSemestreCount} estudiantes actualizados.`);
     
     // Como segunda parte, actualizar los documentos que no tienen 'semester' pero tienen otro campo que podría usarse
     // Por ejemplo, semesterValue, semestreAcademico, etc.
@@ -53,7 +56,7 @@ async function migrateSemesterField() {
       semester: { $exists: false }
     }).toArray();
     
-    console.log(`Se encontraron ${studentsWithoutSemester.length} estudiantes sin campo 'semester'`);
+    logger.log(`📊 Se encontraron ${studentsWithoutSemester.length} estudiantes sin campo 'semester'`);
     
     // Establecer un valor por defecto para el semestre actual
     const currentDate = new Date();
@@ -72,7 +75,7 @@ async function migrateSemesterField() {
       defaultSemesterCount++;
     }
     
-    console.log(`Valor por defecto establecido para ${defaultSemesterCount} estudiantes: ${defaultSemester}`);
+    logger.log(`✅ Valor por defecto establecido para ${defaultSemesterCount} estudiantes: ${defaultSemester}`);
     
     // Finalmente, remover el campo 'semestre' para mantener consistencia
     const result = await studentsCollection.updateMany(
@@ -80,16 +83,16 @@ async function migrateSemesterField() {
       { $unset: { semestre: "" } }
     );
     
-    console.log(`Campo 'semestre' eliminado en ${result.modifiedCount} documentos`);
+    logger.log(`🗑️ Campo 'semestre' eliminado en ${result.modifiedCount} documentos`);
     
-    console.log('Migración completada exitosamente.');
+    logger.log('🎉 Migración completada exitosamente.');
     
   } catch (error) {
-    console.error('Error durante la migración:', error);
+    logger.error('❌ Error durante la migración:', error);
   } finally {
     // Cerrar la conexión a MongoDB
     await connection.close();
-    console.log('Conexión a MongoDB cerrada');
+    logger.log('🔌 Conexión a MongoDB cerrada');
   }
 }
 

@@ -22,7 +22,7 @@ import { Enrollment, EnrollmentSchema } from '../enrollments/schemas/enrollment.
     ])
   ],
   controllers: [HawaiiSyncController, HawaiiCacheController],
-  providers: [HawaiiService, HawaiiSyncService, HawaiiCacheService, Student, Course, Enrollment],
+  providers: [HawaiiService, HawaiiSyncService, HawaiiCacheService],
   exports: [HawaiiService, HawaiiSyncService, HawaiiCacheService],
 })
 export class HawaiiModule {}
