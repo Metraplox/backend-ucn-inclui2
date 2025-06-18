@@ -31,7 +31,7 @@
 
 ### **🔧 ESPECIFICACIONES TÉCNICAS**
 - `15_ARQUITECTURA_TECNICA.md` - Stack tecnológico y decisiones
-- `16_INTEGRACION_API.md` - Conexión con backend existente
+- `02_INTEGRACION_BACKEND_EXISTENTE.md` - Conexión con backend existente
 - `17_SEGURIDAD_FRONTEND.md` - Autenticación, autorización y protección
 - `18_PERFORMANCE_OPTIMIZATION.md` - Optimizaciones y best practices
 

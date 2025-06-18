@@ -78,7 +78,7 @@ ROI = ($35,000 - $16,400) / $16,400 = 113%
 
 ### **📚 Documentos Implementación**
 1. **`README.md`** - Índice y overview completo
-2. **`01_PLAN_EJECUTIVO.md`** - Roadmap detallado con tasks específicas
+2. **`02_GUIA_IMPLEMENTACION.md`** - Roadmap detallado con tasks específicas
 3. **`02_GUIA_IMPLEMENTACION.md`** - Step-by-step con código copy-paste
 4. **`04_CODIGO_TEMPLATES.md`** - Templates ready para usar
 5. **`07_CHECKLIST_VALIDACION.md`** - Validation criteria por fase

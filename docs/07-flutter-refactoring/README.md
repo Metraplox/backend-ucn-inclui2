@@ -11,11 +11,13 @@
 
 ### **📚 DOCUMENTOS TÉCNICOS**
 - `00_EJECUTIVO_RESUMEN.md` - Resumen ejecutivo para stakeholders y decisiones
-- `01_PLAN_EJECUTIVO.md` - Roadmap detallado con timelines y criterios de aceptación  
 - `02_GUIA_IMPLEMENTACION.md` - Guía paso a paso con código copy-paste ready
+- `03_ARQUITECTURA_FLUTTER.md` - Arquitectura técnica y patrones de diseño
 - `04_CODIGO_TEMPLATES.md` - Templates listos para usar durante desarrollo
+- `05_TESTING_STRATEGY.md` - Estrategia comprehensiva de testing
+- `06_PERFORMANCE_OPTIMIZATION.md` - Optimización de performance y métricas
 - `07_CHECKLIST_VALIDACION.md` - Listas de verificación detalladas por fase
-- `../06-frontend-design/04_FLUTTER_MODIFICAR_VS_CREAR_NUEVO.md` - Análisis técnico completo
+- `08_DEPLOYMENT_GUIDE.md` - Guía completa de deployment y CI/CD
 
 ### **🔧 SCRIPTS Y HERRAMIENTAS**
 - `scripts/` - Scripts automatizados para setup y validación
@@ -28,10 +30,11 @@
 
 ### **🚀 Preparación Inmediata**
 1. **Leer**: `00_EJECUTIVO_RESUMEN.md` para overview completo del proyecto
-2. **Planificar**: `01_PLAN_EJECUTIVO.md` para roadmap detallado y timeline
+2. **Planificar**: `02_GUIA_IMPLEMENTACION.md` para roadmap detallado y timeline
 3. **Setup**: Ejecutar `scripts/setup-refactoring.ps1` para preparación automatizada
-4. **Implementar**: Seguir `02_GUIA_IMPLEMENTACION.md` paso a paso con código
-5. **Validar**: Usar checklists en `07_CHECKLIST_VALIDACION.md` por cada fase
+4. **Arquitectura**: Revisar `03_ARQUITECTURA_FLUTTER.md` para patrones técnicos
+5. **Implementar**: Usar templates en `04_CODIGO_TEMPLATES.md` para desarrollo
+6. **Validar**: Usar checklists en `07_CHECKLIST_VALIDACION.md` por cada fase
 
 ### **📋 Criterios de Éxito**
 - ✅ **Semana 1**: State management con Riverpod implementado
