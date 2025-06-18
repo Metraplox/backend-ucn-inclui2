@@ -24,6 +24,7 @@ import {
 import { Student } from '../students/schemas/student.schema';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
 import { UserRole } from '../users/schemas/user.schema';
+import { ConsentService } from '../consent/consent.service';
 
 // Configuración básica de almacenamiento (se puede mover a un archivo de config)
 const UPLOAD_LOCATION =
@@ -38,31 +39,46 @@ export class DocumentsService {
     @InjectModel(DocumentEntity.name)
     private documentModel: Model<DocumentDocument>,
     @InjectModel(Student.name) private studentModel: Model<Student>,
+    private consentService: ConsentService,
   ) {
     // Asegurar que los directorios existan
     fs.mkdir(UPLOAD_LOCATION, { recursive: true }).catch(console.error);
     fs.mkdir(TEMPLATES_LOCATION, { recursive: true }).catch(console.error);
   }
 
+  /**
+   * Autorización de acceso a documentos basada en consentimientos
+   * REGLAS:
+   * - Coordinadora + Educadora Social: VEN documentos SOLO con consentimiento
+   * - Otros roles: NUNCA
+   * - Propio estudiante: SIEMPRE
+   */
   async authorizeAccess(documentId: string, user: UserPublicData): Promise<void> {
     const document = await this.getDocumentById(documentId);
 
-    const isAdminRole = user.roles.some(role =>
-      [UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF].includes(role)
-    );
-
-    if (isAdminRole) {
-      return; // Los roles administrativos tienen acceso
-    }
-
+    // El propio estudiante siempre puede ver sus documentos
     if (user.roles.includes(UserRole.ESTUDIANTE)) {
-      // Verificar que el studentId del documento coincida con el studentId asociado al usuario
       if (document.studentId.toString() === user.studentId) {
         return; // El estudiante es el propietario del documento
       }
+      throw new ForbiddenException('No tiene permiso para acceder a este documento.');
     }
 
-    throw new ForbiddenException('No tiene permiso para acceder a este documento.');
+    // Solo Coordinadora y Educadora Social pueden ver documentos (otros roles prohibidos)
+    if (!user.roles.some(role => [UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL].includes(role))) {
+      throw new ForbiddenException('Su rol no tiene acceso a documentos de estudiantes.');
+    }
+
+    // Verificar consentimiento para Coordinadora/Educadora Social
+    const canViewDocuments = await this.consentService.canViewDocuments(
+      document.studentId.toString(),
+      user.roles.includes(UserRole.COORDINADOR) ? UserRole.COORDINADOR : UserRole.EDUCADORA_SOCIAL,
+      user._id.toString()
+    );
+
+    if (!canViewDocuments) {
+      throw new ForbiddenException('El estudiante no ha autorizado compartir sus documentos.');
+    }
   }
 
   async uploadForStudentByStaff(

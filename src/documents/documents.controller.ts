@@ -20,6 +20,7 @@ import {
   ConflictException,
   UseGuards,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -119,10 +120,10 @@ export class DocumentsController {
   }
 
   @Get('student/:studentId')
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary:
-      'Obtener todos los documentos de un estudiante específico (Admin, Staff)',
+      'Obtener todos los documentos de un estudiante específico (Solo con consentimiento)',
   })
   @ApiParam({
     name: 'studentId',
@@ -136,13 +137,30 @@ export class DocumentsController {
   })
   @ApiResponse({ status: 400, description: 'ID de estudiante inválido.' })
   @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Estudiante no ha autorizado compartir documentos.' })
   async getDocumentsByStudent(
     @Param('studentId') studentId: string,
+    @Req() req: Request & { user: UserPublicData },
   ): Promise<DocumentEntity[]> {
     if (!Types.ObjectId.isValid(studentId)) {
       throw new BadRequestException('ID de estudiante inválido.');
     }
+
+    // Verificar autorización basada en consentimientos
+    const userRole = req.user.roles.includes(UserRole.COORDINADOR) 
+      ? UserRole.COORDINADOR 
+      : UserRole.EDUCADORA_SOCIAL;
+    
+    const canViewDocuments = await this.documentsService['consentService'].canViewDocuments(
+      studentId,
+      userRole,
+      req.user._id.toString()
+    );
+
+    if (!canViewDocuments) {
+      throw new ForbiddenException('El estudiante no ha autorizado compartir sus documentos.');
+    }
+
     return this.documentsService.getDocumentsByStudentId(studentId);
   }
 

@@ -169,29 +169,35 @@ try {
   db.consents.insertOne({
     _id: ObjectId('657000000000000000000001'),
     studentId: estudiante1._id,
-    consentType: 'uso_datos_academicos',
-    description: 'Consentimiento para uso de datos académicos en ajustes educativos',
-    isGranted: true,
-    grantedAt: new Date('2025-02-15'),
+    allowsDataSharing: true,
+    consentDate: new Date('2025-01-15'),
+    studentRut: '20.123.456-7',
+    studentName: 'Juan Carlos Pérez González',
+    studentCareer: 'Ingeniería en Sistemas Computacionales',
+    comments: 'Autorizo compartir mi información para recibir mejor apoyo académico',
+    registeredBy: estudiante1._id,
     ipAddress: '192.168.1.100',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    expiresAt: new Date('2026-02-15'),
-    createdAt: new Date(),
-    updatedAt: new Date()
+    isActive: true,
+    createdAt: new Date('2025-01-15'),
+    updatedAt: new Date('2025-01-15')
   });
   
   db.consents.insertOne({
     _id: ObjectId('657000000000000000000002'),
     studentId: estudiante2._id,
-    consentType: 'compartir_informacion_nee',
-    description: 'Consentimiento para compartir información de NEE con docentes',
-    isGranted: true,
-    grantedAt: new Date('2025-02-20'),
+    allowsDataSharing: false,
+    consentDate: new Date('2025-01-20'),
+    studentRut: '19.987.654-3',
+    studentName: 'María José Rodríguez Fernández',
+    studentCareer: 'Psicología', 
+    comments: 'Prefiero mantener mi información médica privada',
+    registeredBy: estudiante2._id,
     ipAddress: '192.168.1.101',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    expiresAt: new Date('2026-02-20'),
-    createdAt: new Date(),
-    updatedAt: new Date()
+    isActive: true,
+    createdAt: new Date('2025-01-20'),
+    updatedAt: new Date('2025-01-20')
   });
   
   print('✅ 2 consentimientos creados');

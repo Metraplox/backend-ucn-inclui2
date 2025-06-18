@@ -10,6 +10,7 @@ import { DocumentsController } from './documents.controller';
 import { DocumentsService } from './documents.service';
 import { DocumentEntity, DocumentSchema } from './schemas/document.schema';
 import { Student, StudentSchema } from '../students/schemas/student.schema';
+import { ConsentModule } from '../consent/consent.module';
 
 // Configuración de almacenamiento de Multer
 const UPLOAD_LOCATION =
@@ -31,6 +32,7 @@ try {
       { name: DocumentEntity.name, schema: DocumentSchema },
       { name: Student.name, schema: StudentSchema },
     ]),
+    ConsentModule,
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, cb) => {
