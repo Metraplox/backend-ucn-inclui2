@@ -154,7 +154,7 @@ export class ConsentService {
       const student = await this.studentModel
         .findOne({ userId: new Types.ObjectId(viewerUserId) })
         .exec();
-      return student && student._id.toString() === studentId;
+      return student ? student._id.toString() === studentId : false;
     }
 
     return false;
@@ -189,7 +189,7 @@ export class ConsentService {
       const student = await this.studentModel
         .findOne({ userId: new Types.ObjectId(viewerUserId) })
         .exec();
-      return student && student._id.toString() === studentId;
+      return student ? student._id.toString() === studentId : false;
     }
 
     return false;
