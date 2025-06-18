@@ -12,11 +12,11 @@ export class LoginDto {
 
   @ApiProperty({
     description:
-      'Contraseña del usuario para iniciar sesión (mínimo 8 caracteres)',
+      'Contraseña del usuario para iniciar sesión (mínimo 6 caracteres)',
     example: 'password123',
   })
   @IsString({ message: 'La contraseña debe ser una cadena de texto.' })
   @IsNotEmpty({ message: 'La contraseña es obligatoria.' })
-  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
+  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres.' })
   password: string;
 }

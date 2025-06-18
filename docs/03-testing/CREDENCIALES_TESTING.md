@@ -2,7 +2,7 @@
 # ==========================================
 # 
 # Archivo generado automáticamente para testing exhaustivo
-# Fecha: 2025-06-18T23:11:49.764Z
+# Fecha: 2025-06-18T23:18:20.386Z
 # 
 # IMPORTANTE: Este archivo contiene credenciales de testing únicamente
 # NO usar en producción
@@ -79,6 +79,16 @@
 - **Email:** `profesor.ici201@ucn.cl`
 - **Password:** `inclui2025`
 - **Rol:** undefined
+
+### 15. María José (estudiante)
+- **Email:** `estudiante.nee@alumnos.ucn.cl`
+- **Password:** `inclui2025`
+- **Rol:** estudiante
+
+### 16. Carlos Eduardo (estudiante)
+- **Email:** `estudiante.regular@alumnos.ucn.cl`
+- **Password:** `inclui2025`
+- **Rol:** estudiante
 
 
 ## ESTUDIANTES DE PRUEBA ADICIONALES
