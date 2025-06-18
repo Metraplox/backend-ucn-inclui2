@@ -204,7 +204,7 @@ try {
     
     # Test básico de conectividad
     try {
-        $response = Invoke-WebRequest -Uri "http://localhost:3001/health" -Method GET -TimeoutSec 5
+        Invoke-WebRequest -Uri "http://localhost:3001/health" -Method GET -TimeoutSec 5 | Out-Null
         Write-Log "✅ Test de funcionalidad: EXITOSO"
     } catch {
         Write-Warning "⚠️ Test de funcionalidad: No se pudo conectar (puede ser normal si falta .env)"
