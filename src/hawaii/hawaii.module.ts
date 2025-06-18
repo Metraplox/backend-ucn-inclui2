@@ -6,6 +6,8 @@ import {
   HawaiiSyncService, 
   HawaiiSyncController 
 } from './';
+import { HawaiiCacheService } from './hawaii-cache.service';
+import { HawaiiCacheController } from './hawaii-cache.controller';
 import { Student, StudentSchema } from '../students/schemas/student.schema';
 import { Course, CourseSchema } from '../courses/schemas/course.schema';
 import { Enrollment, EnrollmentSchema } from '../enrollments/schemas/enrollment.schema';
@@ -19,8 +21,8 @@ import { Enrollment, EnrollmentSchema } from '../enrollments/schemas/enrollment.
       { name: Enrollment.name, schema: EnrollmentSchema }
     ])
   ],
-  controllers: [HawaiiSyncController],
-  providers: [HawaiiService, HawaiiSyncService, Student, Course, Enrollment],
-  exports: [HawaiiService, HawaiiSyncService],
+  controllers: [HawaiiSyncController, HawaiiCacheController],
+  providers: [HawaiiService, HawaiiSyncService, HawaiiCacheService, Student, Course, Enrollment],
+  exports: [HawaiiService, HawaiiSyncService, HawaiiCacheService],
 })
 export class HawaiiModule {}

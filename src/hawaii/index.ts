@@ -1,5 +1,6 @@
 export * from './hawaii.service';
 export * from './hawaii-sync.service';
+export * from './hawaii-cache.service';
 export * from './hawaii-sync.controller';
 export * from './hawaii.module';
 // Export DTOs

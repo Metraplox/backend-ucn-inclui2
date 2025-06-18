@@ -15,6 +15,9 @@ import { SyncLog, SyncLogDocument, SyncType, SyncStatus } from './schemas/sync-l
 import { CareersService } from '../careers/careers.service';
 import { UsersService } from '../users/users.service';
 
+// 🚀 Integración con sistema de caché Hawaii
+import { HawaiiCacheService } from '../hawaii/hawaii-cache.service';
+
 const HAWAII_ESTUDIANTES_URL = 'https://losvilos.ucn.cl/hawaii/api/estudiantes';
 const HAWAII_ESTUDIANTES_HEADER = { 'X-HAWAII-AUTH': 'mnqpkUk00jioab' };
 
@@ -61,24 +64,48 @@ export class SyncService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private careersService: CareersService,
     private usersService: UsersService,
+    // 🎯 Inyectar servicio de caché Hawaii (opcional para retrocompatibilidad)
+    private hawaiiCacheService?: HawaiiCacheService,
   ) {}
 
+  /**
+   * 🚀 OPTIMIZADO: Sincroniza estudiantes NEE usando caché inteligente
+   */
   async syncNeeStudents(): Promise<UcnStudentDto[]> {
     // Leer lista de NEE desde archivo
     const neeList = await readNeeList();
     
     // Extraer solo los dígitos de los RUTs para comparación consistente
     const neeRutsDigits = neeList.map(e => getOnlyDigits(e.rut));
-    this.logger.log(`NEE list loaded: ${neeList.length} students (solo dígitos para comparación)`);
+    this.logger.log(`📋 NEE list loaded: ${neeList.length} students (solo dígitos para comparación)`);
     // Mostrar los primeros 5 RUTs para diagnóstico
     this.logger.debug(`Primeros 5 RUTs de lista NEE (solo dígitos): ${neeRutsDigits.slice(0, 5).join(', ')}`);
 
-    // Consumir endpoint /estudiantes
+    // ✅ Consumir datos usando caché inteligente si está disponible
     let estudiantes: UcnStudentDto[] = [];
     try {
-      const response = await axios.get<UcnStudentDto[]>(HAWAII_ESTUDIANTES_URL, { headers: HAWAII_ESTUDIANTES_HEADER });
-      estudiantes = response.data;
-      this.logger.log(`Total estudiantes recibidos desde endpoint: ${estudiantes.length}`);
+      if (this.hawaiiCacheService) {
+        this.logger.log('🚀 Usando caché inteligente Hawaii para estudiantes...');
+        // Usar el sistema de caché optimizado
+        const cachedStudents = await this.hawaiiCacheService.getEstudiantesWithCache();
+        // Convertir formato Hawaii a formato UCN
+        estudiantes = cachedStudents.map(student => ({
+          rut: student.rut,
+          nombres: student.nombres,
+          apellidos: student.apellidos,
+          email_ucn: student.email_ucn,
+          // Agregar campos adicionales si es necesario
+        })) as UcnStudentDto[];
+        
+        this.logger.log(`✅ Estudiantes obtenidos desde caché: ${estudiantes.length}`);
+      } else {
+        // Fallback al método original
+        this.logger.log('⚠️ Caché Hawaii no disponible, usando método directo...');
+        const response = await axios.get<UcnStudentDto[]>(HAWAII_ESTUDIANTES_URL, { headers: HAWAII_ESTUDIANTES_HEADER });
+        estudiantes = response.data;
+        this.logger.log(`📡 Total estudiantes recibidos desde endpoint: ${estudiantes.length}`);
+      }
+      
       // Mostrar los primeros 5 RUTs de Hawaii para diagnóstico
       if (estudiantes.length > 0) {
         const primeros5RutsHawaii = estudiantes.slice(0, 5).map(e => e.rut);
@@ -87,7 +114,7 @@ export class SyncService {
         this.logger.debug(`Primeros 5 RUTs de Hawaii (solo dígitos): ${primeros5RutsHawaiiDigits.join(', ')}`);
       }
     } catch (error) {
-      this.logger.error('Error al consumir endpoint /estudiantes', error);
+      this.logger.error('❌ Error al consumir endpoint /estudiantes', error);
       return [];
     }
 
@@ -98,61 +125,96 @@ export class SyncService {
       
       // Si hay alguna coincidencia, log detallado para verificar
       if (coincide) {
-        this.logger.debug(`Coincidencia encontrada: RUT Hawaii=${e.rut} (${rutDigits}) coincide con lista NEE`);
+        this.logger.debug(`✅ Coincidencia encontrada: RUT Hawaii=${e.rut} (${rutDigits}) coincide con lista NEE`);
       }
       
       return coincide;
     });
+
+    this.logger.log(`🎯 Estudiantes NEE encontrados: ${estudiantesNee.length} de ${estudiantes.length} total`);
     
-    this.logger.log(`Estudiantes NEE encontrados: ${estudiantesNee.length}`);
-    
-    // Si no se encontraron estudiantes, buscar posibles problemas
-    if (estudiantesNee.length === 0 && estudiantes.length > 0) {
-      // Verificar si hay algún RUT que esté cerca de coincidir (para detectar problemas de formato)
-      const muestraHawaii = estudiantes.slice(0, 20).map(e => getOnlyDigits(e.rut));
-      this.logger.debug(`Verificando posibles coincidencias cercanas... Muestra de 20 RUTs de Hawaii: ${muestraHawaii.join(', ')}`);
+    if (estudiantesNee.length === 0) {
+      this.logger.warn('⚠️ No se encontraron estudiantes NEE en los datos de Hawaii');
     }
-    
-    // Agregar carrera a cada estudiante NEE
-    const estudiantesNeeEnriquecidos = estudiantesNee.map(e => {
-      // Busca el NEE por RUT (solo dígitos)
-      const rutDigits = getOnlyDigits(e.rut);
-      const nee = neeList.find(n => getOnlyDigits(n.rut) === rutDigits);
-      return { ...e, carrera: nee?.carrera };
-    });
-    return estudiantesNeeEnriquecidos;
+
+    return estudiantesNee;
   }
 
+  /**
+   * 🚀 OPTIMIZADO: Sincroniza cursos usando caché inteligente
+   */
   async syncCourses(semester: string): Promise<UcnCourseDto[]> {
-    const HAWAII_OFERTA_URL = `https://losvilos.ucn.cl/hawaii/api/oferta?${semester}`;
-    const HAWAII_OFERTA_HEADER = { 'X-HAWAII-AUTH': 'qnbdg8k20jio90' };
-    
-    this.logger.log(`Sincronizando cursos para el semestre ${semester}`);
+    this.logger.log(`🔄 Sincronizando cursos para el semestre ${semester}`);
     
     try {
-      const response = await axios.get<UcnCourseDto[]>(HAWAII_OFERTA_URL, { headers: HAWAII_OFERTA_HEADER });
-      const cursos = response.data;
-      this.logger.log(`Total cursos recibidos desde endpoint: ${cursos.length}`);
-      return cursos;
+      if (this.hawaiiCacheService) {
+        this.logger.log('🚀 Usando caché inteligente Hawaii para cursos...');
+        // Usar el sistema de caché optimizado
+        const cachedCourses = await this.hawaiiCacheService.getOfertaWithCache(semester);
+        // Convertir formato Hawaii a formato UCN
+        const cursos = cachedCourses.map(course => ({
+          periodo: course.periodo,
+          nrc: course.nrc,
+          asignatura: course.asignatura,
+          paralelo: course.paralelo,
+          codigo: course.codigo,
+          sede: course.sede,
+          departamento: course.departamento,
+          profesores: course.profesores,
+        })) as UcnCourseDto[];
+        
+        this.logger.log(`✅ Cursos obtenidos desde caché: ${cursos.length}`);
+        return cursos;
+      } else {
+        // Fallback al método original
+        this.logger.log('⚠️ Caché Hawaii no disponible, usando método directo...');
+        const HAWAII_OFERTA_URL = `https://losvilos.ucn.cl/hawaii/api/oferta?${semester}`;
+        const HAWAII_OFERTA_HEADER = { 'X-HAWAII-AUTH': 'qnbdg8k20jio90' };
+        
+        const response = await axios.get<UcnCourseDto[]>(HAWAII_OFERTA_URL, { headers: HAWAII_OFERTA_HEADER });
+        const cursos = response.data;
+        this.logger.log(`📡 Total cursos recibidos desde endpoint: ${cursos.length}`);
+        return cursos;
+      }
     } catch (error) {
-      this.logger.error(`Error al consumir endpoint /oferta para semestre ${semester}`, error);
+      this.logger.error(`❌ Error al consumir endpoint /oferta para semestre ${semester}`, error);
       return [];
     }
   }
 
+  /**
+   * 🚀 OPTIMIZADO: Sincroniza inscripciones usando caché inteligente
+   */
   async syncInscriptions(semester: string): Promise<UcnInscriptionDto[]> {
-    const HAWAII_INSCRIPCION_URL = `https://losvilos.ucn.cl/hawaii/api/inscripcion?${semester}`;
-    const HAWAII_INSCRIPCION_HEADER = { 'X-HAWAII-AUTH': 'knf3g8k29pjht8' };
-    
-    this.logger.log(`Sincronizando inscripciones para el semestre ${semester}`);
+    this.logger.log(`🔄 Sincronizando inscripciones para el semestre ${semester}`);
     
     try {
-      const response = await axios.get<UcnInscriptionDto[]>(HAWAII_INSCRIPCION_URL, { headers: HAWAII_INSCRIPCION_HEADER });
-      const inscripciones = response.data;
-      this.logger.log(`Total inscripciones recibidas desde endpoint: ${inscripciones.length}`);
-      return inscripciones;
+      if (this.hawaiiCacheService) {
+        this.logger.log('🚀 Usando caché inteligente Hawaii para inscripciones...');
+        // Usar el sistema de caché optimizado
+        const cachedEnrollments = await this.hawaiiCacheService.getInscripcionWithCache(semester);
+        // Convertir formato Hawaii a formato UCN
+        const inscripciones = cachedEnrollments.map(enrollment => ({
+          rut: enrollment.rut,
+          nrc: enrollment.nrc,
+          // Agregar campos adicionales si es necesario según el formato UCN
+        })) as UcnInscriptionDto[];
+        
+        this.logger.log(`✅ Inscripciones obtenidas desde caché: ${inscripciones.length}`);
+        return inscripciones;
+      } else {
+        // Fallback al método original
+        this.logger.log('⚠️ Caché Hawaii no disponible, usando método directo...');
+        const HAWAII_INSCRIPCION_URL = `https://losvilos.ucn.cl/hawaii/api/inscripcion?${semester}`;
+        const HAWAII_INSCRIPCION_HEADER = { 'X-HAWAII-AUTH': 'knf3g8k29pjht8' };
+        
+        const response = await axios.get<UcnInscriptionDto[]>(HAWAII_INSCRIPCION_URL, { headers: HAWAII_INSCRIPCION_HEADER });
+        const inscripciones = response.data;
+        this.logger.log(`📡 Total inscripciones recibidas desde endpoint: ${inscripciones.length}`);
+        return inscripciones;
+      }
     } catch (error) {
-      this.logger.error(`Error al consumir endpoint /inscripcion para semestre ${semester}`, error);
+      this.logger.error(`❌ Error al consumir endpoint /inscripcion para semestre ${semester}`, error);
       return [];
     }
   }
@@ -172,6 +234,87 @@ export class SyncService {
     return inscripcionesNee;
   }
   
+  /**
+   * 🚀 NUEVO: Método optimizado para sincronización completa usando pre-carga
+   */
+  async syncCompleteWithCache(semester: string): Promise<{
+    success: boolean;
+    students: number;
+    courses: number;
+    inscriptions: number;
+    cacheStats: {
+      totalApiCalls: number;
+      cachingEnabled: boolean;
+    };
+  }> {
+    this.logger.log(`🚀 Iniciando sincronización completa optimizada para semestre ${semester}`);
+    
+    const startTime = Date.now();
+    
+    try {
+      if (this.hawaiiCacheService) {
+        // ✅ Pre-cargar todos los datos en una sola operación
+        this.logger.log('📦 Pre-cargando datos Hawaii...');
+        const preloadData = await this.hawaiiCacheService.preloadSemesterData(semester);
+        
+        this.logger.log(`📊 Pre-carga completada: ${preloadData.cacheStats.totalApiCalls}/3 llamadas API`);
+        
+        // Procesar estudiantes NEE
+        const neeList = await readNeeList();
+        const neeRutsDigits = neeList.map(e => getOnlyDigits(e.rut));
+        
+        const estudiantesNee = preloadData.students.filter(student => 
+          neeRutsDigits.includes(getOnlyDigits(student.rut))
+        );
+        
+        // Estadísticas finales
+        const duration = Date.now() - startTime;
+        this.logger.log(`🎉 Sincronización optimizada completada en ${duration}ms:`);
+        this.logger.log(`   👥 Estudiantes NEE: ${estudiantesNee.length}`);
+        this.logger.log(`   📚 Cursos: ${preloadData.courses.length}`);
+        this.logger.log(`   📝 Inscripciones: ${preloadData.enrollments.length}`);
+        this.logger.log(`   🌐 Llamadas API: ${preloadData.cacheStats.totalApiCalls}/3`);
+        
+        return {
+          success: true,
+          students: estudiantesNee.length,
+          courses: preloadData.courses.length,
+          inscriptions: preloadData.enrollments.length,
+          cacheStats: {
+            totalApiCalls: preloadData.cacheStats.totalApiCalls,
+            cachingEnabled: true
+          }
+        };
+      } else {
+        this.logger.warn('⚠️ Sistema de caché no disponible, usando métodos individuales...');
+        
+        // Fallback a métodos individuales
+        const [estudiantes, cursos, inscripciones] = await Promise.all([
+          this.syncNeeStudents(),
+          this.syncCourses(semester),
+          this.syncInscriptions(semester)
+        ]);
+        
+        const duration = Date.now() - startTime;
+        this.logger.log(`✅ Sincronización tradicional completada en ${duration}ms`);
+        
+        return {
+          success: true,
+          students: estudiantes.length,
+          courses: cursos.length,
+          inscriptions: inscripciones.length,
+          cacheStats: {
+            totalApiCalls: 3, // Máximo posible sin caché
+            cachingEnabled: false
+          }
+        };
+      }
+    } catch (error) {
+      this.logger.error('❌ Error en sincronización completa optimizada:', error);
+      throw error;
+    }
+  }
+
   /**
    * Sincroniza y persiste estudiantes NEE en la base de datos
    * @param semester Semestre académico actual

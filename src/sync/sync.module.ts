@@ -7,6 +7,7 @@ import { Student, StudentSchema } from '../students/schemas/student.schema';
 import { Course, CourseSchema } from '../courses/schemas/course.schema';
 import { CareersModule } from '../careers/careers.module';
 import { UsersModule } from '../users/users.module';
+import { HawaiiModule } from '../hawaii/hawaii.module';
 import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({
@@ -19,6 +20,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
     ]),
     CareersModule,
     UsersModule,
+    HawaiiModule,
   ],
   controllers: [SyncController],
   providers: [SyncService],
