@@ -20,6 +20,7 @@ import { User } from '../users/schemas/user.schema';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { SystemRolesDto } from './dto/roles.dto';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '90627838122-cv4i0d2124tgm1cbh06cbpotuu128b8v.apps.googleusercontent.com'; // REEMPLAZA ESTO SI ES NECESARIO
 
@@ -116,5 +117,59 @@ export class AuthController {
     @Body() createUserDto: CreateUserDto,
   ): Promise<UserPublicData> {
     return this.authService.register(createUserDto);
+  }
+
+  @Post('roles')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ 
+    summary: 'Obtener información de roles del sistema',
+    description: 'Retorna la lista completa de roles disponibles en el sistema UCN INCLUI2 con sus descripciones y permisos'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Información de roles obtenida exitosamente.',
+    type: SystemRolesDto
+  })
+  async getRoles(): Promise<SystemRolesDto> {
+    return {
+      roles: [
+        {
+          role: 'coordinador' as any,
+          description: 'Administrador principal del sistema',
+          permissions: ['Gestión completa de usuarios', 'Acceso a todos los reportes', 'Configuración del sistema']
+        },
+        {
+          role: 'educadora_social' as any,
+          description: 'Gestión de entrevistas y registro de usuarios',
+          permissions: ['Registro de estudiantes', 'Gestión de entrevistas', 'Acceso a perfiles estudiantiles']
+        },
+        {
+          role: 'diddec_staff' as any,
+          description: 'Personal especializado de DIDDEC',
+          permissions: ['Gestión de recursos', 'Reportes especializados', 'Configuración de ajustes']
+        },
+        {
+          role: 'jefe_carrera' as any,
+          description: 'Gestión académica de carreras',
+          permissions: ['Gestión de estudiantes de carrera', 'Reportes académicos', 'Configuración de cursos']
+        },
+        {
+          role: 'jefe_departamento' as any,
+          description: 'Gestión académica de departamentos',
+          permissions: ['Gestión departamental', 'Supervisión de carreras', 'Reportes institucionales']
+        },
+        {
+          role: 'docente' as any,
+          description: 'Profesores de asignaturas',
+          permissions: ['Acceso a ajustes de estudiantes', 'Gestión de cursos asignados', 'Reportes de progreso']
+        },
+        {
+          role: 'estudiante' as any,
+          description: 'Estudiantes con NEE',
+          permissions: ['Acceso a perfil personal', 'Visualización de ajustes', 'Gestión de documentos personales']
+        }
+      ],
+      info: 'Los roles determinan el acceso a diferentes funcionalidades del sistema UCN INCLUI2'
+    };
   }
 }

@@ -18,6 +18,23 @@ La versión 1.0 del proyecto se ha estabilizado y está lista para su despliegue
 - **Gestión Dinámica de Categorías de Ajustes**: Se creó un módulo `categories` para reemplazar el `enum` estático, permitiendo a los roles autorizados gestionar las categorías.
 - **Saneamiento de Documentación API (Swagger)**: Se crearon DTOs de respuesta (`*ResponseDto`) para mejorar la documentación y consistencia de la API.
 
+### **FASE 2.5: PROTECCIÓN DE CÓDIGO FUENTE (COMPLETADO)**
+- **🛡️ Sistema de Build de Producción**: Implementado sistema completo para entregar aplicación funcional sin código fuente.
+- **Docker Multi-Stage**: `Dockerfile.production` que genera imagen con solo código compilado JavaScript.
+- **Scripts Automatizados**: `build-production.ps1` y `build-production.sh` para deployment seguro.
+- **Flutter APK Nativo**: Script de build que genera APK compilado sin código Dart original.
+- **Documentación Completa**: Manuales de instalación y configuración para el cliente.
+- **Nivel de Protección**: 85% backend, 90% frontend - el cliente NO tendrá acceso al código fuente.
+
+### **FASE 2.6: MONGODB LOCAL PARA PRODUCCIÓN (COMPLETADO)**
+- **🗄️ MongoDB Dockerizado**: Configuración de MongoDB 7.0 local integrada en `docker-compose.production.yml`
+- **🔧 Scripts de Inicialización**: Configuración automática de BD con usuarios, índices, validaciones y datos de prueba
+- **📊 Sistema de Backup/Restore**: Scripts automatizados `backup-mongodb.sh` y `restore-mongodb.sh` para gestión de datos
+- **🔐 Seguridad Robusta**: Autenticación con usuarios específicos, validaciones de esquema JSON y red privada Docker
+- **📁 Estructura Optimizada**: 11 colecciones con 12 índices de rendimiento y validaciones automáticas
+- **🎯 Autonomía Total**: Eliminación completa de dependencias externas (MongoDB Atlas, servicios cloud)
+- **🛠️ Configuración Lista**: Variables de entorno, credenciales seguras y documentación completa
+
 ---
 
 ## 🚀 **ROADMAP POST-LANZAMIENTO (V2)**

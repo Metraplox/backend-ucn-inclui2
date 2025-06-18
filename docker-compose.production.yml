@@ -1,0 +1,61 @@
+# 🛡️ Docker Compose de Producción
+# Configuración para despliegue sin código fuente + MongoDB Local
+
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: ucn_inclui2_mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=secure_password_123
+      - MONGO_INITDB_DATABASE=ucn_inclui2_prod
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongodb-init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    networks:
+      - ucn_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    image: ucn-inclui2-backend:production
+    container_name: ucn_inclui2_production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:secure_password_123@mongodb:27017/ucn_inclui2_prod?authSource=admin
+    env_file:
+      - .env.production
+    volumes:
+      # Solo directorios necesarios para funcionamiento
+      - ./uploads:/app/uploads
+      - ./exports:/app/exports
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - ucn_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  ucn_network:
+    driver: bridge
+
+# Nota: Esta configuración incluye MongoDB local para mayor control
+# NO expone el código fuente - Solo la aplicación compilada y funcional 

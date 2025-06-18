@@ -1,0 +1,60 @@
+# 🛡️ Dockerfile de Producción - Sin Código Fuente
+# Este Dockerfile crea una imagen que NO contiene el código TypeScript original
+
+# Etapa 1: Builder - Compilar el código
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Instalar dependencias nativas necesarias para compilar módulos nativos como bcrypt
+RUN apk add --no-cache python3 make g++
+
+# Copiar archivos de dependencias
+COPY package*.json ./
+
+# Instalar TODAS las dependencias (incluidas devDependencies para compilar)
+RUN npm ci && npm cache clean --force
+
+# Copiar código fuente para compilar
+COPY . .
+
+# Compilar a JavaScript
+RUN npm run build
+
+# Reinstalar solo dependencias de producción compiladas en Alpine
+RUN rm -rf node_modules && npm ci --only=production
+
+# Limpiar archivos de código fuente (CRÍTICO para protección)
+RUN rm -rf src/ test/ guias/ templates/ *.md *.ts tsconfig.json .eslintrc.js
+
+# Etapa 2: Producción - Solo código compilado
+FROM node:18-alpine AS production
+
+# Instalar dependencias de runtime necesarias
+RUN apk add --no-cache wget
+
+# Crear usuario no privilegiado
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001
+
+WORKDIR /app
+
+# Copiar solo lo necesario para ejecutar (SIN código fuente)
+COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/package.json ./package.json
+
+# Crear directorio para uploads si es necesario
+RUN mkdir -p uploads && chown nestjs:nodejs uploads
+
+# Cambiar a usuario no privilegiado
+USER nestjs
+
+# Exponer puerto
+EXPOSE 3000
+
+# Variables de entorno de producción
+ENV NODE_ENV=production
+
+# Comando de inicio
+CMD ["node", "dist/main"] 

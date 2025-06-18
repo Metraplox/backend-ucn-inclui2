@@ -25,7 +25,7 @@ import { Career } from '../schemas/career.schema';
 import { Types } from 'mongoose';
 
 @ApiTags('Jefes de Carrera')
-@ApiBearerAuth('access-token')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('career-heads')
 @ApiResponse({ status: 401, description: 'No autorizado. Se requiere autenticación' })
