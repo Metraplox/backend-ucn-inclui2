@@ -19,7 +19,7 @@ import { ResourcesModule } from './resources/resources.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SyncModule } from './sync/sync.module';
 import { HawaiiModule } from './hawaii/hawaii.module';
-import { DidDecModule } from './diddec/diddec.module';
+import { DiddecModule } from './diddec/diddec.module';
 import { ConsentModule } from './consent/consent.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { SemesterSchedulerModule } from './scheduler/semester-scheduler.module';
@@ -45,7 +45,7 @@ import { SemesterSchedulerModule } from './scheduler/semester-scheduler.module';
     NotificationsModule,
     SyncModule,
     HawaiiModule,
-    DidDecModule,
+    DiddecModule,
     ConsentModule,
     EnrollmentsModule,
     SemesterSchedulerModule,

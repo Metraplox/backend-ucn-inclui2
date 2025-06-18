@@ -10,10 +10,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RoleGuard } from '../auth/guards/role.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { SemesterSchedulerService } from './semester-scheduler.service';
 import { SyncService } from '../sync/sync.service';
+import { UserRole } from '../users/schemas/user.schema';
 
 @ApiTags('semester-sync')
 @Controller('semester-sync')
@@ -27,15 +28,14 @@ export class SemesterSyncController {
   ) {}
 
   @Post('full-sync/:semester')
-  @UseGuards(RoleGuard)
-  @Roles('DIDDEC', 'COORDINADOR')
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ 
-    summary: 'Sincronización completa manual de un semestre',
-    description: 'Ejecuta una sincronización completa de estudiantes NEE, cursos e inscripciones para el semestre especificado'
+    summary: 'Sincronización completa de un semestre',
+    description: 'Ejecuta sincronización completa de estudiantes NEE, cursos e inscripciones para el semestre especificado'
   })
   @ApiParam({
     name: 'semester',
-    description: 'Semestre académico en formato YYYY-P (ej: 2025-1)',
+    description: 'Semestre académico en formato YYYY-P',
     example: '2025-1'
   })
   @ApiResponse({ 
@@ -47,14 +47,7 @@ export class SemesterSyncController {
         success: { type: 'boolean' },
         semester: { type: 'string' },
         duration: { type: 'string' },
-        results: {
-          type: 'object',
-          properties: {
-            students: { type: 'number' },
-            courses: { type: 'number' },
-            enrollments: { type: 'number' }
-          }
-        },
+        results: { type: 'object' },
         timestamp: { type: 'string' }
       }
     }
@@ -68,7 +61,7 @@ export class SemesterSyncController {
     try {
       // 1. Validar formato semestre
       if (!semester.match(/^\d{4}-[1-2]$/)) {
-        throw new BadRequestException('Formato de semestre inválido (debe ser YYYY-P donde P es 1 o 2)');
+        throw new BadRequestException('Formato de semestre inválido (debe ser YYYY-P)');
       }
       
       // 2. Ejecutar sincronización completa
@@ -83,7 +76,7 @@ export class SemesterSyncController {
         results: {
           students: results.students,
           courses: results.courses,
-          enrollments: results.enrollments
+          enrollments: results.enrollments || { count: 0, message: 'Pendiente de implementar' }
         },
         timestamp: new Date().toISOString(),
         type: 'MANUAL_FULL_SYNC'
@@ -93,13 +86,12 @@ export class SemesterSyncController {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new InternalServerErrorException(`Error en sincronización completa: ${error.message}`);
+      throw new InternalServerErrorException(`Error en sincronización: ${error.message}`);
     }
   }
 
   @Get('sync-status/:semester')
-  @UseGuards(RoleGuard)
-  @Roles('DIDDEC', 'COORDINADOR', 'EDUCADORA_SOCIAL')
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({ 
     summary: 'Obtener estado de sincronización de un semestre',
     description: 'Muestra estadísticas y estado actual de los datos sincronizados para el semestre especificado'
@@ -168,8 +160,7 @@ export class SemesterSyncController {
   }
 
   @Post('sync-students/:semester')
-  @UseGuards(RoleGuard)
-  @Roles('DIDDEC', 'COORDINADOR')
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ 
     summary: 'Sincronizar solo estudiantes NEE',
     description: 'Ejecuta sincronización únicamente de estudiantes NEE para el semestre especificado'
@@ -199,8 +190,7 @@ export class SemesterSyncController {
   }
 
   @Post('sync-courses/:semester')
-  @UseGuards(RoleGuard)
-  @Roles('DIDDEC', 'COORDINADOR')
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ 
     summary: 'Sincronizar solo cursos',
     description: 'Ejecuta sincronización únicamente de cursos para el semestre especificado'
@@ -230,8 +220,7 @@ export class SemesterSyncController {
   }
 
   @Get('pre-check/:semester')
-  @UseGuards(RoleGuard)
-  @Roles('DIDDEC', 'COORDINADOR')
+  @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({ 
     summary: 'Pre-validación antes de sincronización',
     description: 'Verifica que se cumplan todos los prerequisitos para ejecutar una sincronización'

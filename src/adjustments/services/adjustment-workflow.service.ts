@@ -269,13 +269,15 @@ export class AdjustmentWorkflowService {
         AdjustmentStatus.REJECTED,
       ],
       [AdjustmentStatus.ACTIVE]: [
-        AdjustmentStatus.COMPLETED,
+        AdjustmentStatus.APPROVED,
         AdjustmentStatus.CANCELLED,
         AdjustmentStatus.PENDING,
       ],
-      [AdjustmentStatus.COMPLETED]: [AdjustmentStatus.ACTIVE],
+      [AdjustmentStatus.APPROVED]: [AdjustmentStatus.IMPLEMENTED],
+      [AdjustmentStatus.IMPLEMENTED]: [AdjustmentStatus.ACTIVE],
       [AdjustmentStatus.CANCELLED]: [AdjustmentStatus.PENDING],
       [AdjustmentStatus.REJECTED]: [AdjustmentStatus.PENDING],
+      [AdjustmentStatus.EXPIRED]: [AdjustmentStatus.PENDING],
     };
 
     return validTransitions[currentStatus]?.includes(newStatus) ?? false;

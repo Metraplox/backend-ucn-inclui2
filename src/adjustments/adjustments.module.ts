@@ -14,6 +14,12 @@ import { CoursesModule } from '../courses/courses.module';
 import { UsersModule } from '../users/users.module';
 import { StudentsModule } from '../students/students.module';
 
+// Servicios especializados refactorizados
+import { AdjustmentCrudService } from './services/adjustment-crud.service';
+import { AdjustmentQueryService } from './services/adjustment-query.service';
+import { AdjustmentWorkflowService } from './services/adjustment-workflow.service';
+import { AdjustmentStatsService } from './services/adjustment-stats.service';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -26,7 +32,27 @@ import { StudentsModule } from '../students/students.module';
     forwardRef(() => StudentsModule),
   ],
   controllers: [AdjustmentsController], // TeacherAdjustmentsController
-  providers: [AdjustmentsService, AdjustmentsServiceExtension],
-  exports: [AdjustmentsService, AdjustmentsServiceExtension],
+  providers: [
+    // Servicios principales existentes
+    AdjustmentsService,
+    AdjustmentsServiceExtension,
+    
+    // Servicios especializados refactorizados ✅
+    AdjustmentCrudService,
+    AdjustmentQueryService,
+    AdjustmentWorkflowService,
+    AdjustmentStatsService,
+  ],
+  exports: [
+    // Servicios principales
+    AdjustmentsService,
+    AdjustmentsServiceExtension,
+    
+    // Servicios especializados para uso en otros módulos
+    AdjustmentCrudService,
+    AdjustmentQueryService,
+    AdjustmentWorkflowService,
+    AdjustmentStatsService,
+  ],
 })
 export class AdjustmentsModule {}
