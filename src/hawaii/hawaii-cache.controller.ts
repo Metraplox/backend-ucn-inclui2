@@ -241,7 +241,7 @@ export class HawaiiCacheController {
     this.logger.log(`🔥 Precalentando caché para semestres: ${body.semesters.join(', ')}`);
     
     const startTime = Date.now();
-    const results = [];
+    const results: any[] = [];
     
     try {
       // Precargar estudiantes una sola vez si se solicita
@@ -272,7 +272,7 @@ export class HawaiiCacheController {
       }
       
       const duration = Date.now() - startTime;
-      const successCount = results.filter(r => r.success).length;
+      const successCount = results.filter((r: any) => r.success).length;
       
       this.logger.log(`✅ Precalentamiento completado en ${duration}ms: ${successCount}/${body.semesters.length} semestres exitosos`);
       
