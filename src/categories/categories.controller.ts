@@ -10,7 +10,7 @@ import { UserRole } from '../users/schemas/user.schema';
 
 @ApiTags('Categories')
 @ApiBearerAuth()
-@Controller('categories')
+@Controller(['categories', 'nee-categories'])
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
@@ -24,7 +24,8 @@ export class CategoriesController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Obtener todas las categorías de ajuste' })
   @ApiResponse({ status: 200, description: 'Lista de categorías.' })
   findAll() {
@@ -32,7 +33,8 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Obtener una categoría por ID' })
   @ApiResponse({ status: 200, description: 'Categoría encontrada.' })
   @ApiResponse({ status: 404, description: 'Categoría no encontrada.' })

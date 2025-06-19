@@ -1,3 +1,86 @@
+# 📜 Scripts del Backend - UCN Inclui2
+
+## 📅 Última Actualización: 18-06-2025
+
+Este directorio contiene scripts utilitarios organizados por categorías para el mantenimiento y despliegue del backend.
+
+## 📂 Organización de Scripts
+
+### 🔨 **Build y Producción**
+- `build-production.ps1` - Script de PowerShell para generar build de producción
+- `build-production.sh` - Script de bash para generar build de producción
+- `validate-production.ps1` - Validación del entorno de producción
+
+### 🔐 **Seguridad y Validación**
+- `security-audit.ps1` - Auditoría de seguridad del proyecto
+- `validate-critical-config.ps1` - Validación de configuraciones críticas
+- `validate-system-health.ps1` - Verificación del estado del sistema
+
+### 💾 **Base de Datos**
+- `backup-mongodb.sh` - Script para respaldo de MongoDB
+- `restore-mongodb.sh` - Script para restaurar MongoDB
+- `create-mongodb-indexes.js` - Crear índices necesarios en MongoDB
+- `migrate-consents.js` - Migración de consentimientos
+
+### 📊 **Población de Datos**
+- `populate-real-data.js` - Cargar datos reales en la base de datos
+- `populate-academic-history.js` - Poblar historial académico
+- `load-real-data.ps1` - Script PowerShell para cargar datos
+
+### 🔄 **Sincronización y Actualización**
+- `sync-production-data.ps1` - Sincronizar datos de producción
+- `semester-auto-update.ps1` - Actualización automática de semestre
+
+### 🧪 **Testing**
+- `test-all-endpoints.ps1` - Testing completo de todos los endpoints
+- `advanced-testing.ps1` - Suite de testing avanzado
+
+### 🛠️ **Refactorización**
+- `refactor-hardcoded-values.ps1` - Refactorizar valores hardcodeados
+
+## 🚀 Uso de Scripts Principales
+
+### Build de Producción
+```bash
+# Windows (PowerShell)
+./build-production.ps1
+
+# Linux/Mac
+./build-production.sh
+```
+
+### Respaldo de Base de Datos
+```bash
+./backup-mongodb.sh
+```
+
+### Validación de Sistema
+```powershell
+./validate-system-health.ps1
+```
+
+### Testing de Endpoints
+```powershell
+./test-all-endpoints.ps1
+```
+
+## ⚠️ Notas Importantes
+
+1. **Permisos**: Asegúrate de tener los permisos necesarios para ejecutar los scripts
+2. **Variables de Entorno**: Algunos scripts requieren variables de entorno configuradas
+3. **MongoDB**: Los scripts de base de datos requieren MongoDB en ejecución
+4. **PowerShell**: Los scripts `.ps1` requieren PowerShell 5.0 o superior
+
+## 🧹 Limpieza Realizada
+
+Se han eliminado scripts duplicados y temporales para mantener el proyecto ordenado:
+- Scripts de debug redundantes
+- Scripts de testing duplicados  
+- Scripts de fix temporales
+- Scripts de validación redundantes
+
+Total de scripts reducido de 60+ a 19 scripts esenciales.
+
 # 📁 Scripts del Proyecto UCN Inclui2
 
 ## 🎯 **Propósito**

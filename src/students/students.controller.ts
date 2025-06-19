@@ -59,7 +59,7 @@ export class StudentsController {
   }
 
   @Get()
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF)
   @ApiOperation({
     summary: 'Obtener todos los estudiantes',
     description: 'Retorna la lista de todos los estudiantes registrados en el sistema',

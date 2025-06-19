@@ -29,7 +29,7 @@ import * as path from 'path';
 import { Response } from 'express';
 
 @ApiTags('Resources')
-@Controller('resources')
+@Controller(['resources', 'educational-resources'])
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class ResourcesController {
@@ -80,6 +80,7 @@ export class ResourcesController {
   }
 
   @Get()
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Get all resources with optional filters' })
   @ApiQuery({ name: 'semester', required: false, description: 'Filter by semester (YYYY-P)' })
   @ApiQuery({ name: 'resourceType', required: false, description: 'Filter by resource type' })
@@ -100,6 +101,7 @@ export class ResourcesController {
   }
 
   @Get('search')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Search resources by term' })
   @ApiQuery({ name: 'term', required: true, description: 'Search term' })
   @ApiQuery({ name: 'semester', required: false, description: 'Filter by semester (YYYY-P)' })
@@ -119,6 +121,7 @@ export class ResourcesController {
   }
 
   @Get('adjustment-type/:id')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Get resources by adjustment type ID' })
   @ApiResponse({
     status: 200,
@@ -130,6 +133,7 @@ export class ResourcesController {
   }
 
   @Get(':id')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Get a resource by ID' })
   @ApiResponse({
     status: 200,
@@ -142,6 +146,7 @@ export class ResourcesController {
   }
 
   @Get(':id/download')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Download a resource file' })
   @ApiResponse({ status: 200, description: 'File downloaded successfully' })
   @ApiResponse({ status: 404, description: 'Resource or file not found' })

@@ -7,9 +7,10 @@ import {
   UseGuards, 
   BadRequestException, 
   InternalServerErrorException,
-  Logger
+  Logger,
+  Query
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -335,14 +336,14 @@ export class SemesterSyncController {
     }
   }
 
-  @Post('trigger/:semester?')
+  @Post('trigger')
   @ApiOperation({ 
     summary: 'Ejecutar sincronización manual',
     description: 'Ejecuta manualmente la sincronización para un semestre específico'
   })
-  @ApiParam({ name: 'semester', required: false, description: 'Semestre (ej: 202510)' })
+  @ApiQuery({ name: 'semester', required: false, description: 'Semestre (ej: 202510)' })
   @ApiResponse({ status: 200, description: 'Sincronización ejecutada exitosamente' })
-  async triggerManualSync(@Param('semester') semester?: string): Promise<any> {
+  async triggerManualSync(@Query('semester') semester?: string): Promise<any> {
     this.logger.log(`🔄 Iniciando sincronización manual para semestre: ${semester || 'actual'}`);
     
     try {
@@ -362,14 +363,14 @@ export class SemesterSyncController {
     }
   }
 
-  @Get('validate/:semester?')
+  @Get('validate')
   @ApiOperation({ 
     summary: 'Validar precondiciones para sincronización',
     description: 'Verifica que todas las condiciones estén listas para sincronización'
   })
-  @ApiParam({ name: 'semester', required: false, description: 'Semestre a validar' })
+  @ApiQuery({ name: 'semester', required: false, description: 'Semestre a validar' })
   @ApiResponse({ status: 200, description: 'Validación completada' })
-  async validatePreConditions(@Param('semester') semester: string = '202510') {
+  async validatePreConditions(@Query('semester') semester: string = '202510') {
     this.logger.log(`🔍 Validando precondiciones para semestre ${semester}`);
     
     try {
