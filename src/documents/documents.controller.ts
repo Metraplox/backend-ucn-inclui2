@@ -59,7 +59,7 @@ const TEMPLATES_LOCATION =
   path.join(__dirname, '..', '..', 'templates');
 
 @ApiTags('documents')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('documents')
 export class DocumentsController {
@@ -69,39 +69,93 @@ export class DocumentsController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @UseInterceptors(FileInterceptor('file', { dest: UPLOAD_LOCATION }))
   @ApiOperation({
-    summary: 'Subir un nuevo documento para un estudiante (Admin, Staff)',
+    summary: 'Subir documento para estudiante (Staff)',
+    description: 'Permite al staff subir documentos de respaldo para estudiantes específicos. Los archivos se almacenan con validaciones de seguridad y se crean metadatos en la base de datos.',
   })
-  @ApiConsumes('multipart/form-data') // Indicar que este endpoint consume form-data
+  @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Archivo a subir y metadatos del documento.',
-    // Swagger no tiene un buen soporte para describir multipart/form-data con DTOs y archivos directamente.
-    // Se suele documentar el campo del archivo y los campos del DTO por separado.
+    description: 'Archivo a subir con metadatos del documento',
     schema: {
       type: 'object',
       properties: {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'El archivo a subir.',
+          description: 'Archivo a subir (documentos de respaldo, informes médicos, certificados)',
         },
-        studentId: { type: 'string', example: '60c72b2f9b1d8c001f8e4a3c' },
-        category: { type: 'string', example: 'Informe Médico' },
-        description: { type: 'string', example: 'Informe detallado' }, // 'required: false' eliminado
+        studentId: { 
+          type: 'string', 
+          example: '507f1f77bcf86cd799439011',
+          description: 'ObjectId del estudiante propietario del documento'
+        },
+        category: { 
+          type: 'string', 
+          example: 'INFORME_MEDICO',
+          description: 'Categoría del documento según enum DocumentCategory'
+        },
+        description: { 
+          type: 'string', 
+          example: 'Informe médico del especialista en neurología - actualización trimestral',
+          description: 'Descripción opcional detallada del documento'
+        },
       },
-      required: ['file', 'studentId', 'category'], // 'description' es opcional, por lo que no se lista aquí
+      required: ['file', 'studentId', 'category'],
     },
   })
   @ApiResponse({
     status: 201,
-    description: 'Documento subido y metadatos guardados.',
+    description: 'Documento subido exitosamente con metadatos guardados',
     type: DocumentResponseDto,
+    schema: {
+      example: {
+        _id: '507f1f77bcf86cd799439012',
+        studentId: {
+          _id: '507f1f77bcf86cd799439011',
+          rut: '12345678-9',
+          nombres: 'Juan Carlos',
+          apellidos: 'Pérez González'
+        },
+        fileNameOriginal: 'informe_medico_juan.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 2048576,
+        category: 'INFORME_MEDICO',
+        description: 'Informe médico del especialista en neurología',
+        uploadedBy: {
+          _id: '507f1f77bcf86cd799439013',
+          email: 'coordinadora@ucn.cl',
+          nombres: 'María',
+          apellidos: 'González'
+        },
+        status: 'PENDIENTE',
+        uploadDate: '2025-06-19T10:30:00.000Z',
+        createdAt: '2025-06-19T10:30:00.000Z',
+        updatedAt: '2025-06-19T10:30:00.000Z'
+      }
+    }
   })
   @ApiResponse({
     status: 400,
-    description: 'Datos inválidos o archivo faltante/incorrecto.',
+    description: 'Datos inválidos o archivo faltante',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Archivo no proporcionado.',
+        error: 'Bad Request'
+      }
+    }
   })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Rol no autorizado - Solo coordinadores y educadoras sociales',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden'
+      }
+    }
+  })
   async uploadDocument(
     @UploadedFile() // TODO: Reintroducir ParseFilePipe
     file: Express.Multer.File,
@@ -122,22 +176,73 @@ export class DocumentsController {
   @Get('student/:studentId')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary:
-      'Obtener todos los documentos de un estudiante específico (Solo con consentimiento)',
+    summary: 'Obtener documentos de estudiante',
+    description: 'Obtiene todos los documentos de un estudiante específico. Requiere que el estudiante haya dado consentimiento para compartir documentos. Solo staff autorizado puede acceder.',
   })
   @ApiParam({
     name: 'studentId',
-    description: 'ID del estudiante',
+    description: 'ObjectId del estudiante',
     type: String,
+    example: '507f1f77bcf86cd799439011'
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de documentos del estudiante.',
+    description: 'Lista de documentos del estudiante',
     type: [DocumentResponseDto],
+    schema: {
+      example: [
+        {
+          _id: '507f1f77bcf86cd799439012',
+          studentId: {
+            _id: '507f1f77bcf86cd799439011',
+            rut: '12345678-9',
+            nombres: 'Juan Carlos',
+            apellidos: 'Pérez González'
+          },
+          fileNameOriginal: 'informe_medico.pdf',
+          category: 'INFORME_MEDICO',
+          status: 'VERIFICADO',
+          uploadDate: '2025-06-19T10:30:00.000Z'
+        },
+        {
+          _id: '507f1f77bcf86cd799439014',
+          studentId: {
+            _id: '507f1f77bcf86cd799439011',
+            rut: '12345678-9',
+            nombres: 'Juan Carlos',
+            apellidos: 'Pérez González'
+          },
+          fileNameOriginal: 'certificado_regular.pdf',
+          category: 'CERTIFICADO_ALUMNO_REGULAR',
+          status: 'PENDIENTE',
+          uploadDate: '2025-06-18T14:20:00.000Z'
+        }
+      ]
+    }
   })
-  @ApiResponse({ status: 400, description: 'ID de estudiante inválido.' })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Estudiante no ha autorizado compartir documentos.' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'ObjectId de estudiante inválido',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'ID de estudiante inválido.',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'El estudiante no ha autorizado compartir documentos o rol no permitido',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'El estudiante no ha autorizado compartir sus documentos.',
+        error: 'Forbidden'
+      }
+    }
+  })
   async getDocumentsByStudent(
     @Param('studentId') studentId: string,
     @Req() req: Request & { user: UserPublicData },
@@ -167,22 +272,88 @@ export class DocumentsController {
   @Get(':documentId/metadata')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary: 'Obtener los metadatos de un documento específico',
+    summary: 'Obtener metadatos de documento',
+    description: 'Obtiene los metadatos de un documento específico sin descargar el archivo. Los estudiantes solo pueden acceder a sus propios documentos, el staff puede acceder según permisos.',
   })
   @ApiParam({
     name: 'documentId',
-    description: 'ID del documento',
+    description: 'ObjectId del documento',
     type: String,
+    example: '507f1f77bcf86cd799439012'
   })
   @ApiResponse({
     status: 200,
-    description: 'Metadatos del documento.',
+    description: 'Metadatos del documento',
     type: DocumentResponseDto,
+    schema: {
+      example: {
+        _id: '507f1f77bcf86cd799439012',
+        studentId: {
+          _id: '507f1f77bcf86cd799439011',
+          rut: '12345678-9',
+          nombres: 'Juan Carlos',
+          apellidos: 'Pérez González'
+        },
+        fileNameOriginal: 'informe_medico_neurologia.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 2048576,
+        category: 'INFORME_MEDICO',
+        description: 'Evaluación neurológica para ajustes académicos',
+        uploadedBy: {
+          _id: '507f1f77bcf86cd799439013',
+          email: 'coordinadora@ucn.cl',
+          nombres: 'María',
+          apellidos: 'González'
+        },
+        status: 'VERIFICADO',
+        verifiedBy: {
+          _id: '507f1f77bcf86cd799439013',
+          email: 'coordinadora@ucn.cl',
+          nombres: 'María',
+          apellidos: 'González'
+        },
+        verificationDate: '2025-06-19T11:00:00.000Z',
+        comments: 'Documento válido para ajustes de tiempo y evaluaciones',
+        uploadDate: '2025-06-19T10:30:00.000Z',
+        createdAt: '2025-06-19T10:30:00.000Z',
+        updatedAt: '2025-06-19T11:00:00.000Z'
+      }
+    }
   })
-  @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
-  @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'ObjectId de documento inválido',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'ID de documento inválido.',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Documento no encontrado',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Documento no encontrado',
+        error: 'Not Found'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Sin permisos para acceder a este documento',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden'
+      }
+    }
+  })
   async getDocumentMetadata(
     @Param('documentId') documentId: string,
     @Req() req: Request & { user: UserPublicData },
@@ -197,21 +368,82 @@ export class DocumentsController {
   @Get(':documentId/download')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary: 'Descargar un archivo de documento específico',
+    summary: 'Descargar archivo de documento',
+    description: 'Descarga el archivo físico del documento. Se valida autorización y la existencia del archivo en el sistema de archivos antes de servir el contenido.',
   })
   @ApiParam({
     name: 'documentId',
-    description: 'ID del documento a descargar',
+    description: 'ObjectId del documento a descargar',
     type: String,
+    example: '507f1f77bcf86cd799439012'
   })
-  @ApiResponse({ status: 200, description: 'Archivo del documento.' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Archivo del documento para descarga',
+    content: {
+      'application/pdf': {
+        schema: {
+          type: 'string',
+          format: 'binary'
+        }
+      },
+      'application/msword': {
+        schema: {
+          type: 'string',
+          format: 'binary'
+        }
+      },
+      'image/*': {
+        schema: {
+          type: 'string',
+          format: 'binary'
+        }
+      }
+    },
+    headers: {
+      'Content-Disposition': {
+        description: 'Nombre del archivo original',
+        schema: {
+          type: 'string',
+          example: 'attachment; filename="informe_medico.pdf"'
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'ObjectId de documento inválido',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'ID de documento inválido.',
+        error: 'Bad Request'
+      }
+    }
+  })
   @ApiResponse({
     status: 404,
-    description: 'Documento o archivo no encontrado.',
+    description: 'Documento no encontrado en base de datos o archivo físico no existe',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Archivo físico no encontrado para el documento ID "507f1f77bcf86cd799439012"',
+        error: 'Not Found'
+      }
+    }
   })
-  @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Sin permisos para descargar este documento',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden'
+      }
+    }
+  })
   async downloadDocument(
     @Param('documentId') documentId: string,
     @Res({ passthrough: true }) res: Response,
@@ -246,27 +478,80 @@ export class DocumentsController {
   @Patch(':documentId/metadata')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary:
-      'Actualizar los metadatos de un documento existente (Admin, Staff)',
+    summary: 'Actualizar metadatos de documento',
+    description: 'Actualiza la categoría, descripción y otros metadatos de un documento existente. No modifica el archivo físico, solo los datos en la base de datos.',
   })
   @ApiParam({
     name: 'documentId',
-    description: 'ID del documento a actualizar',
+    description: 'ObjectId del documento a actualizar',
     type: String,
+    example: '507f1f77bcf86cd799439012'
   })
-  @ApiBody({ type: UpdateDocumentMetadataDto })
+  @ApiBody({ 
+    type: UpdateDocumentMetadataDto,
+    examples: {
+      'actualizar-categoria': {
+        summary: 'Cambiar categoría',
+        value: {
+          category: 'CERTIFICADO_MEDICO',
+          description: 'Reclasificado como certificado médico oficial'
+        }
+      },
+      'actualizar-descripcion': {
+        summary: 'Actualizar descripción',
+        value: {
+          description: 'Informe médico actualizado con recomendaciones específicas para exámenes'
+        }
+      }
+    }
+  })
   @ApiResponse({
     status: 200,
-    description: 'Metadatos actualizados exitosamente.',
+    description: 'Metadatos actualizados exitosamente',
     type: DocumentResponseDto,
+    schema: {
+      example: {
+        _id: '507f1f77bcf86cd799439012',
+        category: 'CERTIFICADO_MEDICO',
+        description: 'Reclasificado como certificado médico oficial',
+        updatedAt: '2025-06-19T12:00:00.000Z'
+      }
+    }
   })
-  @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
-  @ApiResponse({
-    status: 400,
-    description: 'ID de documento inválido o datos de entrada inválidos.',
+  @ApiResponse({ 
+    status: 400, 
+    description: 'ObjectId inválido o datos de entrada inválidos',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'ID de documento inválido.',
+        error: 'Bad Request'
+      }
+    }
   })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Documento no encontrado',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Documento no encontrado',
+        error: 'Not Found'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Rol no autorizado - Solo coordinadores y educadoras sociales',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden'
+      }
+    }
+  })
   async updateMetadata(
     @Param('documentId') documentId: string,
     @Body() updateDto: UpdateDocumentMetadataDto,
@@ -281,24 +566,53 @@ export class DocumentsController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    summary:
-      'Eliminar un documento (metadatos y archivo físico) (Admin, Staff)',
-    description:
-      'Elimina un documento y su archivo físico del sistema. Esta acción es irreversible.',
+    summary: 'Eliminar documento completo',
+    description: 'Elimina permanentemente un documento de la base de datos y su archivo físico del sistema de archivos. Esta acción es irreversible y debe usarse con precaución.',
   })
   @ApiParam({
     name: 'documentId',
-    description: 'ID del documento a eliminar',
+    description: 'ObjectId del documento a eliminar',
     type: String,
+    example: '507f1f77bcf86cd799439012'
   })
   @ApiResponse({
     status: 204,
-    description: 'Documento eliminado exitosamente.',
+    description: 'Documento eliminado exitosamente (sin contenido en respuesta)',
   })
-  @ApiResponse({ status: 404, description: 'Documento no encontrado.' })
-  @ApiResponse({ status: 400, description: 'ID de documento inválido.' })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'ObjectId de documento inválido',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'ID de documento inválido.',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Documento no encontrado',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Documento no encontrado',
+        error: 'Not Found'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Rol no autorizado - Solo coordinadores y educadoras sociales',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden'
+      }
+    }
+  })
   async deleteDocument(@Param('documentId') documentId: string): Promise<void> {
     if (!Types.ObjectId.isValid(documentId)) {
       throw new BadRequestException('ID de documento inválido.');
@@ -309,23 +623,96 @@ export class DocumentsController {
   @Patch('verify/:documentId')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Verificar un documento (Admin, Staff)',
-    description: 'Verifica la verificación de un documento',
+    summary: 'Verificar documento',
+    description: 'Marca un documento como verificado/aprobado por el staff. Cambia el estado a VERIFICADO y registra al usuario que realizó la verificación con comentarios opcionales.',
   })
-  @ApiParam({ name: 'documentId', description: 'ID del documento a verificar' })
-  @ApiBody({ type: VerifyDocumentDto })
+  @ApiParam({ 
+    name: 'documentId', 
+    description: 'ObjectId del documento a verificar',
+    example: '507f1f77bcf86cd799439012'
+  })
+  @ApiBody({ 
+    type: VerifyDocumentDto,
+    examples: {
+      'verificacion-simple': {
+        summary: 'Verificación básica',
+        value: {
+          comments: 'Documento válido y completo'
+        }
+      },
+      'verificacion-detallada': {
+        summary: 'Verificación con detalles',
+        value: {
+          comments: 'Informe médico válido. Aprobado para ajustes de tiempo adicional en evaluaciones según recomendaciones del especialista.'
+        }
+      }
+    }
+  })
   @ApiResponse({
     status: 200,
     description: 'Documento verificado exitosamente',
     type: DocumentResponseDto,
+    schema: {
+      example: {
+        _id: '507f1f77bcf86cd799439012',
+        status: 'VERIFICADO',
+        verifiedBy: {
+          _id: '507f1f77bcf86cd799439013',
+          email: 'coordinadora@ucn.cl',
+          nombres: 'María',
+          apellidos: 'González'
+        },
+        verificationDate: '2025-06-19T12:30:00.000Z',
+        comments: 'Documento válido y completo',
+        updatedAt: '2025-06-19T12:30:00.000Z'
+      }
+    }
   })
-  @ApiResponse({ status: 404, description: 'Documento no encontrado' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'ObjectId de documento inválido',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'ID de documento inválido.',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Documento no encontrado',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Documento no encontrado',
+        error: 'Not Found'
+      }
+    }
+  })
   @ApiResponse({
     status: 409,
     description: 'El documento ya ha sido verificado',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'El documento ya ha sido verificado',
+        error: 'Conflict'
+      }
+    }
   })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
-  @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Rol no autorizado - Solo coordinadores y educadoras sociales',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden'
+      }
+    }
+  })
   async verifyDocument(
     @Param('documentId') documentId: string,
     @Body() verifyDto: VerifyDocumentDto,
@@ -341,23 +728,96 @@ export class DocumentsController {
   @Patch('reject/:documentId')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Rechazar un documento (Admin, Staff)',
-    description: 'Rechaza la verificación de un documento',
+    summary: 'Rechazar documento',
+    description: 'Marca un documento como rechazado por el staff. Cambia el estado a RECHAZADO y registra al usuario que realizó el rechazo con razones obligatorias.',
   })
-  @ApiParam({ name: 'documentId', description: 'ID del documento a rechazar' })
-  @ApiBody({ type: VerifyDocumentDto })
+  @ApiParam({ 
+    name: 'documentId', 
+    description: 'ObjectId del documento a rechazar',
+    example: '507f1f77bcf86cd799439012'
+  })
+  @ApiBody({ 
+    type: VerifyDocumentDto,
+    examples: {
+      'rechazo-calidad': {
+        summary: 'Rechazo por calidad',
+        value: {
+          comments: 'La imagen del documento no es legible. Por favor, suba una versión de mejor calidad.'
+        }
+      },
+      'rechazo-contenido': {
+        summary: 'Rechazo por contenido',
+        value: {
+          comments: 'El documento no corresponde a la categoría seleccionada. Se requiere un informe médico oficial, no un resumen clínico.'
+        }
+      }
+    }
+  })
   @ApiResponse({
     status: 200,
     description: 'Documento rechazado exitosamente',
     type: DocumentResponseDto,
+    schema: {
+      example: {
+        _id: '507f1f77bcf86cd799439012',
+        status: 'RECHAZADO',
+        verifiedBy: {
+          _id: '507f1f77bcf86cd799439013',
+          email: 'coordinadora@ucn.cl',
+          nombres: 'María',
+          apellidos: 'González'
+        },
+        verificationDate: '2025-06-19T12:45:00.000Z',
+        comments: 'La imagen del documento no es legible. Por favor, suba una versión de mejor calidad.',
+        updatedAt: '2025-06-19T12:45:00.000Z'
+      }
+    }
   })
-  @ApiResponse({ status: 404, description: 'Documento no encontrado' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'ObjectId de documento inválido',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'ID de documento inválido.',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Documento no encontrado',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Documento no encontrado',
+        error: 'Not Found'
+      }
+    }
+  })
   @ApiResponse({
     status: 409,
     description: 'El documento ya ha sido rechazado',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'El documento ya ha sido rechazado',
+        error: 'Conflict'
+      }
+    }
   })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
-  @ApiResponse({ status: 403, description: 'Prohibido (rol no permitido)' })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Rol no autorizado - Solo coordinadores y educadoras sociales',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden'
+      }
+    }
+  })
   async rejectDocument(
     @Param('documentId') documentId: string,
     @Body() verifyDto: VerifyDocumentDto,
@@ -372,14 +832,52 @@ export class DocumentsController {
 
   @Get('templates/:templateType')
   @ApiOperation({
-    summary: 'Obtener la URL de descarga para una plantilla específica',
+    summary: 'Obtener URL de plantilla',
+    description: 'Obtiene la URL de descarga y metadatos para plantillas de documentos (consentimientos, formularios, etc.). No requiere autenticación.',
   })
   @ApiParam({
     name: 'templateType',
-    description: 'Tipo de plantilla (consentimiento, informe, etc.)',
+    description: 'Tipo de plantilla solicitada',
+    example: 'consentimiento',
+    enum: ['consentimiento', 'informe', 'certificado']
   })
-  @ApiResponse({ status: 200, description: 'URL de la plantilla' })
-  @ApiResponse({ status: 404, description: 'Plantilla no encontrada' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Información de la plantilla',
+    schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          example: 'http://localhost:3000/documents/templates/download/consentimiento.pdf'
+        },
+        fileName: {
+          type: 'string',
+          example: 'consentimiento.pdf'
+        },
+        fileType: {
+          type: 'string',
+          example: 'application/pdf'
+        }
+      },
+      example: {
+        url: 'http://localhost:3000/documents/templates/download/consentimiento.pdf',
+        fileName: 'Formato consentimiento 2025.pdf',
+        fileType: 'application/pdf'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Plantilla no encontrada',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Plantilla "documento-inexistente" no encontrada',
+        error: 'Not Found'
+      }
+    }
+  })
   async getTemplateUrl(
     @Param('templateType') templateType: string,
   ): Promise<{ url: string; fileName: string; fileType: string }> {
@@ -387,13 +885,53 @@ export class DocumentsController {
   }
 
   @Get('templates/download/:fileName')
-  @ApiOperation({ summary: 'Descargar una plantilla específica' })
+  @ApiOperation({ 
+    summary: 'Descargar plantilla específica',
+    description: 'Descarga directamente un archivo de plantilla por su nombre. Endpoint público para facilitar el acceso a formularios y plantillas estándar.',
+  })
   @ApiParam({
     name: 'fileName',
-    description: 'Nombre del archivo de plantilla',
+    description: 'Nombre exacto del archivo de plantilla',
+    example: 'consentimiento.pdf'
   })
-  @ApiResponse({ status: 200, description: 'Archivo de plantilla' })
-  @ApiResponse({ status: 404, description: 'Plantilla no encontrada' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Archivo de plantilla para descarga',
+    content: {
+      'application/pdf': {
+        schema: {
+          type: 'string',
+          format: 'binary'
+        }
+      },
+      'application/msword': {
+        schema: {
+          type: 'string',
+          format: 'binary'
+        }
+      }
+    },
+    headers: {
+      'Content-Disposition': {
+        description: 'Nombre del archivo de plantilla',
+        schema: {
+          type: 'string',
+          example: 'attachment; filename="consentimiento.pdf"'
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Archivo de plantilla no encontrado',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Plantilla "archivo-inexistente.pdf" no encontrada.',
+        error: 'Not Found'
+      }
+    }
+  })
   async downloadTemplate(
     @Param('fileName') fileName: string,
     @Res({ passthrough: true }) res: Response,
@@ -435,46 +973,105 @@ export class DocumentsController {
   @Roles(UserRole.ESTUDIANTE)
   @UseInterceptors(FileInterceptor('file', { dest: UPLOAD_LOCATION }))
   @ApiOperation({
-    summary: 'Subir un nuevo documento (Solo Estudiantes Autenticados)',
+    summary: 'Subir documento propio (Estudiantes)',
+    description: 'Permite a los estudiantes autenticados subir sus propios documentos de respaldo. El studentId debe coincidir con el usuario autenticado para seguridad.',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description:
-      'Archivo a subir y metadatos del documento. El studentId en el DTO debe coincidir con el del estudiante autenticado.',
+    description: 'Archivo del estudiante con metadatos. El studentId debe coincidir con el usuario autenticado.',
     schema: {
       type: 'object',
       properties: {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'El archivo a subir.',
+          description: 'Archivo personal del estudiante (certificados, informes, documentos médicos)',
         },
-        // studentId no es necesario si se toma del token, pero si se envía, debe coincidir.
         studentId: {
           type: 'string',
-          example: '60c72b2f9b1d8c001f8e4a3c',
-          description: 'ID del estudiante (debe coincidir con el autenticado).',
+          example: '507f1f77bcf86cd799439011',
+          description: 'ObjectId del estudiante (debe coincidir con el usuario autenticado)',
         },
-        category: { type: 'string', example: 'CERTIFICADO_ALUMNO_REGULAR' },
-        description: { type: 'string', example: 'Mi certificado' }, // 'required: false' eliminado
+        category: { 
+          type: 'string', 
+          example: 'CERTIFICADO_ALUMNO_REGULAR',
+          description: 'Categoría del documento según enum DocumentCategory'
+        },
+        description: { 
+          type: 'string', 
+          example: 'Mi certificado de alumno regular semestre actual',
+          description: 'Descripción opcional del documento'
+        },
       },
-      required: ['file', 'studentId', 'category'], // 'description' es opcional, por lo que no se lista aquí
+      required: ['file', 'studentId', 'category'],
     },
   })
   @ApiResponse({
     status: 201,
-    description: 'Documento subido y metadatos guardados.',
+    description: 'Documento subido exitosamente por el estudiante',
     type: DocumentResponseDto,
+    schema: {
+      example: {
+        _id: '507f1f77bcf86cd799439015',
+        studentId: {
+          _id: '507f1f77bcf86cd799439011',
+          rut: '12345678-9',
+          nombres: 'Juan Carlos',
+          apellidos: 'Pérez González'
+        },
+        fileNameOriginal: 'certificado_alumno_regular.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 1024576,
+        category: 'CERTIFICADO_ALUMNO_REGULAR',
+        description: 'Mi certificado de alumno regular semestre actual',
+        uploadedBy: {
+          _id: '507f1f77bcf86cd799439011',
+          email: 'juan.perez@alumnos.ucn.cl',
+          nombres: 'Juan Carlos',
+          apellidos: 'Pérez González'
+        },
+        status: 'PENDIENTE',
+        uploadDate: '2025-06-19T13:00:00.000Z',
+        createdAt: '2025-06-19T13:00:00.000Z',
+        updatedAt: '2025-06-19T13:00:00.000Z'
+      }
+    }
   })
   @ApiResponse({
     status: 400,
-    description:
-      'Datos inválidos, archivo faltante/incorrecto, o ID de estudiante no coincide.',
+    description: 'Archivo faltante, datos inválidos o studentId no coincide',
+    schema: {
+      examples: {
+        'sin-archivo': {
+          summary: 'Archivo no proporcionado',
+          value: {
+            statusCode: 400,
+            message: 'Archivo no proporcionado.',
+            error: 'Bad Request'
+          }
+        },
+        'id-no-coincide': {
+          summary: 'StudentId no coincide',
+          value: {
+            statusCode: 400,
+            message: "El studentId '507f1f77bcf86cd799439999' proporcionado en el cuerpo no coincide con el ID del estudiante autenticado '507f1f77bcf86cd799439011'.",
+            error: 'Bad Request'
+          }
+        }
+      }
+    }
   })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
   @ApiResponse({
     status: 403,
-    description: 'Prohibido. Rol no permitido o ID de estudiante no coincide.',
+    description: 'Rol no autorizado - Solo estudiantes pueden usar este endpoint',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden'
+      }
+    }
   })
   async uploadDocumentForStudent(
     @UploadedFile()

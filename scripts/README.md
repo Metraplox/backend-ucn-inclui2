@@ -1,6 +1,6 @@
 # 📜 Scripts del Backend - UCN Inclui2
 
-## 📅 Última Actualización: 18-06-2025
+## 📅 Última Actualización: 19-06-2025
 
 Este directorio contiene scripts utilitarios organizados por categorías para el mantenimiento y despliegue del backend.
 

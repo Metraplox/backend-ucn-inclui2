@@ -11,6 +11,8 @@ import {
   Req,
   Query,
   BadRequestException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AdjustmentsService } from './adjustments.service';
 import { CreateAdjustmentDto } from './dto/create-adjustment.dto';
@@ -34,7 +36,7 @@ import { Types } from 'mongoose';
 import { AdjustmentResponseDto } from './dto/adjustment-response.dto';
 
 @ApiTags('adjustments')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('adjustments')
 export class AdjustmentsController {
@@ -43,39 +45,83 @@ export class AdjustmentsController {
   @Post()
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Crear nuevo ajuste razonable',
-    description:
-      'Registra un nuevo ajuste académico para un estudiante con NEE',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Ajuste creado exitosamente',
-    type: AdjustmentResponseDto,
-  })
-  @ApiResponse({ status: 400, description: 'Datos inválidos o faltantes' })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflicto: El ajuste ya existe para este curso/estudiante',
+    summary: 'Crear nuevo ajuste razonable para estudiante con NEE',
+    description: 'Registra uno o varios ajustes académicos para un estudiante. Los ajustes pueden incluir tiempo extra, uso de tecnología, formatos alternativos, etc. Cada ajuste está asociado a un curso específico y tiene fecha de expiración.',
   })
   @ApiBody({
     type: CreateAdjustmentDto,
+    description: 'Datos del ajuste o ajustes a crear para el estudiante',
     examples: {
-      ejemplo1: {
+      ajuste_multiple: {
         value: {
           studentRut: '12345678-9',
           currentAdjustments: [
             {
               type: 'tiempo_extra',
               courseNrc: 'MAT101-1',
+              description: '50% de tiempo adicional en evaluaciones',
               approvedBy: 'coordinadora@ucn.cl',
               approvedAt: '2025-04-10T00:00:00Z',
               requiresSemesterConfirmation: true,
               expirationDate: '2025-12-31T00:00:00Z',
             },
+            {
+              type: 'formato_alternativo',
+              courseNrc: 'FIS201-2',
+              description: 'Evaluaciones orales en lugar de escritas',
+              approvedBy: 'educadora@ucn.cl',
+              approvedAt: '2025-04-10T00:00:00Z',
+              requiresSemesterConfirmation: false,
+              expirationDate: '2025-07-31T00:00:00Z',
+            }
           ],
         },
+        description: 'Múltiples ajustes para diferentes cursos'
       },
     },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Ajuste(s) creado(s) exitosamente.',
+    type: AdjustmentResponseDto,
+    schema: {
+      example: {
+        _id: '507f1f77bcf86cd799439011',
+        studentId: '507f1f77bcf86cd799439012',
+        studentRut: '12345678-9',
+        currentAdjustments: [
+          {
+            type: 'tiempo_extra',
+            courseId: '507f1f77bcf86cd799439013',
+            courseNrc: 'MAT101-1',
+            description: '50% de tiempo adicional en evaluaciones',
+            status: 'active',
+            approvedBy: '507f1f77bcf86cd799439014',
+            approvedAt: '2025-04-10T00:00:00Z',
+            requiresSemesterConfirmation: true,
+            expirationDate: '2025-12-31T00:00:00Z',
+            readByTeacher: false
+          }
+        ],
+        createdAt: '2025-06-19T12:00:00.000Z'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Datos inválidos - RUT incorrecto, curso no existe o fechas inválidas.' 
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflicto - Ya existe un ajuste del mismo tipo para el estudiante en ese curso.',
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Solo coordinadores y educadoras sociales pueden crear ajustes.' 
   })
   async create(
     @Body() createAdjustmentDto: CreateAdjustmentDto,
@@ -86,9 +132,8 @@ export class AdjustmentsController {
   @Get()
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE)
   @ApiOperation({
-    summary: 'Listar todos los ajustes',
-    description:
-      'Obtiene todos los ajustes razonables registrados con opción de filtrado',
+    summary: 'Listar todos los ajustes del sistema',
+    description: 'Obtiene todos los ajustes razonables registrados. Los docentes solo ven ajustes de sus cursos. Permite filtrar por RUT de estudiante o código NRC del curso.',
   })
   @ApiQuery({
     name: 'studentRut',
@@ -104,8 +149,17 @@ export class AdjustmentsController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de ajustes encontrados',
+    description: 'Lista de ajustes encontrados.',
     type: [AdjustmentResponseDto],
+    isArray: true,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Usuario no tiene los roles requeridos.' 
   })
   async findAll(): Promise<Adjustment[]> {
     return this.adjustmentsService.findAll();
@@ -114,22 +168,26 @@ export class AdjustmentsController {
   @Get(':id')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE, UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary: 'Obtener ajuste por ID',
-    description: 'Recupera un ajuste específico usando su ID de MongoDB',
+    summary: 'Obtener un ajuste específico por ID',
+    description: 'Recupera los detalles completos de un ajuste. Los estudiantes solo pueden ver sus propios ajustes. Los docentes solo pueden ver ajustes de sus cursos.',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID del ajuste en MongoDB',
+    description: 'ID del ajuste (ObjectId de MongoDB)',
     example: '507f1f77bcf86cd799439011',
   })
   @ApiResponse({
     status: 200,
-    description: 'Ajuste encontrado',
+    description: 'Ajuste encontrado.',
     type: AdjustmentResponseDto,
   })
   @ApiResponse({
     status: 404,
-    description: 'Ajuste no encontrado',
+    description: 'Ajuste no encontrado o no autorizado para verlo.',
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
   })
   async findOne(@Param('id') id: string, @Req() req: Request & { user: UserPublicData }): Promise<Adjustment> {
     const adjustment = await this.adjustmentsService.findOne(id);
@@ -150,23 +208,53 @@ export class AdjustmentsController {
   @Patch(':id')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Actualizar ajuste existente',
-    description: 'Actualiza parcialmente un ajuste razonable',
+    summary: 'Actualizar un ajuste existente',
+    description: 'Actualiza parcialmente la información de un ajuste. Útil para modificar descripción, fechas o agregar nuevos ajustes al documento.',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID del ajuste en MongoDB',
+    description: 'ID del ajuste a actualizar',
     example: '507f1f77bcf86cd799439011',
+  })
+  @ApiBody({
+    type: UpdateAdjustmentDto,
+    description: 'Campos del ajuste a actualizar',
+    examples: {
+      modificar_ajuste: {
+        value: {
+          currentAdjustments: [
+            {
+              type: 'tiempo_extra',
+              courseNrc: 'MAT101-1',
+              description: 'Aumentar a 100% de tiempo adicional',
+              expirationDate: '2026-12-31T00:00:00Z',
+            }
+          ]
+        },
+        description: 'Modificar un ajuste existente'
+      }
+    }
   })
   @ApiResponse({
     status: 200,
-    description: 'Ajuste actualizado',
+    description: 'Ajuste actualizado exitosamente.',
     type: AdjustmentResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Ajuste no encontrado' })
-  @ApiBody({
-    type: UpdateAdjustmentDto,
-    description: 'Solo incluir campos a modificar',
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Ajuste no encontrado con el ID especificado.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Datos de entrada inválidos.' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Solo coordinadores y educadoras sociales pueden actualizar ajustes.' 
   })
   async update(
     @Param('id') id: string,
@@ -184,22 +272,31 @@ export class AdjustmentsController {
 
   @Delete(':id')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    summary: 'Eliminar ajuste',
-    description: 'Elimina permanentemente un ajuste razonable',
+    summary: 'Eliminar un ajuste',
+    description: 'Elimina permanentemente un documento de ajustes completo. Esta acción es irreversible y elimina TODOS los ajustes del estudiante en el documento.',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID del ajuste en MongoDB',
+    description: 'ID del documento de ajustes a eliminar',
     example: '507f1f77bcf86cd799439011',
   })
   @ApiResponse({
     status: 204,
-    description: 'Ajuste eliminado',
+    description: 'Ajuste eliminado exitosamente. Sin contenido en la respuesta.',
   })
   @ApiResponse({
     status: 404,
-    description: 'Ajuste no encontrado',
+    description: 'Ajuste no encontrado con el ID especificado.',
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Solo coordinadores y educadoras sociales pueden eliminar ajustes.' 
   })
   async remove(@Param('id') id: string): Promise<void> {
     const result = await this.adjustmentsService.remove(id);
@@ -211,13 +308,12 @@ export class AdjustmentsController {
   @Get('student/:studentId')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.ESTUDIANTE)
   @ApiOperation({
-    summary: 'Obtener ajustes por estudiante',
-    description:
-      'Recupera todos los ajustes asociados a un estudiante específico',
+    summary: 'Obtener todos los ajustes de un estudiante',
+    description: 'Lista todos los ajustes asociados a un estudiante específico. Los estudiantes solo pueden ver sus propios ajustes. Permite filtrar por estado del ajuste.',
   })
   @ApiParam({
     name: 'studentId',
-    description: 'ID del estudiante',
+    description: 'ID del estudiante (ObjectId)',
     example: '507f1f77bcf86cd799439011',
   })
   @ApiQuery({
@@ -225,15 +321,29 @@ export class AdjustmentsController {
     required: false,
     description: 'Filtrar por estado del ajuste',
     enum: AdjustmentStatus,
+    example: 'active',
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de ajustes del estudiante',
+    description: 'Lista de ajustes del estudiante.',
     type: [AdjustmentResponseDto],
+    isArray: true,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'ID de estudiante inválido - No es un ObjectId válido.',
   })
   @ApiResponse({
     status: 404,
-    description: 'Estudiante no encontrado',
+    description: 'Ajustes no encontrados o no autorizados.',
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Los estudiantes solo pueden ver sus propios ajustes.' 
   })
   async findByStudent(
     @Param('studentId') studentId: string,
@@ -259,9 +369,8 @@ export class AdjustmentsController {
   @Get('department/:departmentId')
   @Roles(UserRole.JEFE_DEPARTAMENTO)
   @ApiOperation({
-    summary: 'Obtener ajustes por ID de departamento',
-    description:
-      'Recupera todos los ajustes para estudiantes que pertenecen a un departamento específico',
+    summary: 'Obtener ajustes de estudiantes de un departamento',
+    description: 'Lista todos los ajustes de estudiantes que pertenecen a carreras del departamento especificado. Solo accesible para el jefe del departamento correspondiente. Requiere filtro por semestre.',
   })
   @ApiParam({
     name: 'departmentId',
@@ -271,17 +380,34 @@ export class AdjustmentsController {
   @ApiQuery({
     name: 'semester',
     required: true,
-    description: 'Filtrar por semestre académico (ej. 2025-1)',
+    description: 'Semestre académico a consultar',
     example: '2025-1',
+    schema: {
+      type: 'string',
+      pattern: '^\\d{4}-[12]$'
+    }
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de ajustes del departamento',
+    description: 'Lista de ajustes del departamento para el semestre especificado.',
     type: [AdjustmentResponseDto],
+    isArray: true,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Formato de semestre inválido.',
   })
   @ApiResponse({
     status: 404,
-    description: 'Departamento no encontrado',
+    description: 'Departamento no encontrado.',
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Solo el jefe del departamento puede acceder a esta información.' 
   })
   async findByDepartment(
     @Param('departmentId') departmentId: string,
@@ -293,9 +419,8 @@ export class AdjustmentsController {
   @Get('course/:courseId')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DOCENTE)
   @ApiOperation({
-    summary: 'Obtener ajustes por ID de curso',
-    description:
-      'Recupera todos los ajustes asociados a un curso específico, accesible para docentes del mismo curso',
+    summary: 'Obtener ajustes de un curso específico',
+    description: 'Lista todos los ajustes asociados a un curso. Los docentes solo pueden acceder si son profesores del curso. Útil para que los docentes conozcan los ajustes de sus estudiantes.',
   })
   @ApiParam({
     name: 'courseId',
@@ -304,12 +429,21 @@ export class AdjustmentsController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de ajustes del curso',
+    description: 'Lista de ajustes del curso.',
     type: [AdjustmentResponseDto],
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Curso no encontrado',
+    description: 'Curso no encontrado.',
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Docente no es profesor de este curso.' 
   })
   async findByCourse(
     @Param('courseId') courseId: string,
@@ -320,18 +454,40 @@ export class AdjustmentsController {
   @Post(':id/documents/:documentId')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Asociar documento a ajuste',
-    description:
-      'Vincula un documento existente a un ajuste razonable específico',
+    summary: 'Asociar documento de respaldo a un ajuste',
+    description: 'Vincula un documento existente (certificado médico, informe psicológico, etc.) a un ajuste específico como respaldo.',
   })
-  @ApiParam({ name: 'id', description: 'ID del ajuste' })
-  @ApiParam({ name: 'documentId', description: 'ID del documento' })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID del ajuste',
+    example: '507f1f77bcf86cd799439011'
+  })
+  @ApiParam({ 
+    name: 'documentId', 
+    description: 'ID del documento a asociar',
+    example: '507f1f77bcf86cd799439012'
+  })
   @ApiResponse({
     status: 200,
-    description: 'Documento asociado exitosamente',
+    description: 'Documento asociado exitosamente al ajuste.',
     type: AdjustmentResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Ajuste o documento no encontrado' })
+  @ApiResponse({ 
+    status: 400,
+    description: 'IDs inválidos - No son ObjectId válidos de MongoDB.'
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Ajuste o documento no encontrado.' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Solo coordinadores y educadoras sociales pueden asociar documentos.' 
+  })
   async associateDocument(
     @Param('id') id: string,
     @Param('documentId') documentId: string,
@@ -346,46 +502,65 @@ export class AdjustmentsController {
   @Patch(':id/status/:status')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.JEFE_CARRERA)
   @ApiOperation({
-    summary: 'Actualizar estado de un ajuste',
-    description: 'Cambia el estado de un ajuste académico',
+    summary: 'Cambiar el estado de un ajuste específico',
+    description: 'Actualiza el estado de un ajuste dentro del array de ajustes. Requiere especificar el índice del ajuste en el array. Los jefes de carrera solo pueden aprobar/rechazar ajustes de su carrera.',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID del ajuste',
+    description: 'ID del documento de ajustes',
     example: '507f1f77bcf86cd799439011',
   })
   @ApiParam({
     name: 'status',
     description: 'Nuevo estado del ajuste',
     enum: AdjustmentStatus,
+    example: 'approved',
   })
   @ApiQuery({
     name: 'adjustmentIndex',
     required: true,
-    description: 'Índice del ajuste específico en el array de ajustes del estudiante',
+    description: 'Índice del ajuste específico en el array currentAdjustments (base 0)',
     example: 0,
+    schema: {
+      type: 'integer',
+      minimum: 0
+    }
   })
   @ApiBody({
+    description: 'Comentarios opcionales sobre el cambio de estado',
+    required: false,
     schema: {
       type: 'object',
       properties: {
         comments: {
           type: 'string',
-          description: 'Comentarios opcionales sobre el cambio de estado',
-          example: 'Aprobado por junta académica.',
+          description: 'Razón o comentarios sobre el cambio de estado',
+          example: 'Aprobado en reunión del consejo académico del 19-06-2025.',
+          maxLength: 500
         },
       },
     },
-    required: false,
   })
   @ApiResponse({
     status: 200,
-    description: 'Estado actualizado correctamente',
+    description: 'Estado del ajuste actualizado correctamente.',
     type: AdjustmentResponseDto,
   })
   @ApiResponse({
+    status: 400,
+    description: 'Parámetro adjustmentIndex inválido o faltante.',
+  })
+  @ApiResponse({
     status: 404,
-    description: 'Ajuste no encontrado',
+    description: 'Ajuste no encontrado o índice fuera de rango.',
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Usuario no tiene permisos para cambiar el estado.' 
   })
   async updateStatus(
     @Param('id') id: string,
@@ -409,42 +584,59 @@ export class AdjustmentsController {
   @Patch(':id/read')
   @Roles(UserRole.DOCENTE)
   @ApiOperation({
-    summary: 'Marcar ajuste como leído por docente',
-    description:
-      'Permite marcar un ajuste como leído por el docente',
+    summary: 'Marcar ajuste como leído por el docente',
+    description: 'Permite a un docente marcar un ajuste específico como leído/revisado. Importante para el seguimiento y para confirmar que el docente conoce los ajustes de sus estudiantes.',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID del ajuste',
+    description: 'ID del documento de ajustes',
     example: '507f1f77bcf86cd799439011',
   })
   @ApiQuery({
     name: 'adjustmentIndex',
     required: true,
-    description: 'Índice del ajuste específico en el array de ajustes del estudiante',
+    description: 'Índice del ajuste específico en el array currentAdjustments (base 0)',
     example: 0,
+    schema: {
+      type: 'integer',
+      minimum: 0
+    }
   })
   @ApiBody({
+    description: 'Comentarios opcionales del docente',
+    required: false,
     schema: {
       type: 'object',
       properties: {
         comments: {
           type: 'string',
-          description: 'Comentarios opcionales del docente',
-          example: 'Recibido y entendido.',
+          description: 'Observaciones o confirmación del docente',
+          example: 'Entendido. Se aplicará tiempo extra en todas las evaluaciones.',
+          maxLength: 500
         },
       },
     },
-    required: false,
   })
   @ApiResponse({
     status: 200,
-    description: 'Ajuste marcado como leído',
+    description: 'Ajuste marcado como leído por el docente.',
     type: AdjustmentResponseDto,
   })
   @ApiResponse({
+    status: 400,
+    description: 'ID inválido o parámetro adjustmentIndex incorrecto.',
+  })
+  @ApiResponse({
     status: 404,
-    description: 'Ajuste no encontrado',
+    description: 'Ajuste no encontrado o índice fuera de rango.',
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Solo docentes pueden marcar ajustes como leídos.' 
   })
   async markAsRead(
     @Param('id') id: string,

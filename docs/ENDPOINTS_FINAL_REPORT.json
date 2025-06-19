@@ -1,0 +1,209 @@
+{
+  "timestamp": "2025-06-19T16:58:06.430Z",
+  "auth": {
+    "status": "success",
+    "token_structure": "data.data.data.access_token"
+  },
+  "working": [
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/users/profile",
+      "status": 200,
+      "description": "Perfil usuario",
+      "response_size": 232
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/users",
+      "status": 200,
+      "description": "Lista usuarios",
+      "response_size": 1697
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/students",
+      "status": 200,
+      "description": "Lista estudiantes",
+      "response_size": 430
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/departments",
+      "status": 200,
+      "description": "Lista departamentos",
+      "response_size": 470
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/careers",
+      "status": 200,
+      "description": "Lista carreras",
+      "response_size": 84
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/courses",
+      "status": 200,
+      "description": "Lista cursos",
+      "response_size": 84
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/categories",
+      "status": 200,
+      "description": "Lista categorías",
+      "response_size": 84
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/adjustments",
+      "status": 200,
+      "description": "Lista ajustes",
+      "response_size": 84
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/resources",
+      "status": 200,
+      "description": "Lista recursos",
+      "response_size": 84
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/notifications",
+      "status": 200,
+      "description": "Notificaciones usuario",
+      "response_size": 84
+    }
+  ],
+  "missing": [
+    {
+      "success": false,
+      "method": "GET",
+      "url": "/documents",
+      "status": 404,
+      "description": "Lista general documentos",
+      "error": "Cannot GET /documents"
+    },
+    {
+      "success": false,
+      "method": "POST",
+      "url": "/documents",
+      "status": 404,
+      "description": "Crear documento (base)",
+      "error": "Cannot POST /documents"
+    },
+    {
+      "success": false,
+      "method": "GET",
+      "url": "/consents",
+      "status": 404,
+      "description": "Lista consentimientos (base)",
+      "error": "Cannot GET /consents"
+    },
+    {
+      "success": false,
+      "method": "POST",
+      "url": "/notifications",
+      "status": 404,
+      "description": "Crear notificación",
+      "error": "Cannot POST /notifications"
+    },
+    {
+      "success": false,
+      "method": "GET",
+      "url": "/sync/status",
+      "status": 404,
+      "description": "Estado sincronización",
+      "error": "Cannot GET /sync/status"
+    },
+    {
+      "success": false,
+      "method": "POST",
+      "url": "/sync/hawaii",
+      "status": 404,
+      "description": "Sincronizar Hawaii",
+      "error": "Cannot POST /sync/hawaii"
+    }
+  ],
+  "discovered": [
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/consents/all",
+      "status": 200,
+      "description": "Lista todos los consentimientos",
+      "response_size": 84
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/api",
+      "status": 200,
+      "description": "Info de API",
+      "response_size": 3584
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/health",
+      "status": 200,
+      "description": "Health check",
+      "response_size": 136
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/diddec/statistics",
+      "status": 200,
+      "description": "Estadísticas DIDDEC",
+      "response_size": 241
+    },
+    {
+      "success": true,
+      "method": "GET",
+      "url": "/diddec/reports/semester/2025-1",
+      "status": 200,
+      "description": "Reportes DIDDEC",
+      "response_size": 344
+    }
+  ],
+  "problematic": [
+    {
+      "success": false,
+      "method": "POST",
+      "url": "/auth/login",
+      "status": 401,
+      "description": "Autenticación",
+      "error": "Unauthorized"
+    },
+    {
+      "success": false,
+      "method": "GET",
+      "url": "/students/profile",
+      "status": 500,
+      "description": "Perfil estudiante",
+      "error": "Internal server error",
+      "critical": true,
+      "notes": "Error 500 - Probable problema con roles undefined en @CurrentUser"
+    }
+  ],
+  "summary": {
+    "total_tested": 23,
+    "working_count": 10,
+    "discovered_count": 5,
+    "missing_count": 6,
+    "problematic_count": 2,
+    "success_rate": 65
+  }
+}

@@ -1,18 +1,42 @@
 import { Controller, Post, Body, UseGuards, Get, Query, BadRequestException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { SyncService } from './sync.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('sync')
 @Controller('sync')
 @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 export class SyncController {
   constructor(private readonly syncService: SyncService) {}
 
   @Post('students/nee')
-  @ApiOperation({ summary: 'Sincronizar estudiantes NEE desde Hawaii UCN' })
-  @ApiResponse({ status: 200, description: 'Estudiantes NEE sincronizados correctamente' })
+  @ApiOperation({ 
+    summary: 'Sincronizar estudiantes NEE desde Hawaii UCN',
+    description: 'Obtiene la lista actualizada de estudiantes con Necesidades Educativas Especiales desde el sistema Hawaii UCN sin persistir en base de datos local.'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Estudiantes NEE sincronizados correctamente desde Hawaii UCN',
+    example: {
+      message: 'Sincronización de estudiantes NEE completada',
+      count: 145,
+      students: [
+        {
+          rut: '20.123.456-7',
+          firstName: 'Ana María',
+          lastName: 'García González',
+          email: 'ana.garcia@alumnos.ucn.cl',
+          career: 'Ingeniería Civil Industrial',
+          disabilityType: 'Trastorno específico del aprendizaje',
+          semester: '2025-1',
+          source: 'hawaii_ucn'
+        }
+      ]
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token de autenticación inválido' })
+  @ApiResponse({ status: 503, description: 'Servicio Hawaii UCN no disponible' })
   async syncNeeStudents() {
     const students = await this.syncService.syncNeeStudents();
     return { 
@@ -23,8 +47,31 @@ export class SyncController {
   }
   
   @Post('students/nee/persist')
-  @ApiOperation({ summary: 'Sincronizar y persistir estudiantes NEE desde Hawaii UCN en la base de datos' })
-  @ApiResponse({ status: 200, description: 'Estudiantes NEE sincronizados y persistidos correctamente' })
+  @ApiOperation({ 
+    summary: 'Sincronizar y persistir estudiantes NEE',
+    description: 'Sincroniza estudiantes NEE desde Hawaii UCN y los guarda/actualiza en la base de datos local del sistema INCLUI2.'
+  })
+  @ApiBody({
+    description: 'Datos de sincronización con semestre académico',
+    examples: {
+      'sync_semester': {
+        value: {
+          semester: '2025-1'
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Estudiantes NEE sincronizados y persistidos correctamente',
+    example: {
+      message: 'Sincronización y persistencia de estudiantes NEE para semestre 2025-1 completada',
+      count: 18
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Semestre es obligatorio o formato inválido' })
+  @ApiResponse({ status: 401, description: 'Token de autenticación inválido' })
+  @ApiResponse({ status: 503, description: 'Error de conexión con Hawaii UCN' })
   async syncAndPersistNeeStudents(@Body('semester') semester: string) {
     if (!semester) {
       throw new BadRequestException('El campo semester es obligatorio');

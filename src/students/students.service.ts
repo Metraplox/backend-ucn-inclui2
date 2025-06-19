@@ -177,7 +177,6 @@ export class StudentsService {
   async findByEmail(email: string): Promise<Student> {
     const student = await this.studentModel
       .findOne({ email: email.toLowerCase().trim() })
-      .populate('userId', 'email isActive roles')
       .exec();
       
     if (!student) {

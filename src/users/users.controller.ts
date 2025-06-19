@@ -26,10 +26,11 @@ import {
   ApiParam,
   ApiBody,
   ApiBearerAuth,
+  ApiSecurity,
 } from '@nestjs/swagger';
 
 @ApiTags('users')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard) // Aplicar globalmente a todas las rutas de este controlador
 export class UsersController {
@@ -53,28 +54,57 @@ export class UsersController {
   @Get()
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Obtener todos los usuarios (Coordinador/Educadora Social)',
+    summary: 'Obtener todos los usuarios',
+    description: 'Retorna la lista completa de usuarios registrados en el sistema con sus datos públicos. Solo accesible para coordinadores y educadoras sociales.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de usuarios con datos públicos.',
+    description: 'Lista de usuarios con datos públicos obtenida exitosamente.',
     type: [UserPublicDataDto],
+    isArray: true,
   })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Usuario no tiene los roles requeridos (COORDINADOR o EDUCADORA_SOCIAL).' 
+  })
   async findAll(): Promise<UserPublicData[]> {
     return this.usersService.findAll();
   }
 
   @Get('profile')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE, UserRole.ESTUDIANTE)
-  @ApiOperation({ summary: 'Obtener el perfil del usuario actual' })
+  @ApiOperation({ 
+    summary: 'Obtener el perfil del usuario actual',
+    description: 'Retorna la información del perfil del usuario autenticado basándose en el token JWT. Accesible para todos los roles del sistema.'
+  })
   @ApiResponse({
     status: 200,
-    description: 'Perfil del usuario actual.',
+    description: 'Perfil del usuario actual obtenido exitosamente.',
     type: UserPublicDataDto,
+    schema: {
+      example: {
+        _id: '507f1f77bcf86cd799439011',
+        email: 'coordinadora@ucn.cl',
+        nombreCompleto: 'María González',
+        roles: ['COORDINADOR'],
+        isActive: true,
+        additionalResponsibilities: {
+          isDepartmentHead: true,
+          departmentIds: ['507f1f77bcf86cd799439012']
+        },
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-06-19T12:00:00.000Z'
+      }
+    }
   })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
   async getProfile(
     @CurrentUser() user: UserPublicData,
   ): Promise<UserPublicData> {
@@ -85,21 +115,32 @@ export class UsersController {
   @Get(':id')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Obtener un usuario por su ID (Coordinador/Educadora Social)',
+    summary: 'Obtener un usuario por su ID',
+    description: 'Busca y retorna la información de un usuario específico utilizando su ID único de MongoDB.',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID único del usuario (ObjectId)',
+    description: 'ID único del usuario (ObjectId de MongoDB)',
     type: String,
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiResponse({
     status: 200,
-    description: 'Detalles del usuario.',
+    description: 'Detalles del usuario encontrados exitosamente.',
     type: UserPublicDataDto,
   })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Usuario no encontrado con el ID especificado.' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Usuario no tiene los roles requeridos.' 
+  })
   async findOne(@Param('id') id: string): Promise<UserPublicData> {
     return this.usersService.findOneById(id);
   }
@@ -107,23 +148,40 @@ export class UsersController {
   @Patch(':id')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
-    summary: 'Actualizar un usuario existente (Coordinador/Educadora Social)',
+    summary: 'Actualizar un usuario existente',
+    description: 'Actualiza parcialmente la información de un usuario. Solo se actualizan los campos enviados en el body.',
   })
   @ApiParam({
     name: 'id',
     description: 'ID único del usuario a actualizar',
     type: String,
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiBody({ type: UpdateUserDto })
+  @ApiBody({ 
+    type: UpdateUserDto,
+    description: 'Campos del usuario a actualizar. Solo incluir los campos que se desean modificar.',
+  })
   @ApiResponse({
     status: 200,
     description: 'Usuario actualizado exitosamente.',
     type: UserPublicDataDto,
   })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
-  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Usuario no encontrado con el ID especificado.' 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Datos de entrada inválidos - Validación fallida.' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Usuario no tiene los roles requeridos.' 
+  })
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -134,16 +192,32 @@ export class UsersController {
   @Delete(':id')
   @Roles(UserRole.COORDINADOR)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un usuario (Coordinador)' })
+  @ApiOperation({ 
+    summary: 'Eliminar un usuario',
+    description: 'Elimina permanentemente un usuario del sistema. Esta acción es irreversible y solo puede ser ejecutada por coordinadores.'
+  })
   @ApiParam({
     name: 'id',
     description: 'ID único del usuario a eliminar',
     type: String,
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiResponse({ status: 204, description: 'Usuario eliminado exitosamente.' })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
-  @ApiResponse({ status: 401, description: 'No autorizado.' })
-  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ 
+    status: 204, 
+    description: 'Usuario eliminado exitosamente. Sin contenido en la respuesta.' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Usuario no encontrado con el ID especificado.' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Solo los coordinadores pueden eliminar usuarios.' 
+  })
   async remove(@Param('id') id: string): Promise<void> {
     // Cambiado el tipo de retorno
     await this.usersService.remove(id);

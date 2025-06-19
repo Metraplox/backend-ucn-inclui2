@@ -31,9 +31,14 @@ async function bootstrap() {
     .setDescription(`
       API REST para la gestión integral de estudiantes con Necesidades Educativas Especiales (NEE) en la Universidad Católica del Norte.
       
+      ## Información del Sistema:
+      - **Total de Controllers**: 28
+      - **Total de Endpoints**: 146
+      - **Estado**: Sistema 90%+ funcional para desarrollo activo
+      
       ## Roles del Sistema:
       - **COORDINADOR**: Administrador principal del sistema
-      - **EDUCADORA_SOCIAL**: Gestión de entrevistas y registro de usuarios
+      - **EDUCADORA_SOCIAL**: Gestión de entrevistas y registro de usuarios  
       - **DIDDEC_STAFF**: Personal especializado de DIDDEC
       - **JEFE_CARRERA**: Gestión académica de carreras
       - **JEFE_DEPARTAMENTO**: Gestión académica de departamentos
@@ -43,9 +48,19 @@ async function bootstrap() {
       ## Autenticación:
       La API utiliza JWT Bearer tokens. Para acceder a endpoints protegidos, incluye el header:
       \`Authorization: Bearer <tu-token>\`
+      
+      ## Formato de Parámetros Comunes:
+      - **semester**: Formato YYYY-P (ej: 2025-1)
+      - **IDs**: ObjectId de MongoDB en formato string
+      
+      ## Usuarios de Prueba:
+      - coordinadora@ucn.cl (COORDINADOR)
+      - educadora@ucn.cl (EDUCADORA_SOCIAL)
+      - diddec@ucn.cl (DIDDEC_STAFF)
+      - Password: Test123!
     `)
     .setVersion('1.0')
-    .setContact('Equipo UCN INCLUI2', '', 'soporte@ucn.cl')
+    .setContact('Equipo UCN INCLUI2', 'https://www.ucn.cl', 'soporte@ucn.cl')
     .addBearerAuth(
       {
         type: 'http',
@@ -57,31 +72,52 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    // Tags organizados por módulos
-    .addTag('auth', 'Autenticación y autorización')
-    .addTag('users', 'Gestión de usuarios del sistema')
-    .addTag('students', 'Gestión de estudiantes con NEE')
-    .addTag('adjustments', 'Ajustes académicos y adaptaciones')
-    .addTag('staff-adjustments', 'Gestión de ajustes por personal')
-    .addTag('categories', 'Categorías de ajustes académicos')
-    .addTag('departments', 'Gestión de departamentos académicos')
-    .addTag('Jefes de Departamento', 'Operaciones específicas para jefes de departamento')
-    .addTag('careers', 'Gestión de carreras universitarias')
-    .addTag('career-students', 'Relación estudiantes-carreras')
-    .addTag('Jefes de Carrera', 'Operaciones específicas para jefes de carrera')
-    .addTag('courses', 'Gestión de cursos y asignaturas')
-    .addTag('academic-history', 'Historial académico de estudiantes')
-    .addTag('documents', 'Gestión de documentos del sistema')
-    .addTag('consent', 'Consentimientos y autorizaciones')
-    .addTag('notifications', 'Sistema de notificaciones')
-    .addTag('Resources', 'Recursos educativos y materiales')
-    .addTag('DIDDEC', 'Operaciones del departamento DIDDEC')
-    .addTag('DIDDEC Resources', 'Recursos específicos de DIDDEC')
-    .addTag('DIDDEC Reports', 'Reportes y estadísticas de DIDDEC')
-    .addTag('sync', 'Sincronización de datos externos')
-    .addTag('hawaii-sync', 'Sincronización con sistema Hawaii')
-    .addTag('heads', 'Gestión de jefaturas')
-    .addTag('diddec', 'Operaciones específicas de DIDDEC')
+    // Tags organizados por módulos - Total: 28 controllers
+    // General System
+    .addTag('Sistema', 'Endpoints generales del sistema (2 endpoints)')
+    
+    // Core Authentication & Users
+    .addTag('auth', 'Autenticación y autorización (4 endpoints)')
+    .addTag('users', 'Gestión de usuarios del sistema (5 endpoints)')
+    
+    // Student Management
+    .addTag('students', 'Gestión de estudiantes con NEE (7 endpoints)')
+    .addTag('consent', 'Consentimientos y autorizaciones (5 endpoints)')
+    
+    // Academic Structure
+    .addTag('departments', 'Gestión de departamentos académicos (5 endpoints)')
+    .addTag('Jefes de Departamento', 'Operaciones específicas para jefes de departamento (5 endpoints)')
+    .addTag('heads', 'Gestión general de jefaturas (5 endpoints)')
+    .addTag('careers', 'Gestión de carreras universitarias (6 endpoints)')
+    .addTag('career-students', 'Relación estudiantes-carreras (3 endpoints)')
+    .addTag('Jefes de Carrera', 'Operaciones específicas para jefes de carrera (4 endpoints)')
+    .addTag('courses', 'Gestión de cursos y asignaturas (7 endpoints)')
+    .addTag('academic-history', 'Historial académico de estudiantes (7 endpoints)')
+    
+    // Adjustments & Support
+    .addTag('adjustments', 'Ajustes académicos y adaptaciones (11 endpoints)')
+    .addTag('staff-adjustments', 'Gestión de ajustes por personal DIDDEC (8 endpoints)')
+    .addTag('categories', 'Categorías de ajustes académicos (5 endpoints)')
+    .addTag('Categories', 'Alias para categorías de NEE')
+    .addTag('nee-categories', 'Categorías específicas para NEE')
+    
+    // Documents & Resources
+    .addTag('documents', 'Gestión de documentos del sistema (11 endpoints)')
+    .addTag('Resources', 'Recursos educativos y materiales (8 endpoints)')
+    .addTag('educational-resources', 'Alias para recursos educativos')
+    
+    // DIDDEC Operations
+    .addTag('diddec', 'Operaciones generales de DIDDEC (11 endpoints)')
+    .addTag('DIDDEC', 'Estadísticas y reportes DIDDEC (5 endpoints)')
+    .addTag('DIDDEC Resources', 'Recursos específicos de DIDDEC (8 endpoints)')
+    .addTag('DIDDEC Reports', 'Reportes y exportaciones de DIDDEC (2 endpoints)')
+    
+    // System & Sync
+    .addTag('notifications', 'Sistema de notificaciones (8 endpoints)')
+    .addTag('sync', 'Sincronización de datos externos (6 endpoints)')
+    .addTag('hawaii-sync', 'Sincronización con sistema Hawaii (4 endpoints)')
+    .addTag('hawaii-cache', 'Gestión de caché Hawaii (6 endpoints)')
+    .addTag('Semester Sync', 'Sincronización semestral (10 endpoints)')
     .build();
     
   const document = SwaggerModule.createDocument(app, config);

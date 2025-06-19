@@ -14,6 +14,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiParam,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -30,7 +31,7 @@ import { NotificationType } from '../../notifications/schemas/notification.schem
 @ApiTags('heads')
 @Controller('heads')
 @UseGuards(JwtAuthGuard, RolesGuard, HeadsGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 export class HeadsController {
   constructor(
     private readonly departmentsService: DepartmentsService,
@@ -43,13 +44,122 @@ export class HeadsController {
   @Get('my-teachers')
   @HeadType('department', 'career')
   @ApiOperation({
-    summary: 'Obtener docentes a cargo del jefe de departamento/carrera',
+    summary: 'Obtener docentes supervisados',
+    description: 'Obtiene la lista de docentes bajo la supervisión del jefe de departamento o carrera autenticado, incluyendo estadísticas de cursos, estudiantes con NEE y estado de lectura de ajustes por semestre.',
   })
-  @ApiResponse({ status: 200, description: 'Lista de docentes' })
   @ApiQuery({
     name: 'semester',
     required: false,
-    description: 'Filtrar por semestre',
+    description: 'Semestre académico para filtrar datos (formato YYYY-P)',
+    example: '2025-1',
+    schema: {
+      type: 'string',
+      pattern: '^\\d{4}-[1-2]$',
+      default: '2025-1'
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de docentes con estadísticas detalladas de supervisión',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          teacherId: {
+            type: 'string',
+            description: 'ObjectId del docente',
+            example: '507f1f77bcf86cd799439032'
+          },
+          teacherName: {
+            type: 'string',
+            description: 'Nombre completo del docente',
+            example: 'Dr. María Elena González Pérez'
+          },
+          teacherEmail: {
+            type: 'string',
+            description: 'Email del docente',
+            example: 'maria.gonzalez@ucn.cl'
+          },
+          department: {
+            type: 'string',
+            description: 'Nombre del departamento',
+            example: 'Departamento de Matemáticas'
+          },
+          coursesCount: {
+            type: 'number',
+            description: 'Número de cursos que dicta en el semestre',
+            example: 3
+          },
+          studentsWithNEE: {
+            type: 'number',
+            description: 'Número de estudiantes con NEE en sus cursos',
+            example: 8
+          },
+          totalAdjustments: {
+            type: 'number',
+            description: 'Total de ajustes razonables en sus cursos',
+            example: 12
+          },
+          readAdjustments: {
+            type: 'number',
+            description: 'Ajustes ya leídos por el docente',
+            example: 9
+          },
+          readPercentage: {
+            type: 'number',
+            description: 'Porcentaje de ajustes leídos',
+            example: 75.0
+          }
+        }
+      },
+      example: [
+        {
+          teacherId: '507f1f77bcf86cd799439032',
+          teacherName: 'Dr. María Elena González Pérez',
+          teacherEmail: 'maria.gonzalez@ucn.cl',
+          department: 'Departamento de Matemáticas',
+          coursesCount: 3,
+          studentsWithNEE: 8,
+          totalAdjustments: 12,
+          readAdjustments: 9,
+          readPercentage: 75.0
+        },
+        {
+          teacherId: '507f1f77bcf86cd799439033',
+          teacherName: 'Prof. Carlos Alberto Ruiz Castro',
+          teacherEmail: 'carlos.ruiz@ucn.cl',
+          department: 'Departamento de Matemáticas',
+          coursesCount: 4,
+          studentsWithNEE: 5,
+          totalAdjustments: 8,
+          readAdjustments: 8,
+          readPercentage: 100.0
+        }
+      ]
+    }
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token JWT inválido o expirado',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Rol no autorizado - Requiere ser jefe de departamento o carrera',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Access denied - Not a department or career head',
+        error: 'Forbidden'
+      }
+    }
   })
   async getMyTeachers(
     @Request() req,
@@ -132,13 +242,168 @@ export class HeadsController {
   @Get('teachers/:teacherId/adjustment-status')
   @HeadType('department', 'career')
   @ApiOperation({
-    summary: 'Obtener estado de lectura de ajustes de un docente específico',
+    summary: 'Estado detallado de ajustes por docente',
+    description: 'Obtiene información detallada sobre el estado de lectura de ajustes razonables de un docente específico, incluyendo desglose por curso y solicitudes de ayuda pendientes.',
   })
-  @ApiResponse({ status: 200, description: 'Estado de ajustes del docente' })
+  @ApiParam({
+    name: 'teacherId',
+    description: 'ObjectId del docente a consultar',
+    example: '507f1f77bcf86cd799439032'
+  })
   @ApiQuery({
     name: 'semester',
     required: false,
-    description: 'Filtrar por semestre',
+    description: 'Semestre académico para filtrar datos (formato YYYY-P)',
+    example: '2025-1',
+    schema: {
+      type: 'string',
+      pattern: '^\\d{4}-[1-2]$',
+      default: '2025-1'
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Estado detallado de ajustes del docente',
+    schema: {
+      type: 'object',
+      properties: {
+        teacher: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', example: '507f1f77bcf86cd799439032' },
+            name: { type: 'string', example: 'Dr. María Elena González Pérez' },
+            email: { type: 'string', example: 'maria.gonzalez@ucn.cl' }
+          }
+        },
+        department: {
+          type: 'string',
+          description: 'Nombre del departamento',
+          example: 'Departamento de Matemáticas'
+        },
+        semester: {
+          type: 'string',
+          description: 'Semestre consultado',
+          example: '2025-1'
+        },
+        coursesCount: {
+          type: 'number',
+          description: 'Número total de cursos',
+          example: 3
+        },
+        totalAdjustments: {
+          type: 'number',
+          description: 'Total de ajustes en todos los cursos',
+          example: 12
+        },
+        readAdjustments: {
+          type: 'number',
+          description: 'Ajustes leídos por el docente',
+          example: 9
+        },
+        readPercentage: {
+          type: 'number',
+          description: 'Porcentaje de lectura',
+          example: 75.0
+        },
+        pendingHelpRequests: {
+          type: 'number',
+          description: 'Solicitudes de ayuda pendientes',
+          example: 2
+        },
+        courses: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              courseNrc: { type: 'string', example: 'MAT101-1' },
+              courseName: { type: 'string', example: 'Matemáticas I' },
+              studentsWithNEE: { type: 'number', example: 3 },
+              adjustments: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    adjustmentId: { type: 'string', example: '507f1f77bcf86cd799439034' },
+                    adjustmentIndex: { type: 'number', example: 0 },
+                    studentRut: { type: 'string', example: '12345678-9' },
+                    adjustmentType: { type: 'string', example: 'tiempo_adicional' },
+                    isRead: { type: 'boolean', example: true },
+                    readDate: { type: 'string', format: 'date-time', example: '2025-06-19T10:30:00.000Z' },
+                    hasPendingHelp: { type: 'boolean', example: false }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      example: {
+        teacher: {
+          id: '507f1f77bcf86cd799439032',
+          name: 'Dr. María Elena González Pérez',
+          email: 'maria.gonzalez@ucn.cl'
+        },
+        department: 'Departamento de Matemáticas',
+        semester: '2025-1',
+        coursesCount: 3,
+        totalAdjustments: 12,
+        readAdjustments: 9,
+        readPercentage: 75.0,
+        pendingHelpRequests: 2,
+        courses: [
+          {
+            courseNrc: 'MAT101-1',
+            courseName: 'Matemáticas I',
+            studentsWithNEE: 3,
+            adjustments: [
+              {
+                adjustmentId: '507f1f77bcf86cd799439034',
+                adjustmentIndex: 0,
+                studentRut: '12345678-9',
+                adjustmentType: 'tiempo_adicional',
+                isRead: true,
+                readDate: '2025-06-19T10:30:00.000Z',
+                hasPendingHelp: false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'ObjectId de docente inválido',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Invalid teacher ObjectId',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Docente no encontrado en los departamentos supervisados',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Docente no encontrado en sus departamentos',
+        error: 'Not Found'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido o expirado' })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Rol no autorizado - Requiere ser jefe de departamento o carrera',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Access denied - Not a department or career head',
+        error: 'Forbidden'
+      }
+    }
   })
   async getTeacherAdjustmentStatus(
     @Param('teacherId') teacherId: string,

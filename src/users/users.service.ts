@@ -38,6 +38,7 @@ export class UsersService {
       isActive: userObject.isActive,
       createdAt: userObject.createdAt,
       updatedAt: userObject.updatedAt,
+      studentId: userObject.studentId?.toString(), // Incluir studentId si existe
     };
   }
 
@@ -120,6 +121,7 @@ export class UsersService {
       isActive: userFromDb.isActive,
       createdAt: userFromDb.createdAt,
       updatedAt: userFromDb.updatedAt,
+      studentId: userFromDb.studentId?.toString(), // Incluir studentId si existe
     };
   }
 

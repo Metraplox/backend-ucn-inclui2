@@ -17,7 +17,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
 import { User, UserRole } from '../users/schemas/user.schema';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SystemRolesDto } from './dto/roles.dto';
@@ -32,10 +32,76 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Iniciar sesión de usuario' })
-  @ApiBody({ type: LoginDto })
-  @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso.' })
-  @ApiResponse({ status: 401, description: 'Credenciales incorrectas.' })
+  @ApiOperation({ 
+    summary: 'Iniciar sesión con credenciales',
+    description: 'Autentica un usuario utilizando email y contraseña. Retorna un token JWT para acceder a endpoints protegidos.'
+  })
+  @ApiBody({ 
+    type: LoginDto,
+    description: 'Credenciales de acceso del usuario',
+    examples: {
+      coordinador: {
+        value: {
+          email: 'coordinadora@ucn.cl',
+          password: 'Test123!'
+        },
+        description: 'Usuario coordinador de prueba'
+      },
+      educadora: {
+        value: {
+          email: 'educadora@ucn.cl',
+          password: 'Test123!'
+        },
+        description: 'Usuario educadora social de prueba'
+      },
+      diddec: {
+        value: {
+          email: 'diddec@ucn.cl',
+          password: 'Test123!'
+        },
+        description: 'Usuario DIDDEC staff de prueba'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Inicio de sesión exitoso.',
+    schema: {
+      type: 'object',
+      properties: {
+        user: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string', example: '507f1f77bcf86cd799439011' },
+            email: { type: 'string', example: 'coordinadora@ucn.cl' },
+            nombreCompleto: { type: 'string', example: 'María González' },
+            roles: { 
+              type: 'array',
+              items: { type: 'string' },
+              example: ['COORDINADOR']
+            }
+          }
+        },
+        access_token: { 
+          type: 'string', 
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          description: 'Token JWT para autenticación'
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Credenciales incorrectas o usuario no encontrado.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 401 },
+        message: { type: 'string', example: 'Credenciales incorrectas' },
+        error: { type: 'string', example: 'Unauthorized' }
+      }
+    }
+  })
   async login(
     @Request() req: { user: Omit<User, 'password_hash'> },
   ) {
@@ -48,11 +114,50 @@ export class AuthController {
 
   @Post('google')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Iniciar sesión con Google' })
-  @ApiBody({ type: GoogleLoginDto })
-  @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso con Google.' })
-  @ApiResponse({ status: 401, description: 'Token inválido o usuario no autorizado/registrado.' }) // Mensaje de Swagger actualizado
-  @ApiResponse({ status: 400, description: 'Solicitud incorrecta (ej. falta idToken).' })
+  @ApiOperation({ 
+    summary: 'Iniciar sesión con Google OAuth',
+    description: 'Autentica un usuario utilizando su cuenta de Google. El usuario debe estar previamente registrado en el sistema o el email debe estar autorizado.'
+  })
+  @ApiBody({ 
+    type: GoogleLoginDto,
+    description: 'Token de autenticación de Google'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Inicio de sesión exitoso con Google.',
+    schema: {
+      type: 'object',
+      properties: {
+        user: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            email: { type: 'string' },
+            nombreCompleto: { type: 'string' },
+            roles: { type: 'array', items: { type: 'string' } },
+            googleId: { type: 'string' }
+          }
+        },
+        access_token: { type: 'string', description: 'Token JWT' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido o usuario no autorizado/registrado.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 401 },
+        message: { type: 'string', example: 'Tu cuenta de Google no está registrada o no ha podido ser vinculada a una cuenta existente en el sistema.' },
+        error: { type: 'string', example: 'Unauthorized' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Solicitud incorrecta - idToken faltante.' 
+  })
   async loginWithGoogle(@Body() body: GoogleLoginDto) {
     if (!body || !body.idToken) {
       console.error('BACKEND: Error - idToken no encontrado en el body.');
@@ -108,11 +213,38 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Registrar un nuevo usuario' })
-  @ApiBody({ type: CreateUserDto })
-  @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente.', type: User })
-  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.'})
-  @ApiResponse({ status: 409, description: 'Conflicto, el usuario ya existe.' })
+  @ApiOperation({ 
+    summary: 'Registrar un nuevo usuario',
+    description: 'Crea una nueva cuenta de usuario en el sistema. Solo usuarios con roles administrativos pueden acceder a este endpoint en producción.'
+  })
+  @ApiBody({ 
+    type: CreateUserDto,
+    description: 'Datos del nuevo usuario a registrar'
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Usuario registrado exitosamente.',
+    type: User,
+    schema: {
+      type: 'object',
+      properties: {
+        _id: { type: 'string' },
+        email: { type: 'string' },
+        nombreCompleto: { type: 'string' },
+        roles: { type: 'array', items: { type: 'string' } },
+        isActive: { type: 'boolean' },
+        createdAt: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Datos de entrada inválidos - validación fallida.'
+  })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Conflicto - El email ya está registrado en el sistema.' 
+  })
   async register(
     @Body() createUserDto: CreateUserDto,
   ): Promise<UserPublicData> {
@@ -123,12 +255,36 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ 
     summary: 'Obtener información de roles del sistema',
-    description: 'Retorna la lista completa de roles disponibles en el sistema UCN INCLUI2 con sus descripciones y permisos'
+    description: 'Retorna la lista completa de roles disponibles en el sistema UCN INCLUI2 con sus descripciones y permisos. Este endpoint es público y no requiere autenticación.'
   })
   @ApiResponse({ 
     status: 200, 
     description: 'Información de roles obtenida exitosamente.',
-    type: SystemRolesDto
+    type: SystemRolesDto,
+    schema: {
+      type: 'object',
+      properties: {
+        roles: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              role: { type: 'string', example: 'COORDINADOR' },
+              description: { type: 'string', example: 'Administrador principal del sistema' },
+              permissions: {
+                type: 'array',
+                items: { type: 'string' },
+                example: ['Gestión completa de usuarios', 'Acceso a todos los reportes', 'Configuración del sistema']
+              }
+            }
+          }
+        },
+        info: { 
+          type: 'string', 
+          example: 'Los roles determinan el acceso a diferentes funcionalidades del sistema UCN INCLUI2' 
+        }
+      }
+    }
   })
   async getRoles(): Promise<SystemRolesDto> {
     return {

@@ -25,10 +25,10 @@ import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth
 import { User } from '../../auth/decorators/user.decorator';
 import { Response } from 'express';
 
-@ApiTags('DIDDEC Resources')
+@ApiTags('diddec-resources')
 @Controller('diddec/resources')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 export class DiddecResourcesController {
   constructor(private readonly resourcesService: ResourcesService) {}
 
