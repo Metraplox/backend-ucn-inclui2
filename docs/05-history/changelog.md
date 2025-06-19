@@ -299,3 +299,35 @@
 ---
 
 **📄 Documento generado automáticamente** | **📅 Última actualización**: Enero 2025 
+
+## [v2.5.0] - 18-06-2025
+
+### 🧹 Limpieza y Mantenimiento
+
+#### Eliminado
+- 40+ scripts de debug y testing duplicados:
+  - Scripts debug-auth*.js 
+  - Scripts debug-roles*.js
+  - Scripts test-*.js redundantes
+  - Scripts fix-*.js temporales
+  - Scripts check-*.js de validación
+  - Scripts professional-*.js duplicados
+  - Scripts quick-*.js de testing rápido
+- Archivo temporal `poblado-report.json`
+- Carpeta `dist/` (código compilado)
+- Script vacío `load-real-data-optimized.ps1`
+
+#### Modificado
+- `scripts/README.md`: Actualizado con nueva organización de scripts
+- `docs/README.md`: Agregada sección de limpieza y mantenimiento
+
+#### Resultado
+- Reducción de 60+ scripts a 19 scripts esenciales
+- Mejor organización por categorías
+- Proyecto más limpio y mantenible
+
+---
+
+## [v2.4.0] - 17-06-2025
+
+// ... existing code ... 

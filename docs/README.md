@@ -1,258 +1,152 @@
-# 📚 DOCUMENTACIÓN UCN INCLUI2
-## Sistema Integral de Gestión de Estudiantes con NEE
+# 📚 Documentación del Backend - UCN Inclui2
 
-### 📅 **Última Actualización**: Enero 2025
-### 🎯 **Estado**: DOCUMENTACIÓN PROFESIONAL ORGANIZADA V2.0
+## 📅 Última Actualización: 18-06-2025
+
+Bienvenido a la documentación oficial del backend de la Plataforma de Inclusión Universitaria UCN.
+
+## 📁 Estructura de la Documentación
+
+```
+docs/
+├── 00-getting-started/    # Introducción y configuración inicial
+├── 01-architecture/       # Arquitectura y diseño del sistema
+├── 02-development/        # Guías de desarrollo
+├── 03-testing/           # Estrategias de testing y reportes
+├── 04-deployment/        # Guías de despliegue
+├── 05-history/           # Historial y cambios
+├── 06-frontend-design/   # Integración con frontend
+├── 07-flutter-refactoring/ # Refactorización Flutter
+└── assets/               # Recursos y documentos de referencia
+```
+
+## 🧹 Limpieza y Mantenimiento
+
+### Última limpieza realizada: 18-06-2025
+
+- ✅ Eliminados 40+ scripts de debug y testing duplicados
+- ✅ Removidos archivos temporales (poblado-report.json)
+- ✅ Eliminada carpeta dist (código compilado)
+- ✅ Organización de scripts en categorías claras
+- ✅ Actualización de documentación
+
+### Scripts mantenidos (19 esenciales):
+- **Build/Producción**: 3 scripts
+- **Base de datos**: 4 scripts
+- **Testing**: 2 scripts
+- **Sincronización**: 2 scripts
+- **Seguridad/Validación**: 3 scripts
+- **Población de datos**: 3 scripts
+- **Refactorización**: 1 script
+- **Documentación**: 1 README
+
+## 🚀 Inicio Rápido
+
+1. **[Visión General del Proyecto](00-getting-started/project-overview.md)**
+   - Introducción al sistema
+   - Objetivos y alcance
+   - Tecnologías utilizadas
+
+2. **[Configuración Rápida](00-getting-started/quick-setup.md)**
+   - Requisitos previos
+   - Instalación paso a paso
+   - Configuración inicial
+
+## 🏗️ Arquitectura
+
+1. **[Diseño de Base de Datos](01-architecture/database-design.md)**
+   - Esquemas y modelos
+   - Relaciones entre entidades
+   - Índices y optimizaciones
+
+2. **[Documentación de API](01-architecture/API_DOCUMENTATION.md)**
+   - Endpoints disponibles
+   - Autenticación y autorización
+   - Ejemplos de uso
+
+## 💻 Desarrollo
+
+1. **[Estándares de Código](02-development/coding-standards.md)**
+   - Convenciones de nomenclatura
+   - Estructura de archivos
+   - Mejores prácticas
+
+2. **[Sistema de Consentimientos](02-development/consent-system.md)**
+   - Implementación del sistema
+   - Flujo de consentimientos
+   - Consideraciones de privacidad
+
+## 🧪 Testing
+
+1. **[Reporte Completo de Testing](03-testing/COMPREHENSIVE_TESTING_REPORT.md)**
+   - Estrategias de testing
+   - Resultados de pruebas
+   - Cobertura de código
+
+2. **[Análisis de Problemas de Permisos](03-testing/ANALISIS_PROBLEMAS_PERMISOS.md)**
+   - Identificación de issues
+   - Soluciones implementadas
+
+## 🚀 Despliegue
+
+1. **[Guía de Despliegue](04-deployment/DEPLOYMENT_README.md)**
+   - Requisitos del servidor
+   - Proceso de despliegue
+   - Configuración de producción
+
+2. **[Protección de Código](04-deployment/code-protection.md)**
+   - Estrategias de protección
+   - Builds de producción
+   - Entrega segura
+
+## 📜 Historial
+
+1. **[Changelog](05-history/changelog.md)**
+   - Historial de versiones
+   - Cambios importantes
+   - Actualizaciones recientes
+
+2. **[Issues Resueltos](05-history/issues-resolved.md)**
+   - Problemas solucionados
+   - Mejoras implementadas
+
+## 🎨 Diseño Frontend
+
+1. **[Análisis de Requisitos](06-frontend-design/01_ANALISIS_REQUISITOS_CLIENTE.md)**
+   - Necesidades del cliente
+   - Especificaciones funcionales
+
+2. **[Integración con Backend](06-frontend-design/02_INTEGRACION_BACKEND_EXISTENTE.md)**
+   - Puntos de integración
+   - Flujo de datos
+
+## 📱 Flutter Refactoring
+
+1. **[Resumen Ejecutivo](07-flutter-refactoring/00_EJECUTIVO_RESUMEN.md)**
+   - Objetivos del refactoring
+   - Beneficios esperados
+
+2. **[Guía de Implementación](07-flutter-refactoring/02_GUIA_IMPLEMENTACION.md)**
+   - Pasos de migración
+   - Consideraciones técnicas
+
+## 📋 Recursos Adicionales
+
+- **[Requisitos del Sistema](assets/requisitos.txt)**
+- **[Plan Ejecutivo](PLAN_EJECUTIVO_100_PERCENT.md)**
+- **[Documentos de Consentimiento](assets/documents/)**
+
+## 🛠️ Scripts Útiles
+
+Para más información sobre los scripts disponibles, consulta:
+- **[README de Scripts](../scripts/README.md)**
+
+## 📞 Soporte
+
+Para preguntas o problemas:
+1. Revisa la documentación existente
+2. Consulta el historial de issues resueltos
+3. Contacta al equipo de desarrollo
 
 ---
 
-## 🌟 **NAVEGACIÓN RÁPIDA**
-
-### **🚀 ¿Nuevo en el proyecto?**
-👉 **Comienza aquí**: [`00-getting-started/`](./00-getting-started/)
-
-### **🏗️ ¿Necesitas información técnica?**
-👉 **Arquitectura**: [`01-architecture/`](./01-architecture/)
-
-### **💻 ¿Vas a desarrollar?**
-👉 **Desarrollo**: [`02-development/`](./02-development/)
-
-### **🧪 ¿Necesitas hacer testing?**
-👉 **Testing**: [`03-testing/`](./03-testing/)
-
-### **🚀 ¿Vas a hacer deployment?**
-👉 **Deployment**: [`04-deployment/`](./04-deployment/)
-
-### **📖 ¿Buscas historial del proyecto?**
-👉 **Historia**: [`05-history/`](./05-history/)
-
----
-
-## 📁 **ESTRUCTURA DE DOCUMENTACIÓN PROFESIONAL**
-
-```
-📁 docs/
-├── 📁 00-getting-started/         # 🚀 PUNTO DE ENTRADA
-│   ├── README.md                  # Guía principal (ex Guía Principal)
-│   ├── quick-setup.md             # Setup rápido del entorno (NUEVO)
-│   └── project-overview.md        # Visión general (ex README Guías)
-│
-├── 📁 01-architecture/            # 🏗️ DOCUMENTACIÓN TÉCNICA
-│   ├── README.md                  # Índice de arquitectura (NUEVO)
-│   ├── system-architecture.md     # Arquitectura completa (ex Arquitectura)
-│   └── database-design.md         # Diseño MongoDB (ex MongoDB Local)
-│
-├── 📁 02-development/             # 💻 GUÍAS DE DESARROLLO
-│   ├── README.md                  # Índice de desarrollo (NUEVO)
-│   ├── coding-standards.md        # Estándares (ex Code Review)
-│   ├── security-implementation.md # Seguridad (ex Sistema Roles)
-│   └── consent-system.md          # Consentimientos (ex Sistema Consentimientos)
-│
-├── 📁 03-testing/                 # 🧪 TESTING Y VALIDACIÓN
-│   ├── README.md                  # Índice de testing (NUEVO)
-│   ├── testing-guide.md           # Guía completa (ex Testing Validación)
-│   └── scripts/                   # Scripts automatizados
-│
-├── 📁 04-deployment/              # 🚀 DEPLOYMENT Y PRODUCCIÓN
-│   ├── README.md                  # Índice de deployment (NUEVO)
-│   └── code-protection.md         # Protección código (ex Protección Código)
-│
-├── 📁 05-history/                 # 📖 HISTORIAL Y EVOLUCIÓN
-│   ├── README.md                  # Índice histórico (NUEVO)
-│   ├── changelog.md               # Changelog (ex Changelog Completo)
-│   ├── roadmap.md                 # Roadmap (ex Roadmap Desarrollo)
-│   └── issues-resolved.md         # Issues (ex Problemas Identificados)
-│
-└── 📁 assets/                     # 📎 ARCHIVOS ADICIONALES
-    └── documents/                 # PDFs oficiales (Formato UCN 2025)
-```
-
----
-
-## 🎯 **GUÍAS POR TIPO DE USUARIO**
-
-### **👨‍💻 DESARROLLADOR NUEVO**
-```
-1. 📖 00-getting-started/README.md          # Comenzar aquí
-2. 🚀 00-getting-started/quick-setup.md     # Setup en 15 minutos
-3. 🏗️ 01-architecture/system-architecture.md # Entender el sistema
-4. 💻 02-development/coding-standards.md     # Estándares de código
-5. 🧪 03-testing/testing-guide.md           # Estrategias de testing
-```
-
-### **🤖 IA ASSISTANT**
-```
-1. 📖 00-getting-started/project-overview.md # Contexto general
-2. 🏗️ 01-architecture/system-architecture.md # Arquitectura técnica
-3. 📖 05-history/changelog.md                # Historia del proyecto
-4. 🗺️ 05-history/roadmap.md                 # Planificación futura
-5. 💻 02-development/README.md               # Estándares desarrollo
-```
-
-### **👩‍💼 PROJECT MANAGER**
-```
-1. 📖 00-getting-started/project-overview.md # Visión general
-2. 📈 05-history/roadmap.md                  # Roadmap y planificación
-3. 🧪 03-testing/README.md                   # Estado del testing
-4. 🚀 04-deployment/README.md                # Estrategias deployment
-5. 📊 05-history/changelog.md                # Progreso histórico
-```
-
-### **🔧 DEVOPS/INFRASTRUCTURE**
-```
-1. 🚀 04-deployment/README.md                # Guía deployment
-2. 🗄️ 01-architecture/database-design.md    # Configuración BD
-3. 🛡️ 04-deployment/code-protection.md      # Protección código
-4. 🧪 03-testing/scripts/                    # Scripts automatizados
-5. 🏗️ 01-architecture/system-architecture.md # Arquitectura técnica
-```
-
----
-
-## 📊 **MÉTRICAS DE DOCUMENTACIÓN V2.0**
-
-```
-📚 Total de Documentos: 20+ archivos organizados
-📁 Categorías Organizadas: 6 secciones especializadas
-🔗 Enlaces Internos: 100+ referencias cruzadas
-📈 Nivel de Detalle: ENTERPRISE PROFESIONAL
-🎯 Estado: COMPLETO Y ESTRUCTURADO
-🆕 Mejoras V2.0: Navegación optimizada, READMEs especializados
-```
-
----
-
-## 🚀 **ACCESO RÁPIDO A FUNCIONALIDADES**
-
-### **🔐 Sistema de Autenticación**
-- 📍 [`02-development/security-implementation.md`](./02-development/security-implementation.md)
-
-### **📝 Sistema de Consentimientos**
-- 📍 [`02-development/consent-system.md`](./02-development/consent-system.md)
-
-### **🗄️ Base de Datos MongoDB**
-- 📍 [`01-architecture/database-design.md`](./01-architecture/database-design.md)
-
-### **🧪 Scripts de Testing**
-- 📍 [`03-testing/scripts/`](./03-testing/scripts/)
-
-### **🚀 Deployment Producción**
-- 📍 [`04-deployment/code-protection.md`](./04-deployment/code-protection.md)
-
-### **⚡ Setup Rápido (15 min)**
-- 📍 [`00-getting-started/quick-setup.md`](./00-getting-started/quick-setup.md)
-
----
-
-## 🆕 **NOVEDADES V2.0 - ENERO 2025**
-
-### **🎯 Reorganización Profesional**
-```yaml
-✅ Estructura Modular:
-  - 6 secciones especializadas
-  - 20+ documentos organizados
-  - READMEs por sección
-
-✅ Navegación Optimizada:
-  - Guías por tipo de usuario
-  - Referencias cruzadas
-  - Acceso rápido a funcionalidades
-
-✅ Documentos Nuevos:
-  - Setup rápido (15 minutos)
-  - READMEs especializados por sección
-  - Índices de navegación
-
-✅ Migración Completa:
-  - Documentos reubicados según propósito
-  - Enlaces actualizados
-  - Estructura consistente
-```
-
-### **📈 Mejoras en Usabilidad**
-```yaml
-Antes (V1.0):
-  - Documentos dispersos en /guias/
-  - Navegación lineal
-  - READMEs básicos
-
-Ahora (V2.0):
-  - Estructura modular /docs/
-  - Navegación por propósito
-  - READMEs especializados
-  - Guías por tipo de usuario
-```
-
----
-
-## 📝 **CONVENCIONES DE DOCUMENTACIÓN V2.0**
-
-### **📅 Fechas y Versionado**
-- Todas las guías incluyen fecha de última actualización
-- Versionado semántico para cambios mayores (V2.0)
-- Referencias cruzadas mantenidas automáticamente
-
-### **🔗 Sistema de Enlaces**
-- Enlaces relativos para navegación interna
-- Referencias externas claramente marcadas
-- Índices especializados por sección
-
-### **📋 Formato y Estilo**
-- Markdown estándar con extensiones GitHub
-- Emojis para mejor navegación visual
-- Estructura consistente en todos los documentos
-- READMEs especializados por audiencia
-
----
-
-## 🔄 **MIGRACIÓN DE DOCUMENTACIÓN**
-
-### **📁 Mapeo de Archivos (Viejo → Nuevo)**
-```yaml
-guias/00_GUIA_PRINCIPAL.md           → 00-getting-started/README.md
-guias/README_GUIAS.md                → 00-getting-started/project-overview.md
-guias/07_ARQUITECTURA.md             → 01-architecture/system-architecture.md
-guias/06_MONGODB_LOCAL.md            → 01-architecture/database-design.md
-guias/08_CODE_REVIEW.md              → 02-development/coding-standards.md
-guias/04_SISTEMA_ROLES.md            → 02-development/security-implementation.md
-guias/06_SISTEMA_CONSENTIMIENTOS.md  → 02-development/consent-system.md
-guias/09_TESTING_VALIDACION.md       → 03-testing/testing-guide.md
-guias/05_PROTECCION_CODIGO.md        → 04-deployment/code-protection.md
-guias/01_CHANGELOG_COMPLETO.md       → 05-history/changelog.md
-guias/03_ROADMAP_DESARROLLO.md       → 05-history/roadmap.md
-guias/02_PROBLEMAS_IDENTIFICADOS.md  → 05-history/issues-resolved.md
-guias/Formato*.pdf                   → assets/documents/
-```
-
-### **🆕 Documentos Creados en V2.0**
-```yaml
-- 00-getting-started/quick-setup.md     # Setup rápido 15 min
-- 01-architecture/README.md             # Índice arquitectura
-- 02-development/README.md              # Índice desarrollo  
-- 03-testing/README.md                  # Índice testing
-- 04-deployment/README.md               # Índice deployment
-- 05-history/README.md                  # Índice historia
-- docs/README.md                        # README principal V2.0
-```
-
----
-
-> **💡 FILOSOFÍA V2.0**: Esta documentación está diseñada para ser **modular, escalable y orientada por propósito**, facilitando que diferentes tipos de usuarios encuentren rápidamente la información que necesitan.
-
----
-
-## 🎯 **PRÓXIMOS PASOS**
-
-### **🔍 Para Explorar el Sistema**
-1. **Nuevo usuario**: [`00-getting-started/README.md`](./00-getting-started/README.md)
-2. **Setup rápido**: [`00-getting-started/quick-setup.md`](./00-getting-started/quick-setup.md)
-3. **Arquitectura**: [`01-architecture/README.md`](./01-architecture/README.md)
-
-### **💻 Para Desarrollo**
-1. **Estándares**: [`02-development/README.md`](./02-development/README.md)
-2. **Testing**: [`03-testing/README.md`](./03-testing/README.md)
-3. **Deployment**: [`04-deployment/README.md`](./04-deployment/README.md)
-
----
-
-**📄 Sistema de documentación profesional V2.0** | **📅 Reorganizado**: Enero 2025 | **🎯 Objetivo**: NAVEGACIÓN EFICIENTE Y PROFESIONAL 
+*Esta documentación se mantiene actualizada con cada release del proyecto.* 
