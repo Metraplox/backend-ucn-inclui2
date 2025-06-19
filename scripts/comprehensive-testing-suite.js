@@ -608,3 +608,4 @@ if (require.main === module) {
 }
 
 module.exports = { ejecutarTestingExhaustivo, testResults };
+ 

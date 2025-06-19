@@ -31,7 +31,7 @@ async function debugAuth() {
       console.log('👤 User info:');
       console.log(`   📧 Email: ${authData.user.email}`);
       console.log(`   👤 Nombre: ${authData.user.nombreCompleto}`);
-      console.log(`   🔑 Roles: ${authData.user.roles.join(', ')}`);
+      console.log(`   🔑 Roles: ${(authData.user.roles || []).join(', ')}`);
     }
     
     if (authData.access_token) {
@@ -45,11 +45,12 @@ async function debugAuth() {
       });
       
       console.log('✅ Profile request successful!');
-      const profileData = profileResponse.data.data || profileResponse.data;
+      console.log('📄 Profile Raw Response:', JSON.stringify(profileResponse.data, null, 2));
+      const profileData = profileResponse.data.data?.data || profileResponse.data.data || profileResponse.data;
       console.log('👤 Profile data:');
       console.log(`   📧 Email: ${profileData.email}`);
       console.log(`   👤 Nombre: ${profileData.nombreCompleto}`);
-      console.log(`   🔑 Roles: ${profileData.roles.join(', ')}`);
+      console.log(`   🔑 Roles: ${(profileData.roles || []).join(', ')}`);
     }
     
   } catch (error) {

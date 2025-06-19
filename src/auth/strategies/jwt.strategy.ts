@@ -38,7 +38,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       _id: user._id.toString(),
       email: user.email,
       nombreCompleto: user.nombreCompleto,
-      roles: user.roles,
+      roles: user.roles || [],  // Asegurar que roles siempre sea un array
+      isActive: user.isActive || false,
       studentId: user.studentId?.toString(), // Añadimos el studentId
     };
   }

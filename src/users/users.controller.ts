@@ -67,6 +67,7 @@ export class UsersController {
   }
 
   @Get('profile')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE, UserRole.ESTUDIANTE)
   @ApiOperation({ summary: 'Obtener el perfil del usuario actual' })
   @ApiResponse({
     status: 200,

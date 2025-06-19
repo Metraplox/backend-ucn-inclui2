@@ -35,7 +35,7 @@ describe('Estudiantes-Carreras Integration (e2e)', () => {
     adminToken = jwtService.sign({
       email: 'admin.test@ucn.cl',
       sub: new Types.ObjectId().toString(),
-      roles: [UserRole.ADMIN],
+      roles: [UserRole.COORDINADOR],
     });
     
     // Crear una carrera de prueba

@@ -44,7 +44,7 @@ interface SyncResult {
 @ApiBearerAuth()
 export class SemesterSyncController {
   private readonly logger = new Logger(SemesterSyncController.name);
-
+  
   constructor(
     private readonly semesterSchedulerService: SemesterSchedulerService,
     private readonly syncService: SyncService,

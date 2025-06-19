@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { DepartmentHeadGuard } from '../../../src/auth/guards/department-head.guard';
-import { Role } from '../../../src/users/enums/role.enum';
+import { UserRole } from '../../../src/users/schemas/user.schema';
 
 describe('DepartmentHeadGuard', () => {
   let guard: DepartmentHeadGuard;
@@ -64,7 +64,7 @@ describe('DepartmentHeadGuard', () => {
         getRequest: () => ({
           user: {
             userId: 'admin1',
-            roles: [Role.ADMIN],
+            roles: [UserRole.COORDINADOR],
           },
         }),
       }),
@@ -80,7 +80,7 @@ describe('DepartmentHeadGuard', () => {
         getRequest: () => ({
           user: {
             userId: 'deptHead1',
-            roles: [Role.DEPARTMENT_HEAD],
+            roles: [UserRole.JEFE_DEPARTAMENTO],
             departmentId: 'dept1',
           },
         }),
@@ -97,7 +97,7 @@ describe('DepartmentHeadGuard', () => {
         getRequest: () => ({
           user: {
             userId: 'deptHead1',
-            roles: [Role.DEPARTMENT_HEAD],
+            roles: [UserRole.JEFE_DEPARTAMENTO],
             // Sin departmentId
           },
         }),

@@ -15,7 +15,7 @@ interface SyncResult {
 export class SemesterSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(SemesterSchedulerService.name);
   private isInitialized = false;
-  
+
   constructor(
     private readonly configService: ConfigService,
   ) {}
@@ -257,5 +257,5 @@ export class SemesterSchedulerService implements OnModuleInit {
     nextMonday.setHours(5, 0, 0, 0);
     
     return nextMonday;
-  }
+} 
 } 

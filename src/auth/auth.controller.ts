@@ -16,7 +16,7 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
-import { User } from '../users/schemas/user.schema';
+import { User, UserRole } from '../users/schemas/user.schema';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -134,37 +134,37 @@ export class AuthController {
     return {
       roles: [
         {
-          role: 'coordinador' as any,
+          role: UserRole.COORDINADOR,
           description: 'Administrador principal del sistema',
           permissions: ['Gestión completa de usuarios', 'Acceso a todos los reportes', 'Configuración del sistema']
         },
         {
-          role: 'educadora_social' as any,
+          role: UserRole.EDUCADORA_SOCIAL,
           description: 'Gestión de entrevistas y registro de usuarios',
           permissions: ['Registro de estudiantes', 'Gestión de entrevistas', 'Acceso a perfiles estudiantiles']
         },
         {
-          role: 'diddec_staff' as any,
+          role: UserRole.DIDDEC_STAFF,
           description: 'Personal especializado de DIDDEC',
           permissions: ['Gestión de recursos', 'Reportes especializados', 'Configuración de ajustes']
         },
         {
-          role: 'jefe_carrera' as any,
+          role: UserRole.JEFE_CARRERA,
           description: 'Gestión académica de carreras',
           permissions: ['Gestión de estudiantes de carrera', 'Reportes académicos', 'Configuración de cursos']
         },
         {
-          role: 'jefe_departamento' as any,
+          role: UserRole.JEFE_DEPARTAMENTO,
           description: 'Gestión académica de departamentos',
           permissions: ['Gestión departamental', 'Supervisión de carreras', 'Reportes institucionales']
         },
         {
-          role: 'docente' as any,
+          role: UserRole.DOCENTE,
           description: 'Profesores de asignaturas',
           permissions: ['Acceso a ajustes de estudiantes', 'Gestión de cursos asignados', 'Reportes de progreso']
         },
         {
-          role: 'estudiante' as any,
+          role: UserRole.ESTUDIANTE,
           description: 'Estudiantes con NEE',
           permissions: ['Acceso a perfil personal', 'Visualización de ajustes', 'Gestión de documentos personales']
         }

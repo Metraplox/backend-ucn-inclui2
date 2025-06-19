@@ -4,21 +4,21 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum UserRole {
   // Administración
-  COORDINADOR = 'coordinador', // Admin/Cliente del proyecto
+  COORDINADOR = 'COORDINADOR', // Admin/Cliente del proyecto
 
   // Personal Especializado
-  EDUCADORA_SOCIAL = 'educadora_social', // Entrevistas, registro usuarios
-  DIDDEC_STAFF = 'diddec_staff', // Personal DIDDEC
+  EDUCADORA_SOCIAL = 'EDUCADORA_SOCIAL', // Entrevistas, registro usuarios
+  DIDDEC_STAFF = 'DIDDEC_STAFF', // Personal DIDDEC
 
   // Académicos con Responsabilidades
-  JEFE_CARRERA = 'jefe_carrera', // Gestión académica de carrera
-  JEFE_DEPARTAMENTO = 'jefe_departamento', // Gestión académica de departamento
+  JEFE_CARRERA = 'JEFE_CARRERA', // Gestión académica de carrera
+  JEFE_DEPARTAMENTO = 'JEFE_DEPARTAMENTO', // Gestión académica de departamento
 
   // Personal Académico
-  DOCENTE = 'docente', // Profesores de asignaturas
+  DOCENTE = 'DOCENTE', // Profesores de asignaturas
 
   // Estudiantes
-  ESTUDIANTE = 'estudiante', // Estudiantes con NEE
+  ESTUDIANTE = 'ESTUDIANTE', // Estudiantes con NEE
 }
 
 @Schema({ timestamps: true, collection: 'users' })
