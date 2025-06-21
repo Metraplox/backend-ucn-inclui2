@@ -78,11 +78,16 @@ class _StudentAdjustmentSubjectScreenState
       );
       for (var sa in selectedStudentAdjustment) {
         if (sa.currentAdjustments != null) {
-          for (var adj in sa.currentAdjustments) {
-            _adjustmentsWithIds.add({"adjustment": adj, "saId": sa.id});
+          for (var i = 0; i < sa.currentAdjustments!.length; i++) {
+            var adj = sa.currentAdjustments![i];
+            _adjustmentsWithIds.add({
+              "adjustment": adj,
+              "saId": sa.id,
+              "adjustmentIndex": i, // <-- guarda el índice aquí
+            });
+
             final yaLeido =
                 adj.readBy?.any((r) => r['userId'] == _currentUserId) ?? false;
-
             _adjustmentChecked[sa.id] = yaLeido;
           }
         }
@@ -101,12 +106,15 @@ class _StudentAdjustmentSubjectScreenState
     }
   }
 
-  Future<void> _sendCheckAdjustment(String adjustmentId) async {
+  Future<void> _sendCheckAdjustment(
+    String adjustmentId,
+    int adjustmentIndex,
+  ) async {
     setState(() {
       _checkLoading = true;
     });
     try {
-      await AdjustmentService.setReadAdjustment(adjustmentId);
+      await AdjustmentService.setReadAdjustment(adjustmentId, adjustmentIndex);
       setState(() {
         _adjustmentChecked[adjustmentId] = true;
       });
@@ -157,7 +165,10 @@ class _StudentAdjustmentSubjectScreenState
                           value: isChecked,
                           onChanged: (value) {
                             if (value == true && !_checkLoading) {
-                              _sendCheckAdjustment(saId!);
+                              final adjustmentIndex =
+                                  _adjustmentsWithIds[index]['adjustmentIndex']
+                                      as int;
+                              _sendCheckAdjustment(saId, adjustmentIndex);
                             }
                           },
                         ),

@@ -33,7 +33,7 @@ class CourseService {
       if (token == null) throw Exception('Token nulo');
       final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
       final response = await dio.get(
-        '/teachers/adjustments/my-courses',
+        '/courses',
         options: Options(
           headers: {
             'Accept': 'application/json',
@@ -47,7 +47,7 @@ class CourseService {
         if (!responseBody.containsKey('data') || responseBody['data'] == null) {
           throw Exception('La respuesta no contiene datos');
         }
-        final List<dynamic> coursesJson = responseBody['data']['courses'];
+        final List<dynamic> coursesJson = responseBody['data']['data'];
 
         return coursesJson
             .map((json) => CourseAdjustment.fromJson(json))
@@ -78,7 +78,7 @@ class CourseService {
         ),
       );
       if (response.statusCode == 200) {
-        final List data = response.data['data'];
+        final List data = response.data['data']['data'];
 
         return data.map((json) => Student.fromJson(json)).toList();
       } else {
@@ -88,5 +88,4 @@ class CourseService {
       throw Exception('Error: $e');
     }
   }
-
 }

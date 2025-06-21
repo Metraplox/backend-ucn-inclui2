@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isStudent = false;
   bool _isAdmin = false;
   bool _isTeacher = false;
+  bool _isHead = false;
   String? _currentUserId; // Este será el ID del User logueado
   // String? _currentStudentDocId; // Podrías necesitar el ID del documento Student si eres estudiante
 
@@ -69,6 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (_isTeacher) {
       await _loadCourses(); // Cargar cursos para el profesor
       // await _checkForNotifications(); // Descomentar si los profesores también tienen notificaciones de ajustes
+    } else if (_isHead) {
+      await _loadCoordinadoraData();
     }
 
     if (mounted) {
@@ -82,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isStudentRole = await StudentService.isStudent();
     final isAdminRole = await StudentService.isAdmin();
     final isTeacherRole = await StudentService.isTeacher();
+    final isHeadRole = await StudentService.isHead();
 
     User? userInfo =
         await StudentService.getCurrentUserInfo(); // Esto devuelve User?
@@ -91,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isStudent = isStudentRole;
         _isAdmin = isAdminRole;
         _isTeacher = isTeacherRole;
+        _isHead = isHeadRole;
         _currentUserId = userInfo?.id; // Obtiene el ID del objeto User
       });
       //print("HomeScreen: Roles - Estudiante: $_isStudent, Admin: $_isAdmin, Profesor: $_isTeacher. UserID: $_currentUserId");
@@ -256,6 +261,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ? _buildAdminDashboard()
               : _isTeacher
               ? _buildTeacherDashboard()
+              : _isHead
+              ? _buildJefeDashboard()
               : const Center(
                 child: Text(
                   'Bienvenido. Por favor, inicia sesión o contacta al administrador si no tienes un rol asignado.',
@@ -378,6 +385,116 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildJefeDashboard() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(/* ... (Tarjeta de bienvenida con _buildStatCard) ... */),
+          const SizedBox(height: 24),
+          const Text(
+            'Alertas y Notificaciones',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          _buildAlertCard(
+            'Nuevos Ingresos',
+            '${(_students.length * 0.2).round()} estudiantes nuevos requieren revisión',
+            Icons.person_add,
+            Colors.orange,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentListScreen(),
+                ),
+              );
+            },
+          ),
+          _buildAlertCard(
+            'Actualización de Ajustes',
+            '${(_students.length * 0.1).round()} solicitudes de actualización',
+            Icons.update,
+            Colors.blue,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Solicitudes de Actualización'),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        child:
+                            _students.isEmpty
+                                ? const Text("No hay estudiantes para mostrar.")
+                                : ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: (_students.length * 0.1)
+                                      .round()
+                                      .clamp(
+                                        0,
+                                        _students.length,
+                                      ), // Asegurar que no exceda
+                                  itemBuilder: (context, index) {
+                                    if (_students.isEmpty)
+                                      return const SizedBox.shrink(); // No debería llegar aquí si se maneja arriba
+                                    final student =
+                                        _students[index %
+                                            _students
+                                                .length]; // Para evitar errores si la lista es pequeña
+                                    return ListTile(
+                                      title: Text(
+                                        student.nombreCompleto,
+                                      ), // CORREGIDO
+                                      subtitle: Text(
+                                        '${student.carreraNombre ?? 'Sin carrera'} - ${student.rut}',
+                                      ), // CORREGIDO
+                                      leading: const CircleAvatar(
+                                        child: Icon(Icons.person),
+                                      ),
+                                    );
+                                  },
+                                ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cerrar'),
+                        ),
+                      ],
+                    ),
+              );
+            },
+          ),
+          // ... (Otras _buildAlertCard y _buildFeatureCard usando los datos de _students donde sea apropiado)
+          // ... Asegúrate de usar student.nombreCompleto y student.carreraNombre
+          const SizedBox(height: 24),
+          const Text(
+            'Gestión de Estudiantes',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          _buildFeatureCard(
+            'Listado de Estudiantes',
+            'Ver todos los estudiantes',
+            Icons.list_alt,
+            Colors.indigo,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentListScreen(),
+                ),
+              );
+            },
+          ),
+          // ... más _buildFeatureCard
         ],
       ),
     );

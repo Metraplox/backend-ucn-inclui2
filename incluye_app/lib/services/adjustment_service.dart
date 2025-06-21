@@ -153,12 +153,18 @@ class AdjustmentService {
     }
   }
 
-  static Future<void> setReadAdjustment(String adjustmentId) async {
+  static Future<void> setReadAdjustment(
+    String adjustmentId,
+    int index, {
+    String? comments,
+  }) async {
     final token = await ApiService.getToken();
     if (token == null) throw Exception('Token nulo');
     final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
     final response = await dio.patch(
-      '/teachers/adjustments/$adjustmentId/acknowledge',
+      '/adjustments/${adjustmentId}/read',
+      queryParameters: {'adjustmentIndex': index},
+      data: comments != null ? {'comments': comments} : null,
       options: Options(
         headers: {
           'Accept': 'application/json',
@@ -182,7 +188,7 @@ class AdjustmentService {
       if (token == null) throw Exception('Token nulo');
       final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
       final response = await dio.get(
-        '/teachers/adjustments/my-courses/$courseNrc',
+        '/adjustments/course/$courseNrc',
         options: Options(
           headers: {
             'Accept': 'application/json',
@@ -191,7 +197,7 @@ class AdjustmentService {
           },
         ),
       );
-      final List<dynamic> data = response.data['data'] ?? [];
+      final List<dynamic> data = response.data['data']['data'] ?? [];
       return data.map((json) => StudentAdjustment.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Error al obtener cursos.$e');

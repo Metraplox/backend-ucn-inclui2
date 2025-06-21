@@ -84,6 +84,11 @@ class StudentService {
     );
   }
 
+  static Future<bool> isHead() async {
+    final roles = await getUserRoles();
+    return roles.any((r) => r.toLowerCase() == 'JEFE_CARRERA');
+  }
+
   // getCurrentUserInfo:
   // Este método intenta construir un objeto User. Con el UserModel actualizado,
   // necesitamos asegurarnos de pasar los parámetros correctos.

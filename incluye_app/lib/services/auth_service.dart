@@ -10,7 +10,8 @@ import 'package:incluye_app/models/user_model.dart';
 import 'dart:math' as math;
 
 class AuthService {
-  static const String _googleWebClientId = '90627838122-cv4i0d2124tgm1cbh06cbpotuu128b8v.apps.googleusercontent.com';
+  static const String _googleWebClientId =
+      '90627838122-cv4i0d2124tgm1cbh06cbpotuu128b8v.apps.googleusercontent.com';
 
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
@@ -23,33 +24,46 @@ class AuthService {
       final response = await ApiService.dio.post(
         '/auth/login',
         data: {'email': email, 'password': password},
-        options: Options(
-          validateStatus: (status) => true,
-        ),
+        options: Options(validateStatus: (status) => true),
       );
 
-      //print("FRONTEND (AuthService): Respuesta login normal - StatusCode: ${response.statusCode}, Data: ${response.data}");
+      print(
+        "FRONTEND (AuthService): Respuesta login normal - StatusCode: ${response.statusCode}, Data: ${response.data}",
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // AJUSTE POR SI LA RESPUESTA DE LOGIN NORMAL VIENE ANIDADA BAJO 'data'
-        final responseBody = response.data;
-        final actualData = responseBody is Map && responseBody.containsKey('data') && responseBody['data'] is Map 
-                           ? responseBody['data'] as Map<String, dynamic>
-                           : responseBody as Map<String, dynamic>;
-
+        //final responseBody = response.data;
+        //final actualData =
+        //  responseBody is Map &&
+        //        responseBody.containsKey('data') &&
+        //      responseBody['data'] is Map
+        // ? responseBody['data'] as Map<String, dynamic>
+        //: responseBody as Map<String, dynamic>;
+        final level1 = response.data as Map<String, dynamic>;
+        final level2 = level1['data'] as Map<String, dynamic>;
+        final actualData = level2['data'] as Map<String, dynamic>;
 
         String? token = actualData['access_token'];
-        Map<String, dynamic>? userData = actualData['user'] is Map ? actualData['user'] as Map<String, dynamic> : null;
-
+        Map<String, dynamic>? userData =
+            actualData['user'] is Map
+                ? actualData['user'] as Map<String, dynamic>
+                : null;
 
         if (token == null || userData == null) {
-          //print('FRONTEND (AuthService): Error login normal - Token o userData nulos desde el backend (después de posible desanidamiento).');
+          print(
+            'FRONTEND (AuthService): Error login normal - Token o userData nulos desde el backend (después de posible desanidamiento).',
+          );
           return null;
         }
-
+        print(email);
+        print(password);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
-        await prefs.setString('nombreCompleto', userData['nombreCompleto'] ?? '');
+        await prefs.setString(
+          'nombreCompleto',
+          userData['nombreCompleto'] ?? '',
+        );
         await prefs.setString('userEmail', userData['email'] ?? '');
         await prefs.setString('userId', userData['_id'] ?? '');
 
@@ -60,11 +74,11 @@ class AuthService {
         //print('FRONTEND (AuthService): Error login normal - Código: ${response.statusCode}, Respuesta: ${response.data}');
         return null;
       }
-    } catch (e,s) {
+    } catch (e, s) {
       //print('FRONTEND (AuthService): Excepción durante login normal: $e');
       //print('FRONTEND (AuthService): Stacktrace login normal: $s');
       if (e is DioException) {
-       // print('FRONTEND (AuthService): DioException login normal - details: ${e.response?.data}');
+        // print('FRONTEND (AuthService): DioException login normal - details: ${e.response?.data}');
       }
       return null;
     }
@@ -84,26 +98,26 @@ class AuthService {
       if (googleUser == null) {
         //print("FRONTEND (AuthService): [PRINT 1.1.1] signInSilently() devolvió null o falló. Intentando _googleSignIn.signIn() (interactivo)...");
         try {
-            googleUser = await _googleSignIn.signIn();
+          googleUser = await _googleSignIn.signIn();
         } on PlatformException catch (e, s) {
-            //print("FRONTEND (AuthService): [PRINT ERROR PLATFORM] PlatformException en _googleSignIn.signIn(): ${e.code} - ${e.message}");
-            //print("FRONTEND (AuthService): [PRINT ERROR PLATFORM] Detalle: ${e.details}");
-            //print("FRONTEND (AuthService): [PRINT ERROR PLATFORM] Stacktrace: $s");
-            return null;
-        } catch (e,s) {
-            //print("FRONTEND (AuthService): [PRINT ERROR SIGNIN] ERROR en _googleSignIn.signIn(): $e");
-            if (e.toString().contains('popup_closed_by_user')) {
-              //print("FRONTEND (AuthService): [PRINT ERROR SIGNIN] Popup cerrado por el usuario.");
-            } else if (e.toString().contains('idpiframe_initialization_failed')) {
-              //print("FRONTEND (AuthService): [PRINT ERROR SIGNIN] Fallo en la inicialización del iframe de Google. Verifica Client ID en index.html y Orígenes de JS en Google Cloud Console.");
-            }
-            //print("FRONTEND (AuthService): [PRINT ERROR SIGNIN] Stacktrace: $s");
-            return null;
+          //print("FRONTEND (AuthService): [PRINT ERROR PLATFORM] PlatformException en _googleSignIn.signIn(): ${e.code} - ${e.message}");
+          //print("FRONTEND (AuthService): [PRINT ERROR PLATFORM] Detalle: ${e.details}");
+          //print("FRONTEND (AuthService): [PRINT ERROR PLATFORM] Stacktrace: $s");
+          return null;
+        } catch (e, s) {
+          //print("FRONTEND (AuthService): [PRINT ERROR SIGNIN] ERROR en _googleSignIn.signIn(): $e");
+          if (e.toString().contains('popup_closed_by_user')) {
+            //print("FRONTEND (AuthService): [PRINT ERROR SIGNIN] Popup cerrado por el usuario.");
+          } else if (e.toString().contains('idpiframe_initialization_failed')) {
+            //print("FRONTEND (AuthService): [PRINT ERROR SIGNIN] Fallo en la inicialización del iframe de Google. Verifica Client ID en index.html y Orígenes de JS en Google Cloud Console.");
+          }
+          //print("FRONTEND (AuthService): [PRINT ERROR SIGNIN] Stacktrace: $s");
+          return null;
         }
       } else {
         //print("FRONTEND (AuthService): [PRINT 1.1.2] signInSilently() exitoso.");
       }
-      
+
       //print("FRONTEND (AuthService): [PRINT 1.2] Después de intentos de signIn. googleUser es ${googleUser == null ? 'null' : 'obtenido'}");
 
       if (googleUser == null) {
@@ -112,21 +126,28 @@ class AuthService {
       }
       //print("FRONTEND (AuthService): [PRINT 3] GoogleSignInAccount obtenido: ${googleUser.email}, displayName: ${googleUser.displayName}");
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       //print("FRONTEND (AuthService): [PRINT AUTH_DETAILS] Inspeccionando GoogleSignInAuthentication...");
-      
+
       String? accessTokenPrint = googleAuth.accessToken;
       if (accessTokenPrint != null) {
-        accessTokenPrint = accessTokenPrint.substring(0, math.min(30, accessTokenPrint.length));
+        accessTokenPrint = accessTokenPrint.substring(
+          0,
+          math.min(30, accessTokenPrint.length),
+        );
       }
       //print("FRONTEND (AuthService): [PRINT AUTH_DETAILS] googleAuth.accessToken (primeros 30 chars): $accessTokenPrint");
 
       String? idTokenPrint = googleAuth.idToken;
       if (idTokenPrint != null) {
-        idTokenPrint = idTokenPrint.substring(0, math.min(30, idTokenPrint.length));
+        idTokenPrint = idTokenPrint.substring(
+          0,
+          math.min(30, idTokenPrint.length),
+        );
       }
       //print("FRONTEND (AuthService): [PRINT AUTH_DETAILS] googleAuth.idToken (primeros 30 chars): $idTokenPrint");
-      
+
       //print("FRONTEND (AuthService): [PRINT AUTH_DETAILS] googleAuth.serverAuthCode: ${googleAuth.serverAuthCode}");
 
       final String? idToken = googleAuth.idToken;
@@ -146,23 +167,27 @@ class AuthService {
       final response = await ApiService.dio.post(
         '/auth/google',
         data: {'idToken': idToken},
-        options: Options(
-          validateStatus: (status) => true,
-        ),
+        options: Options(validateStatus: (status) => true),
       );
-      
+
       //print('FRONTEND (AuthService): [PRINT 7] Respuesta del backend /auth/google: StatusCode: ${response.statusCode}, Data: ${response.data}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // AJUSTE POR SI LA RESPUESTA DE LOGIN CON GOOGLE VIENE ANIDADA BAJO 'data' (aunque tu backend no lo hace así)
         // Por consistencia con el ajuste en login normal, lo pongo, pero tu backend devuelve directamente access_token y user.
         final responseBody = response.data;
-        final actualData = responseBody is Map && responseBody.containsKey('data') && responseBody['data'] is Map 
-                           ? responseBody['data'] as Map<String, dynamic>
-                           : responseBody as Map<String, dynamic>;
+        final actualData =
+            responseBody is Map &&
+                    responseBody.containsKey('data') &&
+                    responseBody['data'] is Map
+                ? responseBody['data'] as Map<String, dynamic>
+                : responseBody as Map<String, dynamic>;
 
         String? token = actualData['access_token'];
-        Map<String, dynamic>? userData = actualData['user'] is Map ? actualData['user'] as Map<String, dynamic> : null;
+        Map<String, dynamic>? userData =
+            actualData['user'] is Map
+                ? actualData['user'] as Map<String, dynamic>
+                : null;
 
         if (token == null || userData == null) {
           //print('FRONTEND (AuthService): [PRINT ERROR BACKEND] Token o userData nulos desde el backend tras login con Google (después de posible desanidamiento).');
@@ -171,7 +196,10 @@ class AuthService {
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
-        await prefs.setString('nombreCompleto', userData['nombreCompleto'] ?? '');
+        await prefs.setString(
+          'nombreCompleto',
+          userData['nombreCompleto'] ?? '',
+        );
         await prefs.setString('userEmail', userData['email'] ?? '');
         await prefs.setString('userId', userData['_id'] ?? '');
 
@@ -195,9 +223,9 @@ class AuthService {
   static Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('userId');
-    
   }
-  static Future <String?> getUserName()async{
+
+  static Future<String?> getUserName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('nombreCompleto');
   }
