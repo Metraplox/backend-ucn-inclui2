@@ -27,13 +27,13 @@ export class AdjustmentCrudService {
    * Crear un nuevo ajuste razonable
    */
   async create(createAdjustmentDto: CreateAdjustmentDto): Promise<Adjustment> {
-    if (!createAdjustmentDto.createdAt) {
-      createAdjustmentDto.createdAt = new Date().toISOString();
-    }
+    //if (!createAdjustmentDto.createdAt) {
+      //createAdjustmentDto.createdAt = new Date().toISOString();
+    //}
 
-    if (!createAdjustmentDto.updatedAt) {
-      createAdjustmentDto.updatedAt = new Date().toISOString();
-    }
+    //if (!createAdjustmentDto.updatedAt) {
+      //createAdjustmentDto.updatedAt = new Date().toISOString();
+   // }
 
     const createdAdjustment = new this.adjustmentModel(createAdjustmentDto);
     return createdAdjustment.save();

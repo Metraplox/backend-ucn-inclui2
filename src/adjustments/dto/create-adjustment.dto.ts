@@ -93,19 +93,19 @@ export class CreateAdjustmentDto {
   @Type(() => CurrentAdjustmentDto)
   currentAdjustments: CurrentAdjustmentDto[];
 
-  @ApiProperty({
-    description: 'Timestamp de creación',
-    example: '2025-05-28T00:00:00Z',
-    required: false,
-  })
-  @IsDateString()
-  createdAt?: string;
+  //@ApiProperty({
+   // description: 'Timestamp de creación',
+    //example: '2025-05-28T00:00:00Z',
+    //required: false,
+  //})
+  //@IsDateString()
+  //createdAt?: string;
 
-  @ApiProperty({
-    description: 'Timestamp de última actualización',
-    example: '2025-05-28T00:00:00Z',
-    required: false,
-  })
-  @IsDateString()
-  updatedAt?: string;
+  //@ApiProperty({
+    //description: 'Timestamp de última actualización',
+    //example: '2025-05-28T00:00:00Z',
+    //required: false,
+  //})
+  //@IsDateString()
+  //updatedAt?: string;
 }

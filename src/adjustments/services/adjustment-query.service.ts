@@ -43,14 +43,14 @@ export class AdjustmentQueryService {
   /**
    * Buscar ajustes por ID de curso
    */
-  async findByCourseId(courseId: string): Promise<Adjustment[]> {
-    if (!Types.ObjectId.isValid(courseId)) {
-      throw new BadRequestException('ID de curso inválido');
-    }
+  async findByCourseId(courseNrc: string): Promise<Adjustment[]> {
+  if (!courseNrc || typeof courseNrc !== 'string') {
+    throw new BadRequestException('NRC de curso inválido');
+  }
 
     return this.adjustmentModel
       .find({
-        'currentAdjustments.courseId': new Types.ObjectId(courseId),
+        'currentAdjustments.courseNrc':courseNrc,
       })
       .exec();
   }
