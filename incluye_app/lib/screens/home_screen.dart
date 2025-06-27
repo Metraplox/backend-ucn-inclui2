@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/courseWithAdjustment_model.dart';
 import 'package:incluye_app/screens/courses/courses_list_screen.dart';
+import 'package:incluye_app/screens/students/student_career_screen.dart';
+import 'package:incluye_app/screens/teachers/teachers_by_career.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/student_service.dart';
@@ -31,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isHead = false;
   String? _currentUserId; // Este será el ID del User logueado
   // String? _currentStudentDocId; // Podrías necesitar el ID del documento Student si eres estudiante
-
+  String? _headCareerId;
   bool _isLoading = true;
   int _pendingAdjustmentsCount = 0;
 
@@ -58,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     await _checkRoleAndId(); // Obtiene roles y _currentUserId
+    await _getHeadCareerId();
 
     if (_isStudent && _currentUserId != null) {
       // Para un estudiante, _currentUserId es el ID de su documento User.
@@ -86,7 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAdminRole = await StudentService.isAdmin();
     final isTeacherRole = await StudentService.isTeacher();
     final isHeadRole = await StudentService.isHead();
-
     User? userInfo =
         await StudentService.getCurrentUserInfo(); // Esto devuelve User?
 
@@ -96,10 +98,18 @@ class _HomeScreenState extends State<HomeScreen> {
         _isAdmin = isAdminRole;
         _isTeacher = isTeacherRole;
         _isHead = isHeadRole;
+
         _currentUserId = userInfo?.id; // Obtiene el ID del objeto User
       });
       //print("HomeScreen: Roles - Estudiante: $_isStudent, Admin: $_isAdmin, Profesor: $_isTeacher. UserID: $_currentUserId");
     }
+  }
+
+  Future<void> _getHeadCareerId() async {
+    final careerId = await StudentService.getHeadCareerId();
+    setState(() {
+      _headCareerId = careerId;
+    });
   }
 
   Future<void> _loadCoordinadoraData() async {
@@ -240,10 +250,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ? 'Panel de Coordinadora'
               : _isTeacher
               ? 'Panel Profesor'
+              : _isHead
+              ? 'Panel Jefe Carrera'
               : 'Inicio',
       isStudent: _isStudent,
       isAdmin: _isAdmin,
       isTeacher: _isTeacher,
+      isHead: _isHead,
       floatingActionButton:
           _isStudent // Solo mostrar FAB si es estudiante
               ? FloatingActionButton(
@@ -409,69 +422,21 @@ class _HomeScreenState extends State<HomeScreen> {
             Icons.person_add,
             Colors.orange,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const StudentListScreen(),
-                ),
-              );
+              if (_headCareerId != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            StudentCareerListScreen(careerId: _headCareerId!),
+                  ),
+                );
+              } else {
+                // Mostrar algún mensaje o manejar el caso de que no hay careerId aún
+              }
             },
           ),
-          _buildAlertCard(
-            'Actualización de Ajustes',
-            '${(_students.length * 0.1).round()} solicitudes de actualización',
-            Icons.update,
-            Colors.blue,
-            onTap: () {
-              showDialog(
-                context: context,
-                builder:
-                    (context) => AlertDialog(
-                      title: const Text('Solicitudes de Actualización'),
-                      content: SizedBox(
-                        width: double.maxFinite,
-                        child:
-                            _students.isEmpty
-                                ? const Text("No hay estudiantes para mostrar.")
-                                : ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: (_students.length * 0.1)
-                                      .round()
-                                      .clamp(
-                                        0,
-                                        _students.length,
-                                      ), // Asegurar que no exceda
-                                  itemBuilder: (context, index) {
-                                    if (_students.isEmpty)
-                                      return const SizedBox.shrink(); // No debería llegar aquí si se maneja arriba
-                                    final student =
-                                        _students[index %
-                                            _students
-                                                .length]; // Para evitar errores si la lista es pequeña
-                                    return ListTile(
-                                      title: Text(
-                                        student.nombreCompleto,
-                                      ), // CORREGIDO
-                                      subtitle: Text(
-                                        '${student.carreraNombre ?? 'Sin carrera'} - ${student.rut}',
-                                      ), // CORREGIDO
-                                      leading: const CircleAvatar(
-                                        child: Icon(Icons.person),
-                                      ),
-                                    );
-                                  },
-                                ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cerrar'),
-                        ),
-                      ],
-                    ),
-              );
-            },
-          ),
+
           // ... (Otras _buildAlertCard y _buildFeatureCard usando los datos de _students donde sea apropiado)
           // ... Asegúrate de usar student.nombreCompleto y student.carreraNombre
           const SizedBox(height: 24),
@@ -486,12 +451,42 @@ class _HomeScreenState extends State<HomeScreen> {
             Icons.list_alt,
             Colors.indigo,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const StudentListScreen(),
-                ),
-              );
+              if (_headCareerId != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            StudentCareerListScreen(careerId: _headCareerId!),
+                  ),
+                );
+              } else {
+                // Mostrar algún mensaje o manejar el caso de que no hay careerId aún
+              }
+            },
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Gestión de Profesores',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          _buildFeatureCard(
+            'Listado de Profesores',
+            'Ver todos los Profesores',
+            Icons.list_alt,
+            Colors.indigo,
+            onTap: () {
+              if (_headCareerId != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TeachersbyCareerScreen(),
+                  ),
+                );
+              } else {
+                // Mostrar algún mensaje o manejar el caso de que no hay careerId aún
+              }
             },
           ),
           // ... más _buildFeatureCard

@@ -61,6 +61,33 @@ class StudentService {
     return [];
   }
 
+  ///GET CAREERID DEL JEFE DE CARRERA////////////
+  static Future<String> getHeadCareerId() async {
+    final token = await ApiService.getToken();
+    if (token != null) {
+      try {
+        final response = await ApiService.dio.get(
+          '/career-heads/my-career',
+          options: Options(
+            headers: {'Authorization': 'Bearer $token'},
+            validateStatus: (status) => true,
+          ),
+        );
+        final data = response.data;
+        final careerId = data?['data']?['data']?['careers']?[0]?['_id'];
+        if (careerId != null) {
+          return careerId;
+        } else {
+          return '';
+        }
+      } catch (e) {
+        return '';
+      }
+    } else {
+      return '';
+    }
+  }
+
   static Future<bool> isStudent() async {
     final roles = await getUserRoles();
     // Usar el método hasRole del UserModel si estuviera disponible globalmente
@@ -73,7 +100,8 @@ class StudentService {
   static Future<bool> isAdmin() async {
     final roles = await getUserRoles();
     return roles.any(
-      (r) => r.toLowerCase() == 'administrador' || r.toLowerCase() == 'admin',
+      (r) =>
+          r.toLowerCase() == 'COORDINADOR' || r.toLowerCase() == 'coordinador',
     );
   }
 
@@ -86,7 +114,11 @@ class StudentService {
 
   static Future<bool> isHead() async {
     final roles = await getUserRoles();
-    return roles.any((r) => r.toLowerCase() == 'JEFE_CARRERA');
+    return roles.any(
+      (r) =>
+          r.toLowerCase() == 'JEFE_CARRERA' ||
+          r.toLowerCase() == 'jefe_carrera',
+    );
   }
 
   // getCurrentUserInfo:
@@ -179,10 +211,8 @@ class StudentService {
       if (response.statusCode == 200) {
         final responseBody = response.data;
         List<dynamic> studentList;
-        if (responseBody is Map &&
-            responseBody.containsKey('data') &&
-            responseBody['data'] is List) {
-          studentList = responseBody['data'] as List<dynamic>;
+        if (responseBody is Map && responseBody.containsKey('data')) {
+          studentList = responseBody['data']['data'] as List<dynamic>;
         } else if (responseBody is List) {
           studentList = responseBody;
         } else {
@@ -266,6 +296,32 @@ class StudentService {
     } catch (e) {
       ApiService.handleApiError('createStudent', e);
       return false;
+    }
+  }
+
+  static Future<List<Student>> getStudentByCareer(String idCareer) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/careers/${idCareer}/students',
+      );
+      if (response.statusCode == 200) {
+        final responseBody = response.data;
+        List<dynamic> studentList;
+        if (responseBody is Map && responseBody.containsKey('data')) {
+          studentList = responseBody['data']['data'] as List<dynamic>;
+        } else if (responseBody is List) {
+          studentList = responseBody;
+        } else {
+          return [];
+        }
+        return studentList
+            .map((item) => Student.fromJson(item as Map<String, dynamic>))
+            .toList();
+      } else {
+        return [];
+      }
+    } catch (e) {
+      return [];
     }
   }
 }

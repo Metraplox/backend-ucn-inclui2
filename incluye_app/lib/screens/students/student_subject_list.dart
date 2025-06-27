@@ -169,64 +169,113 @@ class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
                   ),
                   // Lista de estudiantes
                   Expanded(
-                    child: ListView.separated(
-                      itemCount: _filteredStudents.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final student = _filteredStudents[index];
-                        return ListTile(
-                          // Título con nombre y apellido del estudiante
-                          title: Text(
-                            '${student.nombreCompleto} ',
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          // Subtítulo con el email del estudiante
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                student.email,
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w400,
+                    child:
+                        _filteredStudents.isEmpty && !_isLoading
+                            ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  _searchController.text.isEmpty
+                                      ? 'No hay estudiantes registrados.'
+                                      : 'No se encontraron estudiantes con los criterios de búsqueda.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[700],
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
-                            ],
-                          ),
-                          trailing: TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) =>
-                                          StudentAdjustmentSubjectScreen(
-                                            studentId: student.id,
-                                            courseNrc: widget.courseNrc,
-                                            courseId: widget.courseId,
-                                          ),
-                                ),
-                              );
-                            },
+                            )
+                            : ListView.separated(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              itemCount: _filteredStudents.length,
+                              separatorBuilder:
+                                  (_, __) => const Divider(
+                                    height: 1,
+                                    indent: 16,
+                                    endIndent: 16,
+                                  ),
+                              itemBuilder: (context, index) {
+                                final student = _filteredStudents[index];
 
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.black,
+                                return Card(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 12.0,
+                                    vertical: 6.0,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 2,
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.all(12.0),
+                                    leading: CircleAvatar(
+                                      backgroundColor:
+                                          Theme.of(context).primaryColorLight,
+                                      child: Text(
+                                        student.nombres.isNotEmpty
+                                            ? student.nombres[0].toUpperCase()
+                                            : '?',
+                                        style: TextStyle(
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).primaryColorDark,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      student.nombreCompleto,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(student.email),
+                                        Text('RUT: ${student.rut}'),
+                                      ],
+                                    ),
+                                    isThreeLine: true,
+                                    trailing: TextButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) =>
+                                                    StudentAdjustmentSubjectScreen(
+                                                      studentId: student.id,
+                                                      courseNrc:
+                                                          widget.courseNrc,
+                                                      courseId: widget.courseId,
+                                                    ),
+                                          ),
+                                        );
+                                      },
+                                      style: TextButton.styleFrom(
+                                        backgroundColor: Colors.black,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12.0,
+                                          vertical: 6.0,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Ver Ajustes',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            child: Text(
-                              'Ver Ajustes',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),

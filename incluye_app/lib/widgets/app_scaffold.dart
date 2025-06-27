@@ -17,8 +17,9 @@ class AppScaffold extends StatelessWidget {
   final bool isStudent;
   // Indicador si el usuario es administrador
   final bool isAdmin;
-    // Indicador si el usuario es administrador
+  // Indicador si el usuario es administrador
   final bool isTeacher;
+  final bool isHead;
   // Indicador de tipo de vista horizontal
   final bool isHorizontalView;
   // Callback para cambiar entre tipos de vista
@@ -33,7 +34,8 @@ class AppScaffold extends StatelessWidget {
     required this.body,
     required this.isStudent,
     this.isAdmin = false,
-    this.isTeacher=false,
+    this.isTeacher = false,
+    this.isHead = false,
     this.isHorizontalView = false,
     this.onToggleView,
     this.floatingActionButton, // Agregado soporte para botón flotante
@@ -41,9 +43,9 @@ class AppScaffold extends StatelessWidget {
 
   void _logout(BuildContext context) async {
     await AuthService.logout();
-    
+
     if (!context.mounted) return;
-    
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -58,10 +60,11 @@ class AppScaffold extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         leading: Builder(
-          builder: (ctx) => IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(ctx).openDrawer(),
-          ),
+          builder:
+              (ctx) => IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(ctx).openDrawer(),
+              ),
         ),
         actions: [
           IconButton(
@@ -76,7 +79,9 @@ class AppScaffold extends StatelessWidget {
           ),
           if (onToggleView != null)
             IconButton(
-              icon: Icon(isHorizontalView ? Icons.view_agenda : Icons.view_week),
+              icon: Icon(
+                isHorizontalView ? Icons.view_agenda : Icons.view_week,
+              ),
               tooltip: 'Cambiar vista',
               onPressed: onToggleView,
             ),
@@ -93,7 +98,10 @@ class AppScaffold extends StatelessWidget {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(color: Colors.indigo),
-              child: Text('Menú', style: TextStyle(color: Colors.white, fontSize: 24)),
+              child: Text(
+                'Menú',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
             ),
             if (isStudent) ...[
               ListTile(
@@ -103,7 +111,7 @@ class AppScaffold extends StatelessWidget {
                   Navigator.pop(context);
                   final userInfo = await StudentService.getCurrentUserInfo();
                   if (!context.mounted) return;
-                  
+
                   if (userInfo != null && userInfo['id'] != null) {
                     Navigator.push(
                       context,
@@ -113,7 +121,9 @@ class AppScaffold extends StatelessWidget {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('No se pudo cargar tu perfil')),
+                      const SnackBar(
+                        content: Text('No se pudo cargar tu perfil'),
+                      ),
                     );
                   }
                 },
@@ -124,7 +134,7 @@ class AppScaffold extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
-                    context, 
+                    context,
                     MaterialPageRoute(
                       builder: (context) => const SettingsScreen(),
                     ),
@@ -137,7 +147,11 @@ class AppScaffold extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Solicitud de ajuste: Función en desarrollo')),
+                    const SnackBar(
+                      content: Text(
+                        'Solicitud de ajuste: Función en desarrollo',
+                      ),
+                    ),
                   );
                 },
               ),
@@ -146,11 +160,13 @@ class AppScaffold extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.group),
                 title: const Text('Ver Estudiantes'),
-                 onTap: () {
+                onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (context) => const StudentListScreen()),
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StudentListScreen(),
+                    ),
                   );
                 },
               ),
@@ -160,7 +176,7 @@ class AppScaffold extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
-                    context, 
+                    context,
                     MaterialPageRoute(
                       builder: (context) => const SettingsScreen(),
                     ),

@@ -48,7 +48,7 @@ class CourseService {
           throw Exception('La respuesta no contiene datos');
         }
         final List<dynamic> coursesJson = responseBody['data']['data'];
-
+    
         return coursesJson
             .map((json) => CourseAdjustment.fromJson(json))
             // Opcional: comentar mientras verificas que llega la lista

@@ -24,9 +24,8 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
   void _loadCourses() async {
     final name = await AuthService.getUserName();
     final courses = await CourseService.getTeacherCourses(name ?? '');
-    for (var course in courses) {
-      print('ID del curso: ${course.id}');
-      print('Nrc del curso ${course.nrc}');
+    for (var c in courses) {
+      print(c.students.length);
     }
 
     setState(() {
@@ -79,7 +78,7 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
                   final course = courses[index];
                   return _buildFeatureCard(
                     course.nombre,
-                    '${course.studentsWithNeeCount} estudiantes con ajustes razonables.',
+                    '${course.students.length} estudiantes con ajustes razonables.',
                     Icons.book_sharp,
                     const Color.fromARGB(255, 2, 72, 104),
                     onTap: () {

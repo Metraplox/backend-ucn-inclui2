@@ -39,6 +39,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   file_picker: ^6.1.1
   google_sign_in: ^6.1.6
+  percent_indicator: ^4.2.2
 
 dev_dependencies:
   flutter_test:
