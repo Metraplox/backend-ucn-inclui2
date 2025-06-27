@@ -32,10 +32,21 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   nombre?: string;
 
   @ApiProperty({
+    description: 'Departamento académico al que pertenece el curso (opcional)',
+    example: 'Departamento de Matemáticas',
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: 'El departamento debe ser texto' })
+  departamento?: string;
+  
+  
+  @ApiProperty({
     description: 'Nombre del profesor del curso (opcional)',
     example: 'Profesor Martínez',
     required: false,
   })
+  
   @IsOptional()
   @IsString({ message: 'El nombre del profesor debe ser texto' })
   profesor?: string;

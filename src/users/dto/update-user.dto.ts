@@ -9,6 +9,7 @@ import {
 } from 'class-validator';
 import { UserRole } from '../schemas/user.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { AdditionalResponsibilitiesDto } from './additional-responsibilities.dto';
 
 export class UpdateUserDto {
   @ApiProperty({
@@ -62,4 +63,12 @@ export class UpdateUserDto {
   @IsBoolean({ message: 'El estado activo debe ser un valor booleano.' })
   @IsOptional()
   isActive?: boolean;
+
+  @IsOptional()
+  @ApiProperty({
+  description: 'Responsabilidades adicionales del usuario.',
+  type: AdditionalResponsibilitiesDto,
+  required: false,
+})
+additionalResponsibilities?: AdditionalResponsibilitiesDto;
 }

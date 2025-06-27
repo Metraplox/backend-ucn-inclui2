@@ -22,17 +22,26 @@ export class HeadsGuard implements CanActivate {
     );
 
     const responsibilities = user.additionalResponsibilities || {};
+    console.log(user)
+
 
     // Si no se especifican tipos, cualquier jefatura es válida
     if (!requiredHeadTypes || requiredHeadTypes.length === 0) {
       return responsibilities.isDepartmentHead || responsibilities.isCareerHead;
+      
     }
 
     // Verificar tipos específicos
     for (const type of requiredHeadTypes) {
-      if (type === 'department' && responsibilities.isDepartmentHead)
+      if (type === 'department' && responsibilities.isDepartmentHead){
         return true;
-      if (type === 'career' && responsibilities.isCareerHead) return true;
+        
+}
+      if (type === 'career' && responsibilities.isCareerHead) {
+
+        return true;
+
+      }
     }
 
     return false;

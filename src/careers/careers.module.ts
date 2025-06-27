@@ -5,6 +5,7 @@ import { CareersServiceExtension } from './careers.service.extension';
 import { CareersController } from './controllers/careers.controller';
 import { CareerStudentsController } from './controllers/career-students.controller';
 import { Career, CareerSchema } from './schemas/career.schema';
+import { CareerHeadsController } from './controllers/career-heads.controller';
 
 
 
@@ -13,7 +14,7 @@ import { Career, CareerSchema } from './schemas/career.schema';
     MongooseModule.forFeature([{ name: Career.name, schema: CareerSchema }]),
   ],
   providers: [CareersService, CareersServiceExtension],
-  controllers: [CareersController, CareerStudentsController],
+  controllers: [CareersController, CareerStudentsController,CareerHeadsController],
   exports: [CareersService, CareersServiceExtension],
 })
 export class CareersModule {}

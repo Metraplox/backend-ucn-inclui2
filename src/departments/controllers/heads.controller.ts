@@ -165,12 +165,76 @@ export class HeadsController {
     @Request() req,
     @Query('semester') semester: string = '2025-1',
   ): Promise<any[]> {
-    const user = await this.usersService.findById(req.user.userId);
+    const user = await this.usersService.findById(req.user._id);
     const responsibilities = user.additionalResponsibilities || {};
 
     const teachers: any[] = [];
 
-    // Si es jefe de departamento
+    // Si es jefe de carrera
+    if (responsibilities.isCareerHead && responsibilities.departmentIds) {
+      for (const deptId of responsibilities.departmentIds) {
+        const deptTeachers =
+          await this.departmentsService.getTeachersByDepartment(
+            deptId.toString(),
+          );
+        for (const teacher of deptTeachers) {
+          // Obtener cursos del docente
+          const courses = await this.coursesService.findByTeacher(
+            teacher.id.toString(),
+            semester,
+          );
+
+          // Contar estudiantes con NEE en sus cursos
+          let studentsWithNEE = 0;
+          let totalAdjustments = 0;
+          let readAdjustments = 0;
+
+          for (const course of courses) {
+            const adjustments = await this.adjustmentsService.findByCourseNrc(
+              course.nrc,
+              semester,
+            );
+            studentsWithNEE += adjustments.length;
+
+            for (const adj of adjustments) {
+              for (const currAdj of adj.currentAdjustments) {
+                if (currAdj.courseNrc === course.nrc) {
+                  totalAdjustments++;
+                  if (
+                    currAdj.readBy &&
+                    currAdj.readBy.some(
+                      (r) => r.userId.toString() === teacher.id.toString(),
+                    )
+                  ) {
+                    readAdjustments++;
+                  }
+                }
+              }
+            }
+          }
+
+          const department = await this.departmentsService.findOne(
+            deptId.toString(),
+          );
+
+          teachers.push({
+            teacherId: teacher._id,
+            teacherName: teacher.nombreCompleto,
+            teacherEmail: teacher.email,
+            department: department.name,
+            coursesCount: courses.length,
+            studentsWithNEE,
+            totalAdjustments,
+            readAdjustments,
+            readPercentage:
+              totalAdjustments > 0
+                ? (readAdjustments / totalAdjustments) * 100
+                : 0,
+          });
+        }
+      }
+    }
+    //Si es Jefe del departamento
     if (responsibilities.isDepartmentHead && responsibilities.departmentIds) {
       for (const deptId of responsibilities.departmentIds) {
         const deptTeachers =
@@ -181,7 +245,7 @@ export class HeadsController {
         for (const teacher of deptTeachers) {
           // Obtener cursos del docente
           const courses = await this.coursesService.findByTeacher(
-            teacher._id.toString(),
+            teacher.id.toString(),
             semester,
           );
 

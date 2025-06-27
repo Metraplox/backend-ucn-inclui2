@@ -92,7 +92,6 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash, googleId, ...userSafeData } = userObject;
-
     const userIdAsString = userSafeData._id
       ? (typeof userSafeData._id === 'string' ? userSafeData._id : userSafeData._id.toString())
       : ''; 

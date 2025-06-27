@@ -178,7 +178,7 @@ export class CareersService {
     const totalStudents = students.length;
     
     // Obtener ajustes razonables de los estudiantes
-    const studentIds = students.map(student => new Types.ObjectId(student._id));
+    const studentIds = students.map(student => student._id.toString());
     const matchStage: Record<string, any> = { 
       studentId: { $in: studentIds },
       ...(semester && { semester }) 
@@ -260,7 +260,7 @@ export class CareersService {
       return [];
     }
     
-    const studentIds = students.map(student => student._id);
+    const studentIds = students.map(student => student._id.toString());
     
     // Construir la consulta
     const matchStage: any = { studentId: { $in: studentIds } };
@@ -279,9 +279,14 @@ export class CareersService {
       .aggregate([
         { $match: matchStage },
         {
+          $addFields:{
+            studentObjectId:{$toObjectId:'$studentId'}
+          }
+        },
+        {
           $lookup: {
             from: 'students',
-            localField: 'studentId',
+            localField: 'studentObjectId',
             foreignField: '_id',
             as: 'student'
           }
@@ -296,7 +301,7 @@ export class CareersService {
             createdAt: 1,
             updatedAt: 1,
             studentId: 1,
-            studentName: { $concat: ['$student.firstName', ' ', '$student.lastName'] },
+            studentName: { $concat: ['$student.nombres', ' ', '$student.apellidos'] },
             studentRut: '$student.rut',
             studentEmail: '$student.email',
             courseId: 1,

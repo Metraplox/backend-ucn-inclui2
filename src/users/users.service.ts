@@ -6,7 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Document } from 'mongoose';
+import { Model, Document, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserRole } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -43,7 +43,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserPublicData> {
-    const { email, password, nombreCompleto, roles, isActive } = createUserDto;
+    const { email, password, nombreCompleto, roles, isActive,additionalResponsibilities } = createUserDto;
 
     const existingUserByEmail = await this.userModel.findOne({ email }).exec();
     if (existingUserByEmail) {
@@ -58,6 +58,7 @@ export class UsersService {
       nombreCompleto,
       roles: roles || [UserRole.ESTUDIANTE],
       isActive: isActive === undefined ? true : isActive,
+      additionalResponsibilities,
     });
 
     try {
@@ -111,6 +112,12 @@ export class UsersService {
     if (!userFromDb) {
       throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
     }
+const additionalResponsibilities = {
+    ...userFromDb.additionalResponsibilities,
+    departmentIds: userFromDb.additionalResponsibilities?.departmentIds?.map((id: any) => id.toString()) || [],
+    careerIds: userFromDb.additionalResponsibilities?.careerIds?.map((id: any) => id.toString()) || [],
+  };
+
     // userFromDb ya es un objeto plano aquí debido a .lean() y no tiene password_hash.
     // _id es Types.ObjectId.
     return {
@@ -121,9 +128,11 @@ export class UsersService {
       isActive: userFromDb.isActive,
       createdAt: userFromDb.createdAt,
       updatedAt: userFromDb.updatedAt,
-      studentId: userFromDb.studentId?.toString(), // Incluir studentId si existe
+      studentId: userFromDb.studentId?.toString(),
+      additionalResponsibilities, // Incluir studentId si existe
     };
   }
+  
 
   async findByEmail(email: string): Promise<User | null> {
     // Este método sí debe devolver el password_hash (documento completo) para la validación en AuthService
@@ -191,7 +200,7 @@ export class UsersService {
     if (password) {
       existingUserDoc.password_hash = await bcrypt.hash(password, 10);
     }
-
+  
     try {
       const updatedUser = await existingUserDoc.save();
       return this.toPublicUserData(updatedUser);
