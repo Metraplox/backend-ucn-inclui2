@@ -5,6 +5,7 @@ import 'package:incluye_app/screens/courses/courses_list_screen.dart';
 import 'package:incluye_app/screens/students/student_career_screen.dart';
 import 'package:incluye_app/screens/teachers/teachers_by_career.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
+import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/app_scaffold.dart';
@@ -46,6 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Lista de cursos para profesores.
   List<CourseAdjustment> _courses = [];
 
+  //Lista de cursos Alumno
+  List<Course> _coursesStudent = [];
+  String? _idStudent;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await _getHeadCareerId();
 
     if (_isStudent && _currentUserId != null) {
+      await _loadStudentData();
       // Para un estudiante, _currentUserId es el ID de su documento User.
       // AdjustmentHistoryScreen y StudentOwnProfileScreen están diseñados para esto o para el ID de Student.
       // Si AdjustmentHistoryScreen necesita el ID del DOCUMENTO STUDENT, necesitaríamos obtenerlo.
@@ -71,8 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (_isAdmin) {
       await _loadCoordinadoraData();
     } else if (_isTeacher) {
-      await _loadCourses(); // Cargar cursos para el profesor
-      // await _checkForNotifications(); // Descomentar si los profesores también tienen notificaciones de ajustes
+      await _loadCourses();
     } else if (_isHead) {
       await _loadCoordinadoraData();
     }
@@ -89,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAdminRole = await StudentService.isAdmin();
     final isTeacherRole = await StudentService.isTeacher();
     final isHeadRole = await StudentService.isHead();
+    final idStudent = await StudentService.getStudentId();
     User? userInfo =
         await StudentService.getCurrentUserInfo(); // Esto devuelve User?
 
@@ -98,6 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isAdmin = isAdminRole;
         _isTeacher = isTeacherRole;
         _isHead = isHeadRole;
+        _idStudent = idStudent;
 
         _currentUserId = userInfo?.id; // Obtiene el ID del objeto User
       });
@@ -136,6 +143,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _loadStudentData() async {
+    if (_currentUserId != null) {
+      try {
+        final cursos = await CourseService.getStudentCourses(_idStudent!);
+        setState(() {
+          _coursesStudent = cursos;
+        });
+      } catch (e) {}
     }
   }
 
@@ -342,18 +360,20 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          // TODO: Cargar cursos reales del estudiante desde un servicio
-          CourseWidget(
-            courseName: 'Cálculo II',
-            professor: 'Jorge Díaz',
-            adjustments: ['Más tiempo', 'Letras grandes'],
-            onEdit: _onEditDemo,
-          ),
-          CourseWidget(
-            courseName: 'Álgebra II',
-            professor: 'Pablo Díaz',
-            adjustments: ['Tiempo extra'],
-            onEdit: _onEditDemo,
+          ListView.builder(
+            shrinkWrap:
+                true, // importante para que el ListView se ajuste a su contenido
+            physics:
+                const NeverScrollableScrollPhysics(), // para que no haga scroll dentro del scroll
+            itemCount: _coursesStudent.length,
+            itemBuilder: (context, index) {
+              final course = _coursesStudent[index];
+              return CourseWidget(
+                courseName: course.nombre,
+                professor: course.profesor!,
+                onEdit: _onEditDemo,
+              );
+            },
           ),
         ],
       ),

@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 class CourseWidget extends StatelessWidget {
   final String courseName;
   final String professor;
-  final List<String> adjustments;
   final VoidCallback onEdit;
 
   const CourseWidget({
     super.key,
     required this.courseName,
     required this.professor,
-    required this.adjustments,
     required this.onEdit,
   });
 
@@ -23,16 +21,14 @@ class CourseWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(courseName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              courseName,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
             Text('Profesor: $professor', style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 8),
-            ...adjustments.map((a) => Row(
-              children: [
-                const Text('• ', style: TextStyle(fontSize: 14)),
-                Expanded(child: Text(a, style: const TextStyle(fontSize: 14))),
-              ],
-            )),
+
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,

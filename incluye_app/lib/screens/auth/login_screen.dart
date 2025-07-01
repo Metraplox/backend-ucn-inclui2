@@ -5,6 +5,8 @@ import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/screens/home_screen.dart';
 import 'package:incluye_app/config/app_config.dart';
 import 'package:incluye_app/config/test_credentials.dart';
+import 'dart:html' as html;
+
 // import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,6 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String? errorMessage;
   bool _isLoading = false; // Para login normal
   bool _isGoogleLoading = false; // Para login con Google
+
+  String origin = '';
 
   Future<void> _handleLogin() async {
     // Prevenir múltiples envíos
@@ -135,6 +139,11 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   Widget _buildTestCredentialChip(String label, String email, String password) {

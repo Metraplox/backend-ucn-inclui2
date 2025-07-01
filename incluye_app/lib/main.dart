@@ -6,13 +6,11 @@ import 'package:incluye_app/services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await ApiService.configure(); // Configura el interceptor
-  
+
   runApp(const MyApp());
 }
-
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -25,8 +23,6 @@ class MyApp extends StatelessWidget {
       return const LoginScreen();
     }
   }
-
-  
 
   @override
   Widget build(BuildContext context) {

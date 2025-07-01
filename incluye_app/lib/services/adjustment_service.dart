@@ -3,6 +3,7 @@ import 'package:incluye_app/models/courseWithAdjustment_model.dart';
 import 'package:incluye_app/models/course_model.dart';
 import 'package:incluye_app/models/studentAdjustment.dart';
 import 'package:incluye_app/models/student_model.dart';
+import 'package:incluye_app/services/student_service.dart';
 import 'api_service.dart';
 import 'package:incluye_app/models/adjustment_model.dart'; // Ajusta según tu estructura
 import 'package:incluye_app/models/document_model.dart'; // Ajusta según tu estructura
@@ -230,6 +231,32 @@ class AdjustmentService {
       }
     } catch (e) {
       throw Exception('Error: $e');
+    }
+  }
+
+  static Future<List<StudentAdjustment>> getStudentAdjustments(
+    String idStudent,
+  ) async {
+    try {
+      final token = await ApiService.getToken();
+      if (token == null) {
+        throw Exception('Token nulo');
+      }
+      final response = await ApiService.dio.get(
+        '/adjustments/student/${idStudent}',
+      );
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        final List<dynamic> dataList = responseData['data']['data'];
+        return dataList
+            .map((json) => StudentAdjustment.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('Error al obtener los ajustes');
+      }
+    } catch (e) {
+      print('Error en getStudentAdjustment');
+      rethrow;
     }
   }
 }

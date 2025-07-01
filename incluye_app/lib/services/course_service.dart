@@ -9,12 +9,13 @@ class CourseService {
   static Future<List<Course>> getStudentCourses(String studentId) async {
     try {
       final token = await ApiService.getToken();
+      print(token);
       if (token == null) throw Exception('Token nulo');
 
       final response = await ApiService.dio.get('/courses/student/$studentId');
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
+        final List<dynamic> data = response.data['data']['data'];
         return data.map((json) => Course.fromJson(json)).toList();
       }
       return [];
@@ -48,7 +49,7 @@ class CourseService {
           throw Exception('La respuesta no contiene datos');
         }
         final List<dynamic> coursesJson = responseBody['data']['data'];
-    
+
         return coursesJson
             .map((json) => CourseAdjustment.fromJson(json))
             // Opcional: comentar mientras verificas que llega la lista

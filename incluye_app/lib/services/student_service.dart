@@ -19,7 +19,8 @@ class StudentService {
         if (responseBody is Map &&
             responseBody.containsKey('data') &&
             responseBody['data'] is Map) {
-          final studentData = responseBody['data'] as Map<String, dynamic>;
+          final studentData =
+              responseBody['data']['data'] as Map<String, dynamic>;
           //print("StudentService: Perfil de estudiante obtenido y desanidado exitosamente.");
           return Student.fromJson(studentData);
         } else {
@@ -323,5 +324,10 @@ class StudentService {
     } catch (e) {
       return [];
     }
+  }
+
+  static Future<String> getStudentId() async {
+    final studentProfileData = await getStudentProfile();
+    return studentProfileData!.id;
   }
 }

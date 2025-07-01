@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <base href="$FLUTTER_BASE_HREF">
   <meta charset="UTF-8">
@@ -13,7 +14,7 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>incluye_app</title>
   <link rel="manifest" href="manifest.json">
@@ -21,16 +22,52 @@
   <!-- SCRIPT DE GOOGLE IDENTITY SERVICES (GIS) -->
   <!-- Este es el único script de Google que necesitas para el plugin moderno -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    window.onGoogleLogin = function (response) {
+      console.log('[JS] onGoogleLogin ejecutado');
+      const event = new CustomEvent("google-login-success", {
+        detail: response.credential,
+      });
+      window.dispatchEvent(event);
+    };
+
+    function startGoogleLogin() {
+      console.log('[JS] startGoogleLogin ejecutado');
+      google.accounts.id.initialize({
+        client_id: "553729434325-17le89rd3a5aa56r53mpkhmet41n3srr.apps.googleusercontent.com",
+        callback: window.onGoogleLogin,
+        auto_select: false,
+      });
+
+      google.accounts.id.prompt((notification) => {
+        console.log('[JS] prompt status:', notification);
+        // Fuerza mostrar el prompt si no hay sesión
+        if (notification.isNotDisplayed()) {
+          console.warn("Prompt no mostrado, intentando con select_by=user...");
+          google.accounts.id.renderButton(
+            document.body, // o en un div
+            { theme: "outline", size: "large", width: 250 }
+          );
+          google.accounts.id.prompt({ select_by: "user" });
+        }
+      });
+    }
+  </script>
+
+
+
 
 </head>
+
 <body>
   <!-- El script de carga de Flutter (asegúrate que sea el correcto para tu versión de Flutter) -->
   <!-- Si tu proyecto usa flutter_bootstrap.js por defecto, mantenlo. -->
   <!-- Si usa el bloque de script con main.dart.js, usa ese. -->
-  <script src="flutter_bootstrap.js" async></script> 
-  
+  <script src="flutter_bootstrap.js" async></script>
+
   <!-- NO necesitas la función handleGoogleSignIn ni window.onGoogleSignInSuccess aquí
        si usas el método .signIn() del plugin google_sign_in de Dart.
        El plugin se encarga de los callbacks internos. -->
 </body>
+
 </html>
