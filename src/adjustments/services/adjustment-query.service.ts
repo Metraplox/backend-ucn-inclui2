@@ -31,7 +31,7 @@ export class AdjustmentQueryService {
       throw new BadRequestException('ID de estudiante inválido');
     }
 
-    const query: any = { studentId: new Types.ObjectId(studentId) };
+    const query: any = { studentId };
 
     if (status) {
       query.status = status;

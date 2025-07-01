@@ -38,7 +38,8 @@ export class UsersService {
       isActive: userObject.isActive,
       createdAt: userObject.createdAt,
       updatedAt: userObject.updatedAt,
-      studentId: userObject.studentId?.toString(), // Incluir studentId si existe
+      studentId: userObject.studentId?.toString(),
+      googleId: userObject.googleId,// Incluir studentId si existe
     };
   }
 
@@ -129,7 +130,8 @@ const additionalResponsibilities = {
       createdAt: userFromDb.createdAt,
       updatedAt: userFromDb.updatedAt,
       studentId: userFromDb.studentId?.toString(),
-      additionalResponsibilities, // Incluir studentId si existe
+      additionalResponsibilities,
+      googleId: userFromDb.googleId // Incluir studentId si existe
     };
   }
   

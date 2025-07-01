@@ -10,5 +10,6 @@ export interface UserPublicData {
   updatedAt?: Date;
   studentId?: string; // ID del perfil de estudiante, si el usuario es un estudiante
   additionalResponsibilities?: AdditionalResponsibilitiesDto;
+  googleId?: string;
 
 }

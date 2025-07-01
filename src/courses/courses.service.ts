@@ -83,18 +83,20 @@ export class CoursesService {
   }
 
   async findByStudent(studentId: string, semester?: string): Promise<Course[]> {
-    const isValidId = Types.ObjectId.isValid(studentId);
-    if (!isValidId) {
-      throw new NotFoundException(`ID de estudiante inválido: ${studentId}`);
-    }
-
-    const query: any = { estudiantes: studentId };
-    if (semester) {
-      query.semestre = semester;
-    }
-
-    return this.courseModel.find(query).exec();
+  if (!Types.ObjectId.isValid(studentId)) {
+    throw new NotFoundException(`ID de estudiante inválido: ${studentId}`);
   }
+
+  const query: any = {
+    students: new Types.ObjectId(studentId), // <- Aquí, ObjectId en vez de string
+  };
+
+  if (semester) {
+    query.semestre = semester;
+  }
+
+  return this.courseModel.find(query).exec();
+}
 
   async findByTeacher(teacherId: string, semester: string): Promise<Course[]> {
     return this.courseModel

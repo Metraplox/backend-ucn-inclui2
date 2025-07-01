@@ -37,6 +37,8 @@ export class AuthService {
   }
 
   async validateGoogleUser(googleId: string, email: string, nombreCompleto: string): Promise<User | null> {
+     console.log('[validateGoogleUser] Iniciando validación de usuario con Google.');
+  console.log(`[validateGoogleUser] Datos recibidos -> googleId: ${googleId}, email: ${email}, nombreCompleto: ${nombreCompleto}`);
     // 1. Intentar encontrar al usuario por su Google ID.
     let user = await this.usersService.findByGoogleId(googleId);
     if (user) {
@@ -45,21 +47,29 @@ export class AuthService {
       if (nombreCompleto && user.nombreCompleto !== nombreCompleto) {
         // Podrías añadir lógica para no sobrescribir un nombre ya bien establecido.
         // Por ahora, actualizamos si es diferente.
+              console.log(`[validateGoogleUser] Actualizando nombre de "${user.nombreCompleto}" a "${nombreCompleto}"`);
+
         user.nombreCompleto = nombreCompleto; 
         await user.save();
       }
       return user;
     }
+    else{ console.log('[validateGoogleUser] No se encontró usuario por Google ID.');}
 
     // 2. Si no se encontró por Google ID, intentar encontrar por email para vincular.
     user = await this.usersService.findByEmail(email);
 
     if (user) {
+          console.log(`[validateGoogleUser] Usuario encontrado por email: ${email}`);
+
       // Usuario encontrado por email.
       if (!user.googleId) {
+              console.log('[validateGoogleUser] Usuario sin Google ID. Vinculando...');
+
         // El usuario existe pero no tiene un Google ID vinculado. Vincularlo.
         user.googleId = googleId;
         if (nombreCompleto && user.nombreCompleto !== nombreCompleto) {
+          
             // Actualizar nombre si es relevante (ej. si el actual es genérico o vacío)
             user.nombreCompleto = nombreCompleto;
         }

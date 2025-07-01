@@ -22,7 +22,7 @@ import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SystemRolesDto } from './dto/roles.dto';
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '90627838122-cv4i0d2124tgm1cbh06cbpotuu128b8v.apps.googleusercontent.com'; // REEMPLAZA ESTO SI ES NECESARIO
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '553729434325-17le89rd3a5aa56r53mpkhmet41n3srr.apps.googleusercontent.com'; // REEMPLAZA ESTO SI ES NECESARIO
 
 @ApiTags('auth')
 @Controller('auth')
@@ -159,58 +159,69 @@ export class AuthController {
     description: 'Solicitud incorrecta - idToken faltante.' 
   })
   async loginWithGoogle(@Body() body: GoogleLoginDto) {
-    if (!body || !body.idToken) {
-      console.error('BACKEND: Error - idToken no encontrado en el body.');
-      throw new BadRequestException('idToken es requerido.');
-    }
-
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
-    let payload: TokenPayload | undefined;
-
-    try {
-      const ticket = await client.verifyIdToken({
-        idToken: body.idToken,
-        audience: GOOGLE_CLIENT_ID,
-      });
-      payload = ticket.getPayload();
-    } catch (error) {
-      console.error('BACKEND: Error al verificar el idToken de Google:', error.message);
-      if (error.message && (error.message.includes('Invalid token signature') || error.message.includes('Token used too late') || error.message.includes('No pem found for envelope') || error.message.includes('The OAuth client was not found'))) {
-        throw new UnauthorizedException(`Token de Google inválido o configuración de cliente incorrecta: ${error.message}`);
-      }
-      throw new UnauthorizedException(`Fallo al verificar el token de Google: ${error.message}`);
-    }
-
-    if (!payload || !payload.email || !payload.sub) {
-      console.error('BACKEND: Error - Payload de Google inválido o incompleto.');
-      throw new UnauthorizedException('Token de Google verificado pero payload incompleto.');
-    }
-
-    const email = payload.email;
-    const googleId = payload.sub;
-    const nombreCompleto = payload.name || payload.given_name || '';
-
-    try {
-      const user = await this.authService.validateGoogleUser(googleId, email, nombreCompleto);
-      
-      if (!user) {
-        // Mensaje de error actualizado y más específico para el frontend
-        console.error('BACKEND (Controller): Usuario de Google no encontrado, no vinculado o en conflicto.');
-        throw new UnauthorizedException('Tu cuenta de Google no está registrada o no ha podido ser vinculada a una cuenta existente en el sistema. Por favor, contacta al administrador si crees que esto es un error.');
-      }
-      
-      return this.authService.login(user); 
-
-    } catch (error) {
-        console.error('BACKEND (Controller): Error durante validateGoogleUser o authService.login posterior:', error.message, error.stack);
-        if (error instanceof UnauthorizedException || error instanceof BadRequestException) {
-            throw error; // Re-lanzar excepciones HTTP conocidas
-        }
-        // Para otros errores inesperados
-        throw new InternalServerErrorException('Error interno del servidor al procesar el inicio de sesión con Google.');
-    }
+  if (!body || !body.idToken) {
+    console.error('BACKEND: Error - idToken no encontrado en el body.');
+    throw new BadRequestException('idToken es requerido.');
   }
 
+
+  const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+  let payload: TokenPayload | undefined;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: body.idToken,
+      audience: GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+    //console.log('BACKEND: Payload verificado:', payload);
+  } catch (error) {
+    //console.error('BACKEND: Error al verificar el idToken de Google:', error.message, error.stack);
+    if (
+      error.message &&
+      (error.message.includes('Invalid token signature') ||
+       error.message.includes('Token used too late') ||
+       error.message.includes('No pem found for envelope') ||
+       error.message.includes('The OAuth client was not found'))
+    ) {
+      throw new UnauthorizedException(`Token de Google inválido o configuración de cliente incorrecta: ${error.message}`);
+    }
+    throw new UnauthorizedException(`Fallo al verificar el token de Google: ${error.message}`);
+  }
+
+  if (!payload || !payload.email || !payload.sub) {
+    //console.error('BACKEND: Error - Payload de Google inválido o incompleto.');
+    throw new UnauthorizedException('Token de Google verificado pero payload incompleto.');
+  }
+
+  const email = payload.email;
+  const googleId = payload.sub;
+  const nombreCompleto = payload.name || payload.given_name || '';
+
+  //console.log('BACKEND: email extraído del payload:', email);
+  //console.log('BACKEND: googleId extraído del payload:', googleId);
+  //console.log('BACKEND: nombreCompleto extraído del payload:', nombreCompleto);
+
+  try {
+    const user = await this.authService.validateGoogleUser(googleId, email, nombreCompleto);
+    
+    if (!user) {
+      console.error('BACKEND (Controller): Usuario de Google no encontrado, no vinculado o en conflicto.');
+      throw new UnauthorizedException('Tu cuenta de Google no está registrada o no ha podido ser vinculada a una cuenta existente en el sistema. Por favor, contacta al administrador si crees que esto es un error.');
+    }
+    //console.log(await this.authService.login(user));
+    //console.log('BACKEND (Controller): Usuario validado correctamente, haciendo login...');
+    return await this.authService.login(user); 
+
+  } catch (error) {
+    console.error('BACKEND (Controller): Error durante validateGoogleUser o authService.login posterior:', error.message, error.stack);
+    if (error instanceof UnauthorizedException || error instanceof BadRequestException) {
+      throw error; // Re-lanzar excepciones HTTP conocidas
+    }
+    // Para otros errores inesperados
+    throw new InternalServerErrorException('Error interno del servidor al procesar el inicio de sesión con Google.');
+  }
+}
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ 

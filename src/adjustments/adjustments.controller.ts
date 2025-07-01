@@ -362,7 +362,6 @@ export class AdjustmentsController {
     ) {
       throw new NotFoundException('Ajustes no encontrados o no autorizados');
     }
-
     return this.adjustmentsService.findByStudentId(studentId, status);
   }
 

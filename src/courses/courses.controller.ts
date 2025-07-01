@@ -193,6 +193,7 @@ export class CoursesController {
     @Param('studentId') studentId: string,
     @Query('semester') semester?: string,
   ): Promise<Course[]> {
+    console.log(studentId)
     return this.coursesService.findByStudent(studentId, semester);
   }
 
