@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install docker-compose -y
+
+      - name: Start services (backend + MongoDB)
+        run: |
+          docker compose -f back/backend-ucn-inclui2/docker-compose.yml up -d
+          sleep 25 # espera a que Mongo y Nest arranquen
+
+      - name: Healthcheck API
+        run: |
+          curl --retry 6 --retry-connrefused http://localhost:3000/health | grep '"status":"ok"'
+
+      - name: Install backend dependencies
+        working-directory: back/backend-ucn-inclui2
+        run: npm ci --ignore-scripts --prefer-offline
+
+      - name: Run unit tests
+        working-directory: back/backend-ucn-inclui2
+        run: npm run test -- --runInBand
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f back/backend-ucn-inclui2/docker-compose.yml down -v 
