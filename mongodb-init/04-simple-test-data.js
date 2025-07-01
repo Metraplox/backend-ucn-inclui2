@@ -94,8 +94,9 @@ try {
   db.users.insertOne({
     _id: ObjectId('652000000000000000000001'),
     email: 'coordinadora@ucn.cl',
+    password_hash: '$2b$10$JlO830kFfP/PAcWiqr6keOq2kqABvroccwvLTdz4SWPec13NSS0ta',
     nombreCompleto: 'María González Coordinadora',
-    roles: ['coordinador'],
+    roles: ['COORDINADOR'],
     isActive: true,
     isProfileComplete: true,
     additionalResponsibilities: {
@@ -113,8 +114,9 @@ try {
   db.users.insertOne({
     _id: ObjectId('652000000000000000000002'),
     email: 'educadora@ucn.cl',
+    password_hash: '$2b$10$JlO830kFfP/PAcWiqr6keOq2kqABvroccwvLTdz4SWPec13NSS0ta',
     nombreCompleto: 'Ana Martínez Educadora',
-    roles: ['educadora_social'],
+    roles: ['EDUCADORA_SOCIAL'],
     isActive: true,
     isProfileComplete: true,
     additionalResponsibilities: {
@@ -132,8 +134,9 @@ try {
   db.users.insertOne({
     _id: ObjectId('652000000000000000000003'),
     email: 'diddec@ucn.cl',
+    password_hash: '$2b$10$JlO830kFfP/PAcWiqr6keOq2kqABvroccwvLTdz4SWPec13NSS0ta',
     nombreCompleto: 'Carlos López DIDDEC',
-    roles: ['diddec_staff'],
+    roles: ['DIDDEC_STAFF'],
     isActive: true,
     isProfileComplete: true,
     additionalResponsibilities: {
@@ -151,8 +154,9 @@ try {
   db.users.insertOne({
     _id: ObjectId('652000000000000000000004'),
     email: 'jefe.informatica@ucn.cl',
+    password_hash: '$2b$10$JlO830kFfP/PAcWiqr6keOq2kqABvroccwvLTdz4SWPec13NSS0ta',
     nombreCompleto: 'Roberto Silva Jefe Depto',
-    roles: ['jefe_departamento'],
+    roles: ['JEFE_DEPARTAMENTO'],
     isActive: true,
     isProfileComplete: true,
     additionalResponsibilities: {
@@ -170,8 +174,9 @@ try {
   db.users.insertOne({
     _id: ObjectId('652000000000000000000005'),
     email: 'jefe.carrera.ici@ucn.cl',
+    password_hash: '$2b$10$JlO830kFfP/PAcWiqr6keOq2kqABvroccwvLTdz4SWPec13NSS0ta',
     nombreCompleto: 'Patricia Morales Jefe Carrera',
-    roles: ['jefe_carrera'],
+    roles: ['JEFE_CARRERA'],
     isActive: true,
     isProfileComplete: true,
     additionalResponsibilities: {
@@ -189,8 +194,9 @@ try {
   db.users.insertOne({
     _id: ObjectId('652000000000000000000006'),
     email: 'docente1@ucn.cl',
+    password_hash: '$2b$10$JlO830kFfP/PAcWiqr6keOq2kqABvroccwvLTdz4SWPec13NSS0ta',
     nombreCompleto: 'Pedro Sánchez Docente',
-    roles: ['docente'],
+    roles: ['DOCENTE'],
     isActive: true,
     isProfileComplete: true,
     additionalResponsibilities: {
@@ -209,7 +215,7 @@ try {
     _id: ObjectId('652000000000000000000007'),
     email: 'estudiante1@ucn.cl',
     nombreCompleto: 'Juan Pérez Estudiante',
-    roles: ['estudiante'],
+    roles: ['ESTUDIANTE'],
     isActive: true,
     isProfileComplete: true,
     studentId: ObjectId('653000000000000000000001'),
@@ -229,7 +235,7 @@ try {
     _id: ObjectId('652000000000000000000008'),
     email: 'estudiante2@ucn.cl',
     nombreCompleto: 'María Rodríguez Estudiante',
-    roles: ['estudiante'],
+    roles: ['ESTUDIANTE'],
     isActive: true,
     isProfileComplete: true,
     studentId: ObjectId('653000000000000000000002'),

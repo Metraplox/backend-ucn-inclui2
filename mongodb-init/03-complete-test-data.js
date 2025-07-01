@@ -5,7 +5,25 @@ print('🚀 Iniciando inserción completa de datos de prueba...');
 
 db = db.getSiblingDB('ucn_inclui2_prod');
 
-// Limpiar datos existentes (excepto configuración del sistema)
+// Deshabilitar validaciones de esquema temporalmente para el seed masivo
+print('🔧 Deshabilitando validaciones...');
+try {
+  db.runCommand({collMod: 'users', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'students', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'departments', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'careers', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'courses', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'adjustments', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'documents', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'consents', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'notifications', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'resources', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'academichistories', validator: {}, validationLevel: 'off'});
+  db.runCommand({collMod: 'enrollments', validator: {}, validationLevel: 'off'});
+} catch (e) {
+  print('Validaciones ya deshabilitadas o colecciones no existen');
+}
+
 print('🧹 Limpiando datos existentes...');
 db.users.deleteMany({});
 db.students.deleteMany({});
@@ -275,6 +293,11 @@ const users = [
 ];
 db.users.insertMany(users);
 print('✅ 10 usuarios creados');
+
+// Añadir hash de contraseña común para todos los usuarios
+const commonHash = '$2b$10$JlO830kFfP/PAcWiqr6keOq2kqABvroccwvLTdz4SWPec13NSS0ta';
+db.users.updateMany({}, { $set: { password_hash: commonHash } });
+print('🔑 password_hash añadido a todos los usuarios');
 
 // 4. ESTUDIANTES (usando campos correctos del esquema)
 print('🎓 Creando estudiantes...');

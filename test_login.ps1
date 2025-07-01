@@ -1,0 +1,12 @@
+[
+  "Invoke-RestMethod",
+  "-Uri",
+  "http://localhost:3000/auth/login",
+  "-Method",
+  "Post",
+  "-Body",
+  "{\"email\":\"coordinadora@ucn.cl\",\"password\":\"Test123!\"}",
+  "-ContentType",
+  "application/json",
+  "^"
+]

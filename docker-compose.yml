@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   app:
     build:
@@ -11,8 +12,8 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=mongodb://mongodb_prod:27017/ucn_inclui2_test
-      - MONGODB_URI=mongodb://mongodb_prod:27017/ucn_inclui2_test
+      - DATABASE_URL=mongodb://mongodb_prod:27017/ucn_inclui2_prod
+      - MONGODB_URI=mongodb://mongodb_prod:27017/ucn_inclui2_prod
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules # Evita que node_modules local sobreescriba el del contenedor
@@ -30,11 +31,12 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+      - ./mongodb-init:/docker-entrypoint-initdb.d
     command: mongod --noauth
 
 networks:
   ucn_network:
-    external: true
+    driver: bridge
 
 volumes:
   mongo_data:
