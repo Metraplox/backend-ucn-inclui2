@@ -8,6 +8,8 @@ import {
   Query,
   UseGuards,
   Request,
+  Sse,
+  MessageEvent,
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import {
@@ -23,6 +25,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Notification, NotificationType } from './schemas/notification.schema';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Types } from 'mongoose';
+import { interval, from, Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 @ApiTags('notifications')
 @ApiBearerAuth('JWT-auth')
@@ -146,6 +150,18 @@ export class NotificationsController {
   ): Promise<{ count: number }> {
     const count = await this.notificationsService.getUnreadCount(userId);
     return { count };
+  }
+
+  @Sse('stream')
+  @UseGuards(JwtAuthGuard)
+  streamNotifications(
+    @Request() req: Request & { user: any },
+  ): Observable<MessageEvent> {
+    const userId = req.user._id;
+    return interval(5000).pipe(
+      switchMap(() => from(this.notificationsService.getUnreadCount(userId))),
+      map(count => ({ data: { count } })),
+    );
   }
 
   @Get('by-type/:type')
