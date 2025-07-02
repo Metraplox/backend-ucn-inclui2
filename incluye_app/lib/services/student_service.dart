@@ -109,7 +109,7 @@ class StudentService {
   static Future<bool> isTeacher() async {
     final roles = await getUserRoles();
     return roles.any(
-      (r) => r.toLowerCase() == 'docente' || r.toLowerCase() == 'profesor',
+      (r) => r.toLowerCase() == 'docente' || r.toLowerCase() == 'DOCENTE',
     );
   }
 

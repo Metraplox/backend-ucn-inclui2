@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/models/notification_model.dart';
+import 'package:incluye_app/services/notification_service.dart';
 import 'package:incluye_app/utils/responsive_utils.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -8,16 +10,17 @@ class NotificationsScreen extends StatefulWidget {
   NotificationsScreenState createState() => NotificationsScreenState();
 }
 
-class NotificationsScreenState extends State<NotificationsScreen> with SingleTickerProviderStateMixin {
+class NotificationsScreenState extends State<NotificationsScreen>
+    with SingleTickerProviderStateMixin {
   bool isLoading = true;
   late TabController _tabController;
-  List<Map<String, dynamic>> notifications = [];
-  List<Map<String, dynamic>> filteredNotifications = [];
-  
+  List<Notifications> _notifications = [];
+  List<Notifications> _filteredNotifications = [];
+
   // Filtros
   String? selectedType;
   bool? isRead;
-  
+
   List<String> notificationTypes = [
     'Ajustes',
     'Documentos',
@@ -39,96 +42,42 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
   }
 
   Future<void> _loadNotifications() async {
-    // Simulación de carga de datos
-    await Future.delayed(const Duration(milliseconds: 800));
-    
+    final notificacions = await NotificationService.getAllNotifications();
+
     setState(() {
-      notifications = [
-        {
-          "id": "1",
-          "title": "Nuevo estudiante registrado",
-          "message": "Se ha registrado un nuevo estudiante: María José Rodríguez Silva",
-          "type": "Estudiantes",
-          "date": "2025-05-15T10:30:00",
-          "isRead": false,
-          "priority": "high",
-          "actionType": "view_student",
-          "actionData": {"studentId": "2"},
-        },
-        {
-          "id": "2",
-          "title": "Documento de consentimiento pendiente",
-          "message": "Pedro Pablo González Muñoz aún no ha subido su documento de consentimiento",
-          "type": "Documentos",
-          "date": "2025-05-14T15:45:00",
-          "isRead": false,
-          "priority": "medium",
-          "actionType": "view_documents",
-          "actionData": {"studentId": "3"},
-        },
-        {
-          "id": "3",
-          "title": "Ajuste razonable aprobado",
-          "message": "Se ha aprobado un nuevo ajuste razonable para Juan Carlos Pérez González",
-          "type": "Ajustes",
-          "date": "2025-05-13T09:15:00",
-          "isRead": true,
-          "priority": "medium",
-          "actionType": "view_adjustments",
-          "actionData": {"studentId": "1"},
-        },
-        {
-          "id": "4",
-          "title": "Recordatorio: Verificación de ajustes",
-          "message": "Hay 3 docentes que aún no han verificado los ajustes asignados",
-          "type": "Ajustes",
-          "date": "2025-05-12T11:20:00",
-          "isRead": true,
-          "priority": "low",
-          "actionType": "view_report",
-          "actionData": {"reportId": "adj_verification_2025_1"},
-        },
-        {
-          "id": "5",
-          "title": "Actualización del sistema",
-          "message": "El sistema se actualizará el día 20 de mayo a las 22:00 hrs",
-          "type": "Sistema",
-          "date": "2025-05-10T16:00:00",
-          "isRead": true,
-          "priority": "info",
-          "actionType": "none",
-          "actionData": {},
-        },
-      ];
-      filteredNotifications = notifications;
+      _notifications = notificacions;
+      _filteredNotifications = _notifications;
       isLoading = false;
     });
   }
 
   void _filterNotifications() {
     setState(() {
-      filteredNotifications = notifications.where((notification) {
-        // Filtro por tipo
-        final matchesType = selectedType == null || notification['type'] == selectedType;
-        
-        // Filtro por estado de lectura
-        final matchesReadStatus = isRead == null || notification['isRead'] == isRead;
-        
-        // Filtro por pestaña actual
-        bool matchesTab = true;
-        if (_tabController.index == 0) {
-          // Todas
-          matchesTab = true;
-        } else if (_tabController.index == 1) {
-          // No leídas
-          matchesTab = !notification['isRead'];
-        } else if (_tabController.index == 2) {
-          // Importantes
-          matchesTab = notification['priority'] == 'high';
-        }
-        
-        return matchesType && matchesReadStatus && matchesTab;
-      }).toList();
+      _filteredNotifications =
+          _notifications.where((notification) {
+            // Filtro por tipo
+            final matchesType =
+                selectedType == null || notification.type == selectedType;
+
+            // Filtro por estado de lectura
+            final matchesReadStatus =
+                isRead == null || notification.isRead == isRead;
+
+            // Filtro por pestaña actual
+            bool matchesTab = true;
+            if (_tabController.index == 0) {
+              // Todas
+              matchesTab = true;
+            } else if (_tabController.index == 1) {
+              // No leídas
+              matchesTab = !notification.isRead;
+            } else if (_tabController.index == 2) {
+              // Importantes
+              matchesTab = notification.priority == 'HIGH';
+            }
+
+            return matchesType && matchesReadStatus && matchesTab;
+          }).toList();
     });
   }
 
@@ -168,9 +117,9 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
                       });
                     },
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Filtro por estado de lectura
                   FormField<bool?>(
                     initialValue: isRead,
@@ -245,12 +194,12 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
 
   void _markAllAsRead() {
     setState(() {
-      for (var notification in notifications) {
-        notification['isRead'] = true;
+      for (var notification in _notifications) {
+        notification.isRead = true;
       }
     });
     _filterNotifications();
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Todas las notificaciones han sido marcadas como leídas'),
@@ -258,20 +207,23 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
     );
   }
 
-  void _markAsRead(String notificationId) {
+  void _markAsRead(String notificationId) async {
     setState(() {
-      final notification = notifications.firstWhere((n) => n['id'] == notificationId);
-      notification['isRead'] = true;
+      final notification = _notifications.firstWhere(
+        (n) => n.id == notificationId,
+      );
+      notification.isRead = true;
     });
+    await NotificationService.setNotificationRead(notificationId, context);
     _filterNotifications();
   }
 
   void _deleteNotification(String notificationId) {
     setState(() {
-      notifications.removeWhere((n) => n['id'] == notificationId);
+      _notifications.removeWhere((n) => n.id == notificationId);
     });
     _filterNotifications();
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Notificación eliminada'),
@@ -287,11 +239,11 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
 
   Color _getPriorityColor(String priority) {
     switch (priority) {
-      case 'high':
+      case 'NotificationPriority.HIGH':
         return Colors.red;
-      case 'medium':
+      case 'NotificationPriority.MEDIUM':
         return Colors.orange;
-      case 'low':
+      case 'NotificationPriority.LOW':
         return Colors.blue;
       default:
         return Colors.grey;
@@ -316,16 +268,20 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
   @override
   Widget build(BuildContext context) {
     final padding = ResponsiveUtils.getPadding(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notificaciones'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Todas'),
-            Tab(text: 'No leídas'),
-            Tab(text: 'Importantes'),
+            Tab(child: Text('Leidas', style: TextStyle(color: Colors.white))),
+            Tab(
+              child: Text('No Leídas', style: TextStyle(color: Colors.white)),
+            ),
+            Tab(
+              child: Text('Importantes', style: TextStyle(color: Colors.white)),
+            ),
           ],
           onTap: (index) {
             _filterNotifications();
@@ -344,162 +300,236 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: EdgeInsets.all(padding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Chips de filtros activos
-                  if (selectedType != null || isRead != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        children: [
-                          if (selectedType != null)
-                            Chip(
-                              label: Text('Tipo: $selectedType'),
-                              onDeleted: () {
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: EdgeInsets.all(padding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Chips de filtros activos
+                    if (selectedType != null || isRead != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            if (selectedType != null)
+                              Chip(
+                                label: Text('Tipo: $selectedType'),
+                                onDeleted: () {
+                                  setState(() {
+                                    selectedType = null;
+                                  });
+                                  _filterNotifications();
+                                },
+                              ),
+                            if (isRead != null)
+                              Chip(
+                                label: Text(isRead! ? 'Leídas' : 'No leídas'),
+                                onDeleted: () {
+                                  setState(() {
+                                    isRead = null;
+                                  });
+                                  _filterNotifications();
+                                },
+                              ),
+                            TextButton.icon(
+                              icon: const Icon(Icons.clear_all, size: 18),
+                              label: const Text('Limpiar todos'),
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                              ),
+                              onPressed: () {
                                 setState(() {
                                   selectedType = null;
-                                });
-                                _filterNotifications();
-                              },
-                            ),
-                          if (isRead != null)
-                            Chip(
-                              label: Text(isRead! ? 'Leídas' : 'No leídas'),
-                              onDeleted: () {
-                                setState(() {
                                   isRead = null;
                                 });
                                 _filterNotifications();
                               },
                             ),
-                          TextButton.icon(
-                            icon: const Icon(Icons.clear_all, size: 18),
-                            label: const Text('Limpiar todos'),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                selectedType = null;
-                                isRead = null;
-                              });
-                              _filterNotifications();
-                            },
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  
-                  // Lista de notificaciones
-                  Expanded(
-                    child: filteredNotifications.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.notifications_off, size: 64, color: Colors.grey),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No hay notificaciones',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredNotifications.length,
-                            itemBuilder: (context, index) {
-                              final notification = filteredNotifications[index];
-                              return Dismissible(
-                                key: Key(notification['id']),
-                                background: Container(
-                                  color: Colors.green,
-                                  alignment: Alignment.centerLeft,
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: const Icon(Icons.done, color: Colors.white),
-                                ),
-                                secondaryBackground: Container(
-                                  color: Colors.red,
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: const Icon(Icons.delete, color: Colors.white),
-                                ),
-                                onDismissed: (direction) {
-                                  if (direction == DismissDirection.endToStart) {
-                                    _deleteNotification(notification['id']);
-                                  } else {
-                                    _markAsRead(notification['id']);
-                                  }
-                                },
-                                child: Card(
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  child: ListTile(
-                                    leading: Badge(
-                                      backgroundColor: _getPriorityColor(notification['priority']),
-                                      label: const SizedBox.shrink(),
-                                      child: _getTypeIcon(notification['type']),
+
+                    // Lista de notificaciones
+                    Expanded(
+                      child:
+                          _filteredNotifications.isEmpty
+                              ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.notifications_off,
+                                      size: 64,
+                                      color: Colors.grey,
                                     ),
-                                    title: Text(
-                                      notification['title'],
-                                      style: TextStyle(
-                                        fontWeight: notification['isRead'] ? FontWeight.normal : FontWeight.bold,
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No hay notificaciones',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              )
+                              : ListView.builder(
+                                itemCount: _filteredNotifications.length,
+                                itemBuilder: (context, index) {
+                                  final notification =
+                                      _filteredNotifications[index];
+                                  return Dismissible(
+                                    key: Key(notification.id),
+                                    background: Container(
+                                      color: Colors.green,
+                                      alignment: Alignment.centerLeft,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                      ),
+                                      child: const Icon(
+                                        Icons.done,
+                                        color: Colors.white,
                                       ),
                                     ),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(notification['message']),
-                                        const SizedBox(height: 4),
-                                        Row(
+                                    secondaryBackground: Container(
+                                      color: Colors.red,
+                                      alignment: Alignment.centerRight,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                      ),
+                                      child: const Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    onDismissed: (direction) {
+                                      if (direction ==
+                                          DismissDirection.endToStart) {
+                                        _deleteNotification(notification.id);
+                                      } else {
+                                        _markAsRead(notification.id);
+                                      }
+                                    },
+                                    child: Card(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      child: ListTile(
+                                        leading: Badge(
+                                          backgroundColor: _getPriorityColor(
+                                            notification.priority.toString(),
+                                          ),
+                                          label: const SizedBox.shrink(),
+                                          child: _getTypeIcon(
+                                            notification.type.toString(),
+                                          ),
+                                        ),
+                                        title: Text(
+                                          notification.title,
+                                          style: TextStyle(
+                                            fontWeight:
+                                                notification.isRead
+                                                    ? FontWeight.normal
+                                                    : FontWeight.bold,
+                                          ),
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              _formatDate(notification['date']),
-                                              style: Theme.of(context).textTheme.bodySmall,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: _getPriorityColor(notification['priority']).withValues(alpha: 26),  // 0.1 * 255 ≈ 26
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                notification['type'],
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  color: _getPriorityColor(notification['priority']),
+                                            Text(notification.message),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  _formatDate(
+                                                    notification.updatedAt
+                                                        .toString(),
+                                                  ),
+                                                  style:
+                                                      Theme.of(
+                                                        context,
+                                                      ).textTheme.bodySmall,
                                                 ),
-                                              ),
+                                                const SizedBox(width: 8),
+
+                                                // NUEVO CÓDIGO CON COLOR DE FONDO Y CONTRASTE DE TEXTO
+                                                Builder(
+                                                  builder: (context) {
+                                                    final backgroundColor =
+                                                        _getPriorityColor(
+                                                          notification.priority
+                                                              .toString(),
+                                                        ).withAlpha(30);
+                                                    final isDarkBackground =
+                                                        ThemeData.estimateBrightnessForColor(
+                                                          backgroundColor,
+                                                        ) ==
+                                                        Brightness.dark;
+
+                                                    return Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 6,
+                                                            vertical: 2,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: backgroundColor,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              4,
+                                                            ),
+                                                      ),
+                                                      child: Text(
+                                                        getNotificationTypeLabel(
+                                                          notification.type
+                                                              .toString(),
+                                                        ),
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          color:
+                                                              isDarkBackground
+                                                                  ? Colors.white
+                                                                  : Colors
+                                                                      .black,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),
-                                      ],
+                                        trailing:
+                                            notification.isRead
+                                                ? null
+                                                : const Icon(
+                                                  Icons.circle,
+                                                  size: 12,
+                                                  color: Colors.blue,
+                                                ),
+                                        onTap: () {
+                                          _markAsRead(notification.id);
+                                          _handleNotificationAction(
+                                            notification,
+                                          );
+                                        },
+                                      ),
                                     ),
-                                    trailing: notification['isRead']
-                                        ? null
-                                        : const Icon(Icons.circle, size: 12, color: Colors.blue),
-                                    onTap: () {
-                                      _markAsRead(notification['id']);
-                                      _handleNotificationAction(notification);
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
+                                  );
+                                },
+                              ),
+                    ),
+                  ],
+                ),
               ),
-            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _showNotificationSettingsDialog();
@@ -514,7 +544,7 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
     final date = DateTime.parse(dateString);
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
         return 'Hace ${difference.inMinutes} minutos';
@@ -529,8 +559,45 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
     }
   }
 
-  void _handleNotificationAction(Map<String, dynamic> notification) {
-    switch (notification['actionType']) {
+  String getNotificationTypeLabel(String type) {
+    switch (type) {
+      case 'NotificationType.ADJUSTMENT_CREATED':
+        return 'Ajuste creado';
+      case 'NotificationType.ADJUSTMENT_UPDATED':
+        return 'Ajuste actualizado';
+      case 'NotificationType.ADJUSMENT_APPROVAL_NEEDED':
+        return 'Ajuste necesita aprobación';
+      case 'NotificationType.ADJUSMENT_APPROVED':
+        return 'Ajuste fue aprobado';
+      case 'NotificationType.ADJUSMENT_REJECTED':
+        return 'Ajuste fue rechazado';
+      case 'NotificationType.NEW_STUDENT':
+        return 'Nuevo estudiante';
+      case 'NotificationType.STUDENT_UPDATE':
+        return 'Estudiante ha sido actualizado';
+      case 'NotificationType.TEACHER_ASSIGNMENT':
+        return 'Asignatura de un profesor.';
+      case 'NotificationType.TEACHER_ACKNOWLEDGMENT_NEEDED':
+        return 'Necesita confirmación de lectura del profesor';
+      case 'NotificationType.TEACHER_ACKNOWLEDGMENT_RECEIVED':
+        return 'Confirmación de lectura del profesor';
+      case 'NotificationType.NEW_RESOURCE_AVAILABLE':
+        return 'Nuevo recurso disponible';
+      case 'NotificationType.REMINDER':
+        return 'Recordatorio del Sistema';
+      case 'NotificationType.SYSTEM_ALERT':
+        return 'Alerta del sistema';
+      case 'NotificationType.HELP_REQUEST':
+        return 'Solicitud de ayuda';
+      case 'NotificationType.HELP_REQUEST_RESPONSE':
+        return 'Respuesta a solicitud de ayuda';
+      default:
+        return type;
+    }
+  }
+
+  void _handleNotificationAction(Notifications notification) {
+    switch (notification.type) {
       case 'view_student':
         // Implementar navegación a perfil de estudiante
         break;
@@ -591,9 +658,9 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
                         });
                       },
                     ),
-                    
+
                     const Divider(),
-                    
+
                     const Text(
                       'Tipos de Notificación',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -648,7 +715,7 @@ class NotificationsScreenState extends State<NotificationsScreen> with SingleTic
                   onPressed: () {
                     // Implementar guardado de configuración
                     Navigator.of(context).pop();
-                    
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Configuración guardada correctamente'),

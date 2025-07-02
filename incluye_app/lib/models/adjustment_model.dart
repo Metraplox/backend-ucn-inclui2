@@ -1,5 +1,5 @@
 class Adjustment {
-  final String? id;
+  String? id;
   final String tipo;
   final String descripcion;
   final String? courseNrc;

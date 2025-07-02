@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/notification_service.dart';
@@ -71,9 +72,9 @@ class AppScaffold extends StatelessWidget {
             icon: const Icon(Icons.notifications),
             tooltip: 'Notificaciones',
             onPressed: () {
-              NotificationService.saveLastCheckTime();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notificaciones revisadas')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationsScreen()),
               );
             },
           ),

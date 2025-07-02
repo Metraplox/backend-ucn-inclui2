@@ -5,10 +5,12 @@ class AdjustmentCategoriesScreen extends StatefulWidget {
   const AdjustmentCategoriesScreen({super.key});
 
   @override
-  AdjustmentCategoriesScreenState createState() => AdjustmentCategoriesScreenState();
+  AdjustmentCategoriesScreenState createState() =>
+      AdjustmentCategoriesScreenState();
 }
 
-class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> {
+class AdjustmentCategoriesScreenState
+    extends State<AdjustmentCategoriesScreen> {
   bool isLoading = true;
   List<Map<String, dynamic>> categories = [];
 
@@ -21,31 +23,35 @@ class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> 
   Future<void> _loadCategories() async {
     // Simulación de carga de datos
     await Future.delayed(const Duration(milliseconds: 800));
-    
+
     setState(() {
       categories = [
         {
           "id": "1",
           "name": "Tiempo adicional en evaluaciones",
-          "description": "Otorgar tiempo adicional para completar evaluaciones (generalmente 50% más).",
+          "description":
+              "Otorgar tiempo adicional para completar evaluaciones (generalmente 50% más).",
           "isActive": true,
         },
         {
           "id": "2",
           "name": "Material en formato accesible",
-          "description": "Proporcionar material de estudio en formatos accesibles (audio, digital, etc).",
+          "description":
+              "Proporcionar material de estudio en formatos accesibles (audio, digital, etc).",
           "isActive": true,
         },
         {
           "id": "3",
           "name": "Ubicación preferencial",
-          "description": "Asignar ubicación preferencial en el aula para mejorar visibilidad o acceso.",
+          "description":
+              "Asignar ubicación preferencial en el aula para mejorar visibilidad o acceso.",
           "isActive": true,
         },
         {
           "id": "4",
           "name": "Uso de tecnología asistiva",
-          "description": "Permitir el uso de tecnologías de asistencia durante clases y evaluaciones.",
+          "description":
+              "Permitir el uso de tecnologías de asistencia durante clases y evaluaciones.",
           "isActive": false,
         },
       ];
@@ -57,7 +63,7 @@ class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> 
   Widget build(BuildContext context) {
     final isMobile = ResponsiveUtils.isMobile(context);
     final padding = ResponsiveUtils.getPadding(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Categorías de Ajustes Razonables'),
@@ -71,52 +77,54 @@ class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> 
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: EdgeInsets.all(padding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Botones de acción
-                  Row(
-                    children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text('Nueva Categoría'),
-                        onPressed: () {
-                          _showAddEditCategoryDialog();
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.import_export),
-                        label: const Text('Importar/Exportar'),
-                        onPressed: () {
-                          // Implementar importación/exportación
-                        },
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Lista de categorías
-                  Expanded(
-                    child: Card(
-                      elevation: 2,
-                      child: categories.isEmpty
-                          ? const Center(
-                              child: Text('No hay categorías disponibles'),
-                            )
-                          : isMobile
-                              ? _buildMobileCategoriesList()
-                              : _buildDesktopCategoriesTable(),
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: EdgeInsets.all(padding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Botones de acción
+                    Row(
+                      children: [
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text('Nueva Categoría'),
+                          onPressed: () {
+                            _showAddEditCategoryDialog();
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.import_export),
+                          label: const Text('Importar/Exportar'),
+                          onPressed: () {
+                            // Implementar importación/exportación
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 16),
+
+                    // Lista de categorías
+                    Expanded(
+                      child: Card(
+                        elevation: 2,
+                        child:
+                            categories.isEmpty
+                                ? const Center(
+                                  child: Text('No hay categorías disponibles'),
+                                )
+                                : isMobile
+                                ? _buildMobileCategoriesList()
+                                : _buildDesktopCategoriesTable(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _showAddEditCategoryDialog();
@@ -176,59 +184,64 @@ class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> 
           DataColumn(label: Text('Estado')),
           DataColumn(label: Text('Acciones')),
         ],
-        rows: categories.map((category) {
-          return DataRow(
-            cells: [
-              DataCell(Text(category['name'])),
-              DataCell(
-                Text(
-                  category['description'],
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              DataCell(
-                Switch(
-                  value: category['isActive'],
-                  onChanged: (value) {
-                    setState(() {
-                      category['isActive'] = value;
-                    });
-                  },
-                ),
-              ),
-              DataCell(
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      tooltip: 'Editar categoría',
-                      onPressed: () {
-                        _showAddEditCategoryDialog(category: category);
+        rows:
+            categories.map((category) {
+              return DataRow(
+                cells: [
+                  DataCell(Text(category['name'])),
+                  DataCell(
+                    Text(
+                      category['description'],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  DataCell(
+                    Switch(
+                      value: category['isActive'],
+                      onChanged: (value) {
+                        setState(() {
+                          category['isActive'] = value;
+                        });
                       },
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      tooltip: 'Eliminar categoría',
-                      onPressed: () {
-                        _showDeleteConfirmationDialog(category);
-                      },
+                  ),
+                  DataCell(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          tooltip: 'Editar categoría',
+                          onPressed: () {
+                            _showAddEditCategoryDialog(category: category);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          tooltip: 'Eliminar categoría',
+                          onPressed: () {
+                            _showDeleteConfirmationDialog(category);
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        }).toList(),
+                  ),
+                ],
+              );
+            }).toList(),
       ),
     );
   }
 
   void _showAddEditCategoryDialog({Map<String, dynamic>? category}) {
     final isEditing = category != null;
-    final nameController = TextEditingController(text: isEditing ? category['name'] : '');
-    final descriptionController = TextEditingController(text: isEditing ? category['description'] : '');
+    final nameController = TextEditingController(
+      text: isEditing ? category['name'] : '',
+    );
+    final descriptionController = TextEditingController(
+      text: isEditing ? category['description'] : '',
+    );
     bool isActive = isEditing ? category['isActive'] : true;
 
     showDialog(
@@ -287,7 +300,7 @@ class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> 
                   onPressed: () {
                     // Implementar guardado de categoría
                     Navigator.of(context).pop();
-                    
+
                     // Actualizar la lista (simulación)
                     if (isEditing) {
                       setState(() {
@@ -298,7 +311,8 @@ class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> 
                     } else {
                       setState(() {
                         categories.add({
-                          "id": DateTime.now().millisecondsSinceEpoch.toString(),
+                          "id":
+                              DateTime.now().millisecondsSinceEpoch.toString(),
                           "name": nameController.text,
                           "description": descriptionController.text,
                           "isActive": isActive,
@@ -322,7 +336,9 @@ class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> 
       builder: (context) {
         return AlertDialog(
           title: const Text('Eliminar Categoría'),
-          content: Text('¿Está seguro que desea eliminar la categoría "${category['name']}"?'),
+          content: Text(
+            '¿Está seguro que desea eliminar la categoría "${category['name']}"?',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -331,13 +347,13 @@ class AdjustmentCategoriesScreenState extends State<AdjustmentCategoriesScreen> 
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 // Implementar eliminación de categoría
                 setState(() {
-                  categories.removeWhere((item) => item['id'] == category['id']);
+                  categories.removeWhere(
+                    (item) => item['id'] == category['id'],
+                  );
                 });
                 Navigator.of(context).pop();
               },

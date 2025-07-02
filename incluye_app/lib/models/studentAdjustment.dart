@@ -1,7 +1,7 @@
 import 'package:incluye_app/models/adjustment_model.dart';
 
 class StudentAdjustment {
-  final String id; // _id del ajuste
+  String id; // _id del ajuste
   final String studentRut;
   final String studentId;
   final List<Adjustment> currentAdjustments;

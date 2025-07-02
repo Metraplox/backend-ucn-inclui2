@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:incluye_app/models/adjustment_model.dart';
+import 'package:incluye_app/models/studentAdjustment.dart';
+import 'package:incluye_app/models/student_model.dart';
+import 'package:incluye_app/services/adjustment_service.dart';
+import 'package:incluye_app/services/notification_service.dart';
 import 'package:incluye_app/utils/responsive_utils.dart';
 
 class StudentAdjustmentsScreen extends StatefulWidget {
@@ -12,17 +17,37 @@ class StudentAdjustmentsScreen extends StatefulWidget {
   });
 
   @override
-  StudentAdjustmentsScreenState createState() => StudentAdjustmentsScreenState();
+  StudentAdjustmentsScreenState createState() =>
+      StudentAdjustmentsScreenState();
 }
 
-class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with SingleTickerProviderStateMixin {
+class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen>
+    with SingleTickerProviderStateMixin {
   bool isLoading = true;
   late TabController _tabController;
   List<String> semesters = ['2025-1', '2024-2', '2024-1'];
-  String selectedSemester = '2025-1';
-  
-  List<Map<String, dynamic>> currentAdjustments = [];
-  List<Map<String, dynamic>> adjustmentHistory = [];
+
+  String actualSemester = '';
+
+  void setActualSemester() {
+    final int actualYear = DateTime.now().year;
+    final int actualMonth = DateTime.now().month;
+    String monthSemester = '1';
+    if (actualMonth > 7) {
+      monthSemester = '2';
+    } else if (actualMonth < 7) {
+      monthSemester = '1';
+    }
+    final semesterString = '$actualYear-$monthSemester';
+    setState(() {
+      actualSemester = semesterString;
+    });
+    print(actualSemester);
+  }
+
+  List<StudentAdjustment> _studentAdjustments = [];
+  List<Adjustment> _currentAdjustments = [];
+  List<Adjustment> adjustmentHistory = [];
   List<Map<String, dynamic>> availableCategories = [];
 
   @override
@@ -30,6 +55,7 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _loadData();
+    setActualSemester();
   }
 
   @override
@@ -39,84 +65,29 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
   }
 
   Future<void> _loadData() async {
-    // Simulación de carga de datos
-    await Future.delayed(const Duration(milliseconds: 800));
-    
+    final List<StudentAdjustment> studentAdjustments =
+        await AdjustmentService.getStudentAdjustments(widget.studentId);
+
+    List<Adjustment> allAdjustments = [];
+
+    for (var studentAdj in studentAdjustments) {
+      for (var adj in studentAdj.currentAdjustments) {
+        // Aquí asignas el id de StudentAdjustment a Adjustment si Adjustment.id es nulo
+        adj.id ??= studentAdj.id;
+
+        // También puedes asignar studentId si es necesario
+
+        allAdjustments.add(adj);
+      }
+    }
+
     setState(() {
-      currentAdjustments = [
-        {
-          "id": "1",
-          "category": "Tiempo adicional en evaluaciones",
-          "description": "50% de tiempo adicional en todas las evaluaciones",
-          "courses": ["MAT101", "FIS102", "QUI201"],
-          "startDate": "2025-03-01",
-          "endDate": "2025-07-31",
-          "status": "active",
-          "approvedBy": "coordinadora@ucn.cl",
-        },
-        {
-          "id": "2",
-          "category": "Material en formato accesible",
-          "description": "Proporcionar material en formato digital accesible",
-          "courses": ["MAT101", "FIS102"],
-          "startDate": "2025-03-01",
-          "endDate": "2025-07-31",
-          "status": "active",
-          "approvedBy": "coordinadora@ucn.cl",
-        },
-      ];
-      
-      adjustmentHistory = [
-        {
-          "id": "3",
-          "category": "Ubicación preferencial",
-          "description": "Asiento en primera fila",
-          "courses": ["BIO101", "QUI101"],
-          "startDate": "2024-08-01",
-          "endDate": "2024-12-15",
-          "status": "completed",
-          "approvedBy": "coordinadora@ucn.cl",
-        },
-        {
-          "id": "4",
-          "category": "Uso de tecnología asistiva",
-          "description": "Uso de grabadora en clases",
-          "courses": ["BIO101"],
-          "startDate": "2024-08-01",
-          "endDate": "2024-12-15",
-          "status": "completed",
-          "approvedBy": "coordinadora@ucn.cl",
-        },
-      ];
-      
-      availableCategories = [
-        {
-          "id": "1",
-          "name": "Tiempo adicional en evaluaciones",
-        },
-        {
-          "id": "2",
-          "name": "Material en formato accesible",
-        },
-        {
-          "id": "3",
-          "name": "Ubicación preferencial",
-        },
-        {
-          "id": "4",
-          "name": "Uso de tecnología asistiva",
-        },
-        {
-          "id": "5",
-          "name": "Evaluación diferenciada",
-        },
-      ];
-      
+      _currentAdjustments = allAdjustments;
       isLoading = false;
     });
   }
 
-  String _getStatusText(String status) {
+  String _getStatusText(String? status) {
     switch (status) {
       case 'active':
         return 'Activo';
@@ -131,7 +102,7 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
     }
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String? status) {
     switch (status) {
       case 'active':
         return Colors.green;
@@ -149,15 +120,22 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
   @override
   Widget build(BuildContext context) {
     final padding = ResponsiveUtils.getPadding(context);
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajustes de ${widget.studentName}'),
+        title: Text('Mis ajustes'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Ajustes Actuales'),
-            Tab(text: 'Historial'),
+            Tab(
+              child: Text(
+                'Ajustes Actuales',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            Tab(
+              child: Text('Historial', style: TextStyle(color: Colors.white)),
+            ),
           ],
         ),
         actions: [
@@ -177,94 +155,97 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: EdgeInsets.all(padding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Selector de semestre
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: EdgeInsets.all(padding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Selector de semestre
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            const Text(
+                              'Semestre: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 8),
+                            DropdownButton<String>(
+                              value: actualSemester,
+                              items:
+                                  semesters.map((semester) {
+                                    return DropdownMenuItem<String>(
+                                      value: semester,
+                                      child: Text(semester),
+                                    );
+                                  }).toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() {
+                                    actualSemester = value;
+                                    // Aquí se cargarían los ajustes del semestre seleccionado
+                                  });
+                                }
+                              },
+                            ),
+                            const Spacer(),
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.history),
+                              label: const Text('Ver todos los semestres'),
+                              onPressed: () {
+                                // Implementar vista de todos los semestres
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Contenido de las pestañas
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
                         children: [
-                          const Text('Semestre: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(width: 8),
-                          DropdownButton<String>(
-                            value: selectedSemester,
-                            items: semesters.map((semester) {
-                              return DropdownMenuItem<String>(
-                                value: semester,
-                                child: Text(semester),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                setState(() {
-                                  selectedSemester = value;
-                                  // Aquí se cargarían los ajustes del semestre seleccionado
-                                });
-                              }
-                            },
-                          ),
-                          const Spacer(),
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.history),
-                            label: const Text('Ver todos los semestres'),
-                            onPressed: () {
-                              // Implementar vista de todos los semestres
-                            },
-                          ),
+                          // Pestaña de ajustes actuales
+                          _buildAdjustmentsTab(_currentAdjustments),
+
+                          // Pestaña de historial
+                          _buildAdjustmentsTab(adjustmentHistory),
                         ],
                       ),
                     ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Contenido de las pestañas
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        // Pestaña de ajustes actuales
-                        _buildAdjustmentsTab(currentAdjustments),
-                        
-                        // Pestaña de historial
-                        _buildAdjustmentsTab(adjustmentHistory),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddAdjustmentDialog();
-        },
+        onPressed: () {},
         tooltip: 'Agregar Ajuste',
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildAdjustmentsTab(List<Map<String, dynamic>> adjustments) {
+  Widget _buildAdjustmentsTab(List<Adjustment> adjustments) {
     final isMobile = ResponsiveUtils.isMobile(context);
-    
+
     if (adjustments.isEmpty) {
       return const Center(
         child: Text('No hay ajustes para mostrar en este periodo'),
       );
     }
-    
+
     return isMobile
         ? _buildMobileAdjustmentsList(adjustments)
         : _buildDesktopAdjustmentsTable(adjustments);
   }
 
-  Widget _buildMobileAdjustmentsList(List<Map<String, dynamic>> adjustments) {
+  Widget _buildMobileAdjustmentsList(List<Adjustment> adjustments) {
     return ListView.builder(
       itemCount: adjustments.length,
       itemBuilder: (context, index) {
@@ -272,10 +253,10 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           child: ExpansionTile(
-            title: Text(adjustment['category']),
+            title: Text(adjustment.tipo),
             subtitle: Text(
-              _getStatusText(adjustment['status']),
-              style: TextStyle(color: _getStatusColor(adjustment['status'])),
+              _getStatusText(adjustment.status),
+              style: TextStyle(color: _getStatusColor(adjustment.status)),
             ),
             children: [
               Padding(
@@ -283,13 +264,15 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Descripción: ${adjustment['description']}'),
+                    Text('Descripción: ${adjustment.descripcion}'),
                     const SizedBox(height: 8),
-                    Text('Cursos: ${adjustment['courses'].join(", ")}'),
+                    Text('Curso: ${adjustment.curso}'),
                     const SizedBox(height: 8),
-                    Text('Periodo: ${adjustment['startDate']} - ${adjustment['endDate']}'),
+                    Text(
+                      'Periodo: ${adjustment.fechaInicio} - ${adjustment.expirationDate}',
+                    ),
                     const SizedBox(height: 8),
-                    Text('Aprobado por: ${adjustment['approvedBy']}'),
+                    Text('Aprobado por: ${adjustment.approvedBy}'),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -297,18 +280,22 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
                         TextButton.icon(
                           icon: const Icon(Icons.edit),
                           label: const Text('Editar'),
-                          onPressed: adjustment['status'] == 'active' ? () {
-                            _showEditAdjustmentDialog(adjustment);
-                          } : null,
+                          onPressed:
+                              adjustment.status == 'active'
+                                  ? () {
+                                    _showEditAdjustmentDialog(adjustment);
+                                  }
+                                  : null,
                         ),
                         const SizedBox(width: 8),
                         TextButton.icon(
                           icon: const Icon(Icons.delete),
                           label: const Text('Eliminar'),
-                          style: TextButton.styleFrom(foregroundColor: Colors.red),
-                          onPressed: adjustment['status'] == 'active' ? () {
-                            _showDeleteConfirmationDialog(adjustment);
-                          } : null,
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                          onPressed:
+                              adjustment.status == 'active' ? () {} : null,
                         ),
                       ],
                     ),
@@ -322,7 +309,7 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
     );
   }
 
-  Widget _buildDesktopAdjustmentsTable(List<Map<String, dynamic>> adjustments) {
+  Widget _buildDesktopAdjustmentsTable(List<Adjustment> adjustments) {
     return SingleChildScrollView(
       child: DataTable(
         columns: const [
@@ -333,208 +320,68 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
           DataColumn(label: Text('Estado')),
           DataColumn(label: Text('Acciones')),
         ],
-        rows: adjustments.map((adjustment) {
-          return DataRow(
-            cells: [
-              DataCell(Text(adjustment['category'])),
-              DataCell(Text(adjustment['description'])),
-              DataCell(Text(adjustment['courses'].join(", "))),
-              DataCell(Text('${adjustment['startDate']} - ${adjustment['endDate']}')),
-              DataCell(
-                Chip(
-                  label: Text(_getStatusText(adjustment['status'])),
-                  backgroundColor: _getStatusColor(adjustment['status']).withValues(alpha: 51),  // 0.2 * 255 ≈ 51
-                  labelStyle: TextStyle(color: _getStatusColor(adjustment['status'])),
-                ),
-              ),
-              DataCell(
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      tooltip: 'Editar ajuste',
-                      onPressed: adjustment['status'] == 'active' ? () {
-                        _showEditAdjustmentDialog(adjustment);
-                      } : null,
+        rows:
+            adjustments.map((adjustment) {
+              return DataRow(
+                cells: [
+                  DataCell(Text(adjustment.tipo)),
+                  DataCell(Text(adjustment.descripcion)),
+                  DataCell(Text(adjustment.curso)),
+                  DataCell(
+                    Text(
+                      '${adjustment.fechaInicio} - ${adjustment.fechaInicio}',
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      tooltip: 'Eliminar ajuste',
-                      onPressed: adjustment['status'] == 'active' ? () {
-                        _showDeleteConfirmationDialog(adjustment);
-                      } : null,
+                  ),
+                  DataCell(
+                    Chip(
+                      label: Text(_getStatusText(adjustment.status)),
+                      backgroundColor: _getStatusColor(
+                        adjustment.status,
+                      ).withValues(alpha: 51), // 0.2 * 255 ≈ 51
+                      labelStyle: TextStyle(
+                        color: _getStatusColor(
+                          adjustment.status?.toLowerCase(),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        }).toList(),
+                  ),
+                  DataCell(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          tooltip: 'Editar ajuste',
+                          onPressed:
+                              adjustment.status?.toLowerCase() == 'activo'
+                                  ? () {
+                                    _showEditAdjustmentDialog(adjustment);
+                                  }
+                                  : null,
+                        ),
+                        //IconButton(
+                        //icon: const Icon(Icons.delete),
+                        //tooltip: 'Eliminar ajuste',
+                        //onPressed:
+                        //  adjustment['status'] == 'active'
+                        ////    _showDeleteConfirmationDialog(adjustment);
+                        //}
+                        //: null,
+                        // ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
       ),
     );
   }
 
-  void _showAddAdjustmentDialog() {
-    String? selectedCategory;
-    final descriptionController = TextEditingController();
-    final startDateController = TextEditingController(text: '2025-03-01');
-    final endDateController = TextEditingController(text: '2025-07-31');
-    List<String> selectedCourses = [];
-    List<String> availableCourses = ['MAT101', 'FIS102', 'QUI201', 'BIO101', 'INF203'];
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Nuevo Ajuste Razonable'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Categoría
-                    DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: 'Categoría de Ajuste',
-                        border: OutlineInputBorder(),
-                      ),
-                      value: selectedCategory,
-                      items: availableCategories.map((category) {
-                        return DropdownMenuItem<String>(
-                          value: category['id'],
-                          child: Text(category['name']),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCategory = value;
-                        });
-                      },
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Descripción
-                    TextField(
-                      controller: descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Descripción',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 3,
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Fechas
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: startDateController,
-                            decoration: const InputDecoration(
-                              labelText: 'Fecha Inicio',
-                              border: OutlineInputBorder(),
-                            ),
-                            readOnly: true,
-                            onTap: () async {
-                              // Implementar selector de fecha
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: endDateController,
-                            decoration: const InputDecoration(
-                              labelText: 'Fecha Fin',
-                              border: OutlineInputBorder(),
-                            ),
-                            readOnly: true,
-                            onTap: () async {
-                              // Implementar selector de fecha
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Selector de cursos
-                    const Text('Cursos aplicables:'),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: availableCourses.map((course) {
-                        final isSelected = selectedCourses.contains(course);
-                        return FilterChip(
-                          label: Text(course),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedCourses.add(course);
-                              } else {
-                                selectedCourses.remove(course);
-                              }
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Implementar guardado de ajuste
-                    Navigator.of(context).pop();
-                    
-                    // Simulación de guardado
-                    setState(() {
-                      final newAdjustment = {
-                        "id": DateTime.now().millisecondsSinceEpoch.toString(),
-                        "category": availableCategories
-                            .firstWhere((c) => c['id'] == selectedCategory)['name'],
-                        "description": descriptionController.text,
-                        "courses": selectedCourses,
-                        "startDate": startDateController.text,
-                        "endDate": endDateController.text,
-                        "status": "active",
-                        "approvedBy": "coordinadora@ucn.cl",
-                      };
-                      
-                      currentAdjustments.add(newAdjustment);
-                    });
-                  },
-                  child: const Text('Guardar'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+  void _showEditAdjustmentDialog(Adjustment adjustment) {
+    final descriptionController = TextEditingController(
+      text: adjustment.descripcion,
     );
-  }
-
-  void _showEditAdjustmentDialog(Map<String, dynamic> adjustment) {
-    final descriptionController = TextEditingController(text: adjustment['description']);
-    final startDateController = TextEditingController(text: adjustment['startDate']);
-    final endDateController = TextEditingController(text: adjustment['endDate']);
-    List<String> selectedCourses = List<String>.from(adjustment['courses']);
-    List<String> availableCourses = ['MAT101', 'FIS102', 'QUI201', 'BIO101', 'INF203'];
 
     showDialog(
       context: context,
@@ -548,87 +395,40 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Categoría (no editable)
+                    // Categoría (solo lectura)
                     TextField(
-                      controller: TextEditingController(text: adjustment['category']),
+                      controller: TextEditingController(text: adjustment.tipo),
                       decoration: const InputDecoration(
                         labelText: 'Categoría de Ajuste',
                         border: OutlineInputBorder(),
                       ),
                       readOnly: true,
+                      enabled: false,
                     ),
-                    
                     const SizedBox(height: 16),
-                    
-                    // Descripción
+
+                    // Descripción editable
                     TextField(
                       controller: descriptionController,
                       decoration: const InputDecoration(
-                        labelText: 'Descripción',
+                        labelText: 'Motivo',
                         border: OutlineInputBorder(),
                       ),
                       maxLines: 3,
                     ),
-                    
                     const SizedBox(height: 16),
-                    
-                    // Fechas
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: startDateController,
-                            decoration: const InputDecoration(
-                              labelText: 'Fecha Inicio',
-                              border: OutlineInputBorder(),
-                            ),
-                            readOnly: true,
-                            onTap: () async {
-                              // Implementar selector de fecha
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: endDateController,
-                            decoration: const InputDecoration(
-                              labelText: 'Fecha Fin',
-                              border: OutlineInputBorder(),
-                            ),
-                            readOnly: true,
-                            onTap: () async {
-                              // Implementar selector de fecha
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Selector de cursos
-                    const Text('Cursos aplicables:'),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: availableCourses.map((course) {
-                        final isSelected = selectedCourses.contains(course);
-                        return FilterChip(
-                          label: Text(course),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedCourses.add(course);
-                              } else {
-                                selectedCourses.remove(course);
-                              }
-                            });
-                          },
-                        );
-                      }).toList(),
+
+                    // Curso (solo lectura)
+                    TextField(
+                      controller: TextEditingController(
+                        text: adjustment.courseNrc ?? '',
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Curso',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      enabled: false,
                     ),
                   ],
                 ),
@@ -641,17 +441,11 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
                   child: const Text('Cancelar'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    // Implementar actualización de ajuste
-                    Navigator.of(context).pop();
-                    
-                    // Simulación de actualización
-                    setState(() {
-                      adjustment['description'] = descriptionController.text;
-                      adjustment['startDate'] = startDateController.text;
-                      adjustment['endDate'] = endDateController.text;
-                      adjustment['courses'] = selectedCourses;
-                    });
+                  onPressed: () async {
+                    await _handleSaveDescription(
+                      adjustment,
+                      descriptionController,
+                    );
                   },
                   child: const Text('Guardar'),
                 ),
@@ -663,36 +457,69 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen> with
     );
   }
 
-  void _showDeleteConfirmationDialog(Map<String, dynamic> adjustment) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Eliminar Ajuste'),
-          content: Text('¿Está seguro que desea eliminar el ajuste "${adjustment['category']}"?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
-              onPressed: () {
-                // Implementar eliminación de ajuste
-                setState(() {
-                  currentAdjustments.removeWhere((item) => item['id'] == adjustment['id']);
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Eliminar'),
-            ),
-          ],
+  Future<void> _handleSaveDescription(
+    Adjustment adjustment,
+    TextEditingController descriptionController,
+  ) async {
+    final newDesc = descriptionController.text.trim();
+
+    if (newDesc.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Motivos no pueden estar vacíos'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    print("IDAJUSSTE:-${adjustment.id}");
+    print("IDSTUDENT-${widget.studentId}");
+    print("APROBADOPOR- ${adjustment.aprobadoPor}");
+    // Validaciones previas
+    if (adjustment.id == null || adjustment.aprobadoPor == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Falta información obligatoria para enviar la solicitud.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await NotificationService.studentUpdateNotification(
+        adjustment.id!,
+        actualSemester,
+        newDesc,
+        widget.studentId,
+        adjustment.aprobadoPor!,
+        widget.studentName,
+      );
+
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Solicitud enviada correctamente.')),
+      );
+    } catch (e) {
+      if (e.toString().contains('duplicada')) {
+        // Caso notificación duplicada: mostrar mensaje distinto, pero sin error rojo
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La solicitud ya fue enviada anteriormente.'),
+          ),
         );
-      },
-    );
+      } else {
+        // Otros errores
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al enviar solicitud: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

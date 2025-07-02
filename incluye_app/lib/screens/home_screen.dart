@@ -1,7 +1,10 @@
 // screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/courseWithAdjustment_model.dart';
+import 'package:incluye_app/models/notification_model.dart';
+import 'package:incluye_app/screens/adjustments/student_adjustments_screen.dart';
 import 'package:incluye_app/screens/courses/courses_list_screen.dart';
+import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/screens/students/student_career_screen.dart';
 import 'package:incluye_app/screens/teachers/teachers_by_career.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
@@ -50,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   //Lista de cursos Alumno
   List<Course> _coursesStudent = [];
   String? _idStudent;
+  String? _studentName;
 
   @override
   void initState() {
@@ -67,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await _checkRoleAndId(); // Obtiene roles y _currentUserId
     await _getHeadCareerId();
 
-    if (_isStudent && _currentUserId != null) {
+    if (_isStudent && _currentUserId != null && _idStudent != null) {
       await _loadStudentData();
       // Para un estudiante, _currentUserId es el ID de su documento User.
       // AdjustmentHistoryScreen y StudentOwnProfileScreen están diseñados para esto o para el ID de Student.
@@ -94,9 +98,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAdminRole = await StudentService.isAdmin();
     final isTeacherRole = await StudentService.isTeacher();
     final isHeadRole = await StudentService.isHead();
-    final idStudent = await StudentService.getStudentId();
-    User? userInfo =
-        await StudentService.getCurrentUserInfo(); // Esto devuelve User?
+
+    User? userInfo = await StudentService.getCurrentUserInfo();
+
+    String? idStudent;
+    if (isStudentRole) {
+      idStudent = await StudentService.getStudentId();
+    }
 
     if (mounted) {
       setState(() {
@@ -104,11 +112,10 @@ class _HomeScreenState extends State<HomeScreen> {
         _isAdmin = isAdminRole;
         _isTeacher = isTeacherRole;
         _isHead = isHeadRole;
+        _currentUserId = userInfo?.id;
         _idStudent = idStudent;
-
-        _currentUserId = userInfo?.id; // Obtiene el ID del objeto User
+        _studentName = userInfo?.nombreCompleto;
       });
-      //print("HomeScreen: Roles - Estudiante: $_isStudent, Admin: $_isAdmin, Profesor: $_isTeacher. UserID: $_currentUserId");
     }
   }
 
@@ -122,18 +129,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadCoordinadoraData() async {
     try {
       final studentsData = await StudentService.getAllStudents();
+      final unreadNotif = await NotificationService.checkUnreadNotification();
+      final totalAdjustmentsData =
+          await NotificationService.getNotificationByType();
+
       if (!mounted) return;
 
       // Simulación de datos, idealmente vendrían de la API
-      final totalAdjustmentsData = studentsData.length * 2;
-      final pendingAlertsData = (studentsData.length / 5).round();
 
       setState(() {
         _students = studentsData;
         _totalStudents = studentsData.length;
         _totalAdjustments = totalAdjustmentsData;
-        _pendingAlerts = pendingAlertsData;
+        _pendingAlerts = unreadNotif;
       });
+      print(_totalAdjustments);
     } catch (e) {
       //print('HomeScreen: Error al cargar datos de coordinadora: $e');
       if (mounted) {
@@ -147,13 +157,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadStudentData() async {
-    if (_currentUserId != null) {
-      try {
-        final cursos = await CourseService.getStudentCourses(_idStudent!);
-        setState(() {
-          _coursesStudent = cursos;
-        });
-      } catch (e) {}
+    if (_currentUserId == null || _idStudent == null) {
+      print("NO se puede cargar cursos: falta _currentUserId o _idStudent");
+      return;
+    }
+
+    try {
+      final cursos = await CourseService.getStudentCourses(_idStudent!);
+      setState(() {
+        _coursesStudent = cursos;
+      });
+    } catch (e) {
+      print("Error al cargar cursos del estudiante: $e");
     }
   }
 
@@ -371,7 +386,18 @@ class _HomeScreenState extends State<HomeScreen> {
               return CourseWidget(
                 courseName: course.nombre,
                 professor: course.profesor!,
-                onEdit: _onEditDemo,
+                onEdit: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => StudentAdjustmentsScreen(
+                            studentId: _idStudent!,
+                            studentName: _studentName!,
+                          ),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -522,12 +548,27 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Card(/* ... (Tarjeta de bienvenida con _buildStatCard) ... */),
-          const SizedBox(height: 24),
+          //const SizedBox(height: 24),
           const Text(
             'Alertas y Notificaciones',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
+          _buildAlertCard(
+            'Notificaciones',
+            '${_pendingAlerts} notificaciones sin abrir.',
+            Icons.notifications,
+            const Color.fromARGB(255, 221, 12, 12),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              );
+            },
+          ),
+
           _buildAlertCard(
             'Nuevos Ingresos',
             '${(_students.length * 0.2).round()} estudiantes nuevos requieren revisión',
@@ -544,7 +585,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           _buildAlertCard(
             'Actualización de Ajustes',
-            '${(_students.length * 0.1).round()} solicitudes de actualización',
+            '$_totalAdjustments solicitudes de actualización',
             Icons.update,
             Colors.blue,
             onTap: () {
