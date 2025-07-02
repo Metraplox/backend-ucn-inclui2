@@ -21,6 +21,8 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  Sse,
+  MessageEvent,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -36,6 +38,8 @@ import { Request, Response } from 'express'; // <--- Añadido Request
 import * as fs from 'fs';
 import * as path from 'path';
 import { Types } from 'mongoose';
+import { interval, from, Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 import { DocumentsService } from './documents.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -1095,6 +1099,16 @@ export class DocumentsController {
       file,
       createDocumentDto,
       authenticatedStudentUserId.toString(),
+    );
+  }
+
+  // SSE endpoint para emitir documentos pendientes en tiempo real
+  @Sse('pending-stream')
+  @Roles(UserRole.DIDDEC_STAFF)
+  pendingDocumentsStream(): Observable<MessageEvent> {
+    return interval(5000).pipe(
+      switchMap(() => from(this.documentsService.getPendingDocuments())),
+      map(docs => ({ data: docs })),
     );
   }
 }

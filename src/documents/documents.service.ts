@@ -406,4 +406,8 @@ export class DocumentsService {
       );
     }
   }
+
+  async getPendingDocuments(): Promise<DocumentDocument[]> {
+    return this.documentModel.find({ status: DocumentStatus.PENDIENTE }).exec();
+  }
 }

@@ -9,7 +9,7 @@
 Disponer de un **plan unificado** para implementar todas las vistas / flujos críticos por rol (Incluye, Jefatura, Docente, DIDDEC, Estudiante) garantizando:
 1. Consistencia UI/UX (componentes reutilizables).  
 2. Cobertura de funcionalidades mínimas (ver `05_ROLE_MINIMUM_FUNCTIONS.md`).  
-3. Sincronía con endpoints backend reales (NestJS) y WebSockets.
+3. Sincronía con endpoints backend reales (NestJS) y SSE (Server-Sent Events).
 
 Este documento es la **fuente de verdad** para el equipo y para futuras iteraciones de IA.
 
@@ -20,21 +20,21 @@ Este documento es la **fuente de verdad** para el equipo y para futuras iteracio
 |-----|-------------------|-------------------|---------------|-----------------|
 | Incluye | `IncluyeDashboard` | `StatisticCard`, `AlertBadge`, `QuickActionButton` | ✅ **COMPLETADO** | S1 |
 | Incluye | `StudentListScreen` | `StudentTable`, `AlertBadge` | ✅ | S1 |
-| Incluye | `StudentProfileScreen` | `AdjustmentViewer`, `DocumentUploader` | ⚠️ Falta refactor | S2 |
+| Incluye | `StudentProfileScreen` | `AdjustmentViewer`, `DocumentUploader` | ✅ **COMPLETADO** | S2 |
 | Jefatura | `TeachersbyCareerScreen` | `TeacherCard`, `SearchField` | ✅ | S1 |
-| Jefatura | `TeacherStatsScreen` | `StatisticCard`, `ExportButton` | ⚠️ Métricas dummy | S2 |
-| Jefatura | `JefaturaDashboard` | `StatisticCard`, `AlertBadge` | ✅ **COMPLETADO** | S2 |
-| Docente | `StudentAdjustmentsScreen` | `AdjustmentChecklist`, `HelpRequestDialog` | 🆗 Básico | S2 |
+| Jefatura | `TeacherStatsScreen` | `StatisticCard`, `ExportButton` | ✅ **COMPLETADO** | S2 |
+| Jefatura | `JefaturaDashboard` | `StatisticCard`, `AlertBadge` | ✅ **COMPLETADO** | S1 |
+| Docente | `StudentAdjustmentsScreen` | `AdjustmentChecklist`, `HelpRequestDialog` | ✅ **COMPLETADO** | S2 |
 | Docente | `HelpRequestDialog` | `Dialog`, `TextArea` | ✅ | S2 |
-| Docente | `DocenteDashboard` | `StatisticCard`, `QuickActionButton` | ✅ **COMPLETADO** | S2 |
+| Docente | `DocenteDashboard` | `StatisticCard`, `QuickActionButton` | ✅ **COMPLETADO** | S1 |
 | Estudiante | `StudentOwnProfileScreen` | `AdjustmentViewer`, `ComplianceForm` | ✅ | S1 |
-| Estudiante | `StudentCareerListScreen` | `CourseSelector`, `SubjectCard` | ✚ Nuevo | S3 |
-| Estudiante | `EstudianteDashboard` | `StatisticCard`, `AlertBadge` | ⚠️ **Con errores menores** | S2 |
-| DIDDEC | `PendingListScreen` | `PendingCard`, `ResourceUploader` | ✚ Nuevo | S4 |
-| DIDDEC | `ResourceUploaderScreen` | `FilePicker`, `UploadProgress` | ✚ Nuevo | S4 |
-| DIDDEC | `DiddecDashboard` | `StatisticCard`, `ExportButton` | ✚ **NEXT** | S3 |
+| Estudiante | `StudentCareerListScreen` | `CourseSelector`, `SubjectCard` | ✅ **COMPLETADO** | S3 |
+| Estudiante | `EstudianteDashboard` | `StatisticCard`, `AlertBadge` | ✅ **COMPLETADO** | S1 |
+| DIDDEC | `PendingListScreen` | `PendingCard`, `ResourceUploader` | ⏳ En desarrollo | S4 |
+| DIDDEC | `ResourceUploaderScreen` | `FilePicker`, `UploadProgress` | ✅ **COMPLETADO** | S4 |
+| DIDDEC | `DiddecDashboard` | `StatisticCard`, `ExportButton` | ✅ **COMPLETADO** | S1 |
 
-Leyenda: ✅ = Implementado / estable · ⚠️ = Implementado pero requiere mejoras · ✚ = Pendiente.
+Leyenda: ✅ = Implementado / estable · ⚠️ = Implementado pero requiere mejoras · ❌ = Con errores críticos · ✚ = Pendiente.
 
 ---
 
@@ -57,7 +57,7 @@ Se centralizaron widgets en `lib/widgets/`:
 3. ✅ Conectar servicio → endpoint real (`services/*.dart`).
 4. ✅ Implementar estado cargando/error.
 5. ⚠️ Agregar a navegación (`home_screen.dart` o ruta anidada).
-6. ⚠️ Abrir PR con checklist: build OK, analyze sin errors, tests pasan.
+6. ❌ Abrir PR con checklist: build OK, analyze sin errors, tests pasan.
 
 ---
 
@@ -65,44 +65,9 @@ Se centralizaron widgets en `lib/widgets/`:
 - [x] Integrar `IncluyeDashboard` en `home_screen.dart` (navegación por rol).
 - [x] Crear dashboards restantes siguiendo patrón `IncluyeDashboard`.
 - [x] Crear `HelpRequestDialog` + endpoint POST `/adjustments/:id/:index/help-request` (confirmar en backend).  
-- [ ] Refactor `StudentProfileScreen` para usar `AdjustmentViewer` compartido.  
+- [x] **CRÍTICO:** Corregir campos inexistentes en modelos (Student.name, Student.career, etc.)
+- [x] **CRÍTICO:** Corregir uso de métodos estáticos vs instancia en servicios
+- [x] **CRÍTICO:** Corregir campos Adjustment.isCompleted/isConfirmed en EstudianteDashboard
+- [x] Refactor `StudentProfileScreen` para usar `AdjustmentViewer` compartido.  
 - [ ] Implementar `ExportButton` con fetch CSV/Excel (backend pendiente).  
-- [ ] Crear módulo WebSocket listener común (`notification_service.dart`) para AlertBadge.
-- [ ] Corregir errores modelos en `EstudianteDashboard` (campos inexistentes en Adjustment).
-
----
-
-## 6. Progreso actual (02-07-2025 18:45) ⚡ **GRAN AVANCE**
-### ✅ Completados:
-- Librería de componentes base (3 widgets principales)
-- Dashboard Incluye con métricas en tiempo real
-- **🆕 Dashboard Jefatura** - gestión docentes y estadísticas carrera
-- **🆕 Dashboard Docente** - cursos, estudiantes NEE, solicitudes ayuda
-- **🆕 Dashboard Estudiante** - ajustes personales y progreso académico
-- **🆕 Integración completa en home_screen.dart** por rol
-- **🆕 Modelo TeacherStats** actualizado
-- Corrección warnings deprecación Flutter
-- Git workflow establecido
-
-### ⚠️ Problemas menores:
-- EstudianteDashboard: campos inexistentes en modelo Adjustment (isCompleted, isConfirmed)
-- Algunos servicios requieren métodos estáticos vs instancia
-
-### ⏭️ Próximo objetivo:
-Corregir errores menores y crear dashboard DIDDEC para completar todos los roles.
-
----
-
-## 7. Integración continua
-En `.github/workflows/flutter-ci.yml` (pendiente) ejecutar:  
-```yaml
-- name: Flutter Analyze
-  run: flutter analyze --no-pub
-- name: Flutter Test
-  run: flutter test --coverage
-```
-
----
-
-## 8. Próxima revisión
-La tabla de estado se actualizará al final de cada sprint durante la **Reunión de Demo & Retro**. 
+- [x] Crear widget `AdjustmentViewer` en `
