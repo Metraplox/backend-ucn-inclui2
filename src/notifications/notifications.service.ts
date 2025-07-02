@@ -3,7 +3,9 @@ import { Types } from 'mongoose';
 import { NotificationRepository } from './repositories/notification.repository';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
-import { Notification, NotificationType } from './schemas/notification.schema';
+import { Notification, NotificationPriority, NotificationType } from './schemas/notification.schema';
+import { ConflictException } from '@nestjs/common';
+import { AdjustmentNotificationDto, AdjustmentNotificationType } from './dto/adjustment-notification.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -11,11 +13,65 @@ export class NotificationsService {
     private readonly notificationRepository: NotificationRepository,
   ) {}
 
-  async create(
-    createNotificationDto: CreateNotificationDto,
-  ): Promise<Notification> {
-    return this.notificationRepository.create(createNotificationDto);
+async create(createNotificationDto: CreateNotificationDto): Promise<Notification> {
+  const { adjustmentId, type } = createNotificationDto;
+
+  if (adjustmentId && type) {
+    const filter = {
+  adjustmentId: adjustmentId, // usa el string directamente
+  type,
+};
+
+const existingNotification = await this.notificationRepository.findOneByFilter(filter);
+
+    if (existingNotification) {
+      throw new ConflictException('Notificación ya existente para este ajuste y tipo.');
+
+    }
   }
+
+  return this.notificationRepository.create(createNotificationDto);
+}
+
+async createAdjustmentNotification(dto: AdjustmentNotificationDto): Promise<Notification> {
+  const notificationType = this.mapAdjustmentTypeToNotificationType(dto.notificationType);
+    console.log('reason:', dto.reason);
+
+
+  const createDto: CreateNotificationDto = {
+    userId: dto.userId.toString(),
+    title: 'Notificación de Ajuste Razonable',
+    message: dto.reason || `Notificación tipo ${dto.notificationType}`,
+    type: notificationType,            // <- aquí asignas el tipo correcto para la BD
+    semester: dto.semester,
+    isRead: false,
+    priority: NotificationPriority.MEDIUM,
+    adjustmentId: dto.adjustmentId.toString(),
+    metadata: {
+      adjustmentIndex: dto.adjustmentIndex,
+      status: dto.status,
+      reason: dto.reason,               // <- guarda reason en metadata
+    },
+  };
+
+  return this.create(createDto);
+}
+private mapAdjustmentTypeToNotificationType(
+  type: AdjustmentNotificationType,
+): NotificationType {
+  switch (type) {
+    case AdjustmentNotificationType.NEW_ADJUSTMENT:
+      return NotificationType.ADJUSTMENT_CREATED;
+    case AdjustmentNotificationType.ADJUSTMENT_APPROVED:
+      return NotificationType.ADJUSTMENT_APPROVED;
+    case AdjustmentNotificationType.ADJUSTMENT_REJECTED:
+      return NotificationType.ADJUSTMENT_REJECTED;
+    case AdjustmentNotificationType.ADJUSTMENT_UPDATED:
+      return NotificationType.ADJUSTMENT_UPDATED;
+    default:
+      return NotificationType.ADJUSTMENT_APPROVAL_NEEDED;
+  }
+}
 
   async findAll(userId: string, semester?: string): Promise<Notification[]> {
     if (!Types.ObjectId.isValid(userId)) {

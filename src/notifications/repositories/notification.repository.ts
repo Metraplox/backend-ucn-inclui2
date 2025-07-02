@@ -25,7 +25,7 @@ export class NotificationRepository {
   }
 
   async findAll(userId: string, semester?: string): Promise<Notification[]> {
-    const query: any = { userId: new Types.ObjectId(userId) };
+    const query: any = { userId };
 
     if (semester) {
       query.semester = semester;
@@ -37,7 +37,9 @@ export class NotificationRepository {
   async findOne(id: string): Promise<Notification | null> {
     return this.notificationModel.findById(id).exec();
   }
-
+async findOneByFilter(filter: Record<string, any>): Promise<Notification | null> {
+  return this.notificationModel.findOne(filter).exec();
+}
   async update(
     id: string,
     updateNotificationDto: UpdateNotificationDto,
@@ -64,7 +66,7 @@ export class NotificationRepository {
 
   async getUnreadCount(userId: string): Promise<number> {
     return this.notificationModel
-      .countDocuments({ userId: new Types.ObjectId(userId), isRead: false })
+      .countDocuments({ userId, isRead: false })
       .exec();
   }
 

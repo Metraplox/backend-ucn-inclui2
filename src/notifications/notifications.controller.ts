@@ -23,6 +23,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Notification, NotificationType } from './schemas/notification.schema';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Types } from 'mongoose';
+import { CreateNotificationDto } from './dto/create-notification.dto';
+import { AdjustmentNotificationDto } from './dto/adjustment-notification.dto';  // Ajusta la ruta si es necesario
+
+
 
 @ApiTags('notifications')
 @ApiBearerAuth('JWT-auth')
@@ -381,6 +385,61 @@ export class NotificationsController {
   async markAsRead(@Param('id') id: string): Promise<Notification> {
     return this.notificationsService.markAsRead(id);
   }
+  @Post()
+@ApiOperation({
+  summary: 'Crear una notificación individual',
+  description: 'Crea una notificación personalizada para un usuario específico.',
+})
+@ApiBody({
+  type: CreateNotificationDto,
+})
+@ApiResponse({
+  status: 201,
+  description: 'Notificación creada exitosamente',
+  schema: {
+    example: {
+      _id: '507f1f77bcf86cd799439016',
+      userId: '507f1f77bcf86cd799439011',
+      title: 'Nuevo ajuste razonable creado',
+      message: 'Se ha creado un ajuste de tiempo adicional para el curso MAT101-1.',
+      type: 'ADJUSTMENT_CREATED',
+      semester: '2025-1',
+      isRead: false,
+      priority: 'MEDIUM',
+      createdAt: '2025-06-19T14:30:00.000Z',
+      updatedAt: '2025-06-19T14:30:00.000Z'
+    }
+  }
+})
+@ApiResponse({
+  status: 400,
+  description: 'Datos inválidos',
+  schema: {
+    example: {
+      statusCode: 400,
+      message: 'userId debe ser un ObjectId válido',
+      error: 'Bad Request'
+    }
+  }
+})
+@ApiResponse({
+  status: 401,
+  description: 'Token JWT inválido o expirado',
+  schema: {
+    example: {
+      statusCode: 401,
+      message: 'Unauthorized',
+      error: 'Unauthorized'
+    }
+  }
+})
+async create(
+  @Body() createNotificationDto: CreateNotificationDto,
+): Promise<Notification> {
+  return this.notificationsService.create(createNotificationDto);
+}
+
+
 
   @Patch('mark-all-read')
   @ApiOperation({ 
@@ -755,4 +814,31 @@ export class NotificationsController {
         return NotificationType.SYSTEM_ALERT;
     }
   }
+@UseGuards(JwtAuthGuard)
+  @Post('adjustment')
+@ApiOperation({
+  summary: 'Crear notificación de ajuste razonable',
+  description: 'Crea una notificación relacionada con un ajuste razonable basado en el DTO AdjustmentNotificationDto',
+})
+@ApiBody({ type: AdjustmentNotificationDto })
+@ApiResponse({
+  status: 201,
+  description: 'Notificación de ajuste creada exitosamente',
+  type: Notification,
+})
+@ApiResponse({
+  status: 400,
+  description: 'Datos inválidos',
+})
+@ApiResponse({
+  status: 401,
+  description: 'Token JWT inválido o expirado',
+})
+async createAdjustmentNotification(
+  @Body() adjustmentNotificationDto: AdjustmentNotificationDto,
+): Promise<Notification> {
+    console.log('DTO completo:', adjustmentNotificationDto);
+  console.log('Reason recibido:', adjustmentNotificationDto.reason);
+  return this.notificationsService.createAdjustmentNotification(adjustmentNotificationDto);
+}
 }

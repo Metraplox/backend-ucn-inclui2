@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Types } from 'mongoose';
 
 /**
@@ -42,7 +42,8 @@ export class AdjustmentNotificationDto {
   @IsNotEmpty()
   adjustmentId: Types.ObjectId;
 
-  @ApiProperty({
+ 
+  @ApiPropertyOptional({
     description: 'Índice del ajuste en el array',
     example: 0,
   })
@@ -69,6 +70,7 @@ export class AdjustmentNotificationDto {
     example: 'Documentación incompleta',
     required: false,
   })
+  @IsOptional()
   reason?: string;
 
   @ApiProperty({
