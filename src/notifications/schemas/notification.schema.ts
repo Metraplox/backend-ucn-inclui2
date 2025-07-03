@@ -266,3 +266,6 @@ export class Notification {
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
+
+// Índice compuesto para acelerar queries por usuario, estado y fecha
+NotificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
