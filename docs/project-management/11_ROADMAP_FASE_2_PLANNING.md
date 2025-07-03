@@ -35,6 +35,31 @@ Con esta base sólida, el proyecto está listo para abordar las funcionalidades 
 
 ---
 
+## 📊 **Avances al 05 de Julio 2025**
+
+### Backend – Sistema de Notificaciones
+- `GET /notifications` ahora soporta parámetros `page` y `limit` (paginación eficiente, máx 100).
+- `PATCH /notifications/:id/read` y `PATCH /notifications/mark-all-read` permiten marcar una o todas como leídas.
+- Índice compuesto `{ userId, isRead, createdAt }` agregado al esquema para acelerar consultas.
+- CronJob diario `notificationsCleanup` elimina notificaciones > 90 días y mantiene la base ligera.
+
+### Frontend – Experiencia de Notificaciones
+- Creado `NotificationModel`, métodos REST `getNotifications`, `markAsRead`, `markAllRead` y contador via `/notifications/unread-count`.
+- Nueva pantalla `NotificationsScreen`: lista paginada, pull-to-refresh, swipe-to-read y botón "Marcar todas".
+- `HomeScreen` muestra badge dinámico y navega a la nueva pantalla.
+
+### Deuda técnica
+- Se corrigieron warnings `library_private_types_in_public_api` y `deprecated_member_use` en widgets clave.
+- Advertencias reales del analizador: **10** pendientes (todas INFO/WARNING).
+
+### Próximos pasos inmediatos (Sprint 4)
+- Pruebas unitarias para cron y endpoints de notificaciones.
+- Integrar WebSocket para recepción en tiempo real en Flutter.
+- Completar carga de historial en `StudentProfileScreen`.
+- Iniciar flujo de consentimiento con descarga PDF y subida de firma.
+
+---
+
 ## 📍 **Fase 1: Módulo de Gestión de Plazos y Semestre + Refactorización Técnica de Frontend**
 
 **Estado:** 🟢 **En Progreso**
