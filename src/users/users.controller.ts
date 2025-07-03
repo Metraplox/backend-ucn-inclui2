@@ -274,4 +274,39 @@ export class UsersController {
   ): Promise<UserPublicData> {
     return this.usersService.update(id, { roles });
   }
+
+  @Get(':id/roles')
+  @Roles(UserRole.COORDINADOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Obtener los roles de un usuario',
+    description: 'Permite a un coordinador obtener la lista de roles de un usuario.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del usuario',
+    type: String,
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Roles obtenidos exitosamente.',
+    schema: {
+      type: 'object',
+      properties: {
+        userId: { type: 'string' },
+        roles: { type: 'array', items: { type: 'string', enum: Object.values(UserRole) } }
+      }
+    }
+  })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  async getUserRoles(
+    @Param('id') id: string,
+  ): Promise<{ userId: string; roles: UserRole[] }> {
+    const user = await this.usersService.findById(id);
+    return {
+      userId: user._id.toString(),
+      roles: user.roles || [],
+    };
+  }
 }
