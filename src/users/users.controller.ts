@@ -111,6 +111,30 @@ export class UsersController {
     // El objeto user ya contiene toda la información necesaria gracias a la estrategia JWT
     return user;
   }
+  
+  @Get('teachers')
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @ApiOperation({
+    summary: 'Obtener todos los usuarios',
+    description: 'Retorna la lista completa de usuarios registrados en el sistema con sus datos públicos. Solo accesible para coordinadores y educadoras sociales.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de usuarios con datos públicos obtenida exitosamente.',
+    type: [UserPublicDataDto],
+    isArray: true,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'No autorizado - Token JWT inválido o expirado.' 
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: 'Prohibido - Usuario no tiene los roles requeridos (COORDINADOR o EDUCADORA_SOCIAL).' 
+  })
+  async findAllTeachers(): Promise<User[]> {
+    return this.usersService.findByRole(UserRole.DOCENTE);
+  }
 
   @Get(':id')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
@@ -222,4 +246,6 @@ export class UsersController {
     // Cambiado el tipo de retorno
     await this.usersService.remove(id);
   }
+  
+
 }

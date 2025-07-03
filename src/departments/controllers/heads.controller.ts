@@ -167,7 +167,6 @@ export class HeadsController {
   ): Promise<any[]> {
     const user = await this.usersService.findById(req.user._id);
     const responsibilities = user.additionalResponsibilities || {};
-
     const teachers: any[] = [];
 
     // Si es jefe de carrera
@@ -183,6 +182,8 @@ export class HeadsController {
             teacher.id.toString(),
             semester,
           );
+          
+
 
           // Contar estudiantes con NEE en sus cursos
           let studentsWithNEE = 0;
@@ -197,17 +198,15 @@ export class HeadsController {
             studentsWithNEE += adjustments.length;
 
             for (const adj of adjustments) {
+
               for (const currAdj of adj.currentAdjustments) {
                 if (currAdj.courseNrc === course.nrc) {
                   totalAdjustments++;
-                  if (
-                    currAdj.readBy &&
-                    currAdj.readBy.some(
-                      (r) => r.userId.toString() === teacher.id.toString(),
-                    )
-                  ) {
-                    readAdjustments++;
-                  }
+                  
+                  if (currAdj.readBy) {
+                    const leido = currAdj.readBy.some(r => r?.userId != null && r.userId.toString() === teacher.id.toString());
+            if (leido) readAdjustments++;
+}
                 }
               }
             }
@@ -265,14 +264,10 @@ export class HeadsController {
               for (const currAdj of adj.currentAdjustments) {
                 if (currAdj.courseNrc === course.nrc) {
                   totalAdjustments++;
-                  if (
-                    currAdj.readBy &&
-                    currAdj.readBy.some(
-                      (r) => r.userId.toString() === teacher._id.toString(),
-                    )
-                  ) {
-                    readAdjustments++;
-                  }
+                  if (currAdj.readBy) {
+                    const leido = currAdj.readBy.some(r => r?.userId != null && r.userId.toString() === teacher.id.toString());
+            if (leido) readAdjustments++;
+}
                 }
               }
             }
@@ -299,7 +294,6 @@ export class HeadsController {
         }
       }
     }
-
     return teachers;
   }
 

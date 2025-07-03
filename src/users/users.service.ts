@@ -157,61 +157,87 @@ const additionalResponsibilities = {
     return user;
   }
 
-  async update(
-    id: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<UserPublicData> {
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      throw new BadRequestException('El ID proporcionado no es válido.');
-    }
-    const existingUserDoc = await this.userModel.findById(id).exec();
-    if (!existingUserDoc) {
-      throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
-    }
+ async update(
+  id: string,
+  updateUserDto: UpdateUserDto,
+): Promise<UserPublicData> {
+  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    throw new BadRequestException('El ID proporcionado no es válido.');
+  }
 
-    const {
-      email: newEmail,
-      password,
-      nombreCompleto,
-      roles,
-      isActive,
-    } = updateUserDto;
+  const existingUserDoc = await this.userModel.findById(id).exec();
+  if (!existingUserDoc) {
+    throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
+  }
 
-    if (newEmail && newEmail !== existingUserDoc.email) {
-      const userWithNewEmail = await this.userModel
-        .findOne({ email: newEmail })
-        .exec();
-      if (userWithNewEmail) {
-        throw new ConflictException(
-          'El nuevo correo electrónico ya está registrado por otro usuario.',
-        );
-      }
-      existingUserDoc.email = newEmail;
-    }
+  const {
+    email: newEmail,
+    password,
+    nombreCompleto,
+    roles,
+    isActive,
+    additionalResponsibilities, // ⬅️ nuevo
+  } = updateUserDto;
 
-    if (nombreCompleto !== undefined) {
-      existingUserDoc.nombreCompleto = nombreCompleto;
-    }
-    if (roles !== undefined) {
-      existingUserDoc.roles = roles;
-    }
-    if (isActive !== undefined) {
-      existingUserDoc.isActive = isActive;
-    }
-
-    if (password) {
-      existingUserDoc.password_hash = await bcrypt.hash(password, 10);
-    }
-  
-    try {
-      const updatedUser = await existingUserDoc.save();
-      return this.toPublicUserData(updatedUser);
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Ocurrió un error al actualizar el usuario.',
+  if (newEmail && newEmail !== existingUserDoc.email) {
+    const userWithNewEmail = await this.userModel
+      .findOne({ email: newEmail })
+      .exec();
+    if (userWithNewEmail) {
+      throw new ConflictException(
+        'El nuevo correo electrónico ya está registrado por otro usuario.',
       );
     }
+    existingUserDoc.email = newEmail;
   }
+
+  if (nombreCompleto !== undefined) {
+    existingUserDoc.nombreCompleto = nombreCompleto;
+  }
+  if (roles !== undefined) {
+    existingUserDoc.roles = roles;
+  }
+  if (isActive !== undefined) {
+    existingUserDoc.isActive = isActive;
+  }
+
+  if (password) {
+    existingUserDoc.password_hash = await bcrypt.hash(password, 10);
+  }
+
+  // ✅ Aquí actualizamos responsabilidades adicionales
+  if (additionalResponsibilities) {
+    const ar = existingUserDoc.additionalResponsibilities ?? {};
+
+    if ('isDepartmentHead' in additionalResponsibilities)
+      ar.isDepartmentHead = additionalResponsibilities.isDepartmentHead;
+
+    if ('isCareerHead' in additionalResponsibilities)
+      ar.isCareerHead = additionalResponsibilities.isCareerHead;
+
+    if ('isDIDDECStaff' in additionalResponsibilities)
+      ar.isDIDDECStaff = additionalResponsibilities.isDIDDECStaff;
+
+    if ('departmentIds' in additionalResponsibilities && additionalResponsibilities.departmentIds) {
+  ar.departmentIds = additionalResponsibilities.departmentIds.map((id) => new Types.ObjectId(id));
+}
+
+if ('careerIds' in additionalResponsibilities && additionalResponsibilities.careerIds) {
+  ar.careerIds = additionalResponsibilities.careerIds.map((id) => new Types.ObjectId(id));
+}
+
+    existingUserDoc.additionalResponsibilities = ar;
+  }
+
+  try {
+    const updatedUser = await existingUserDoc.save();
+    return this.toPublicUserData(updatedUser);
+  } catch (error) {
+    throw new InternalServerErrorException(
+      'Ocurrió un error al actualizar el usuario.',
+    );
+  }
+}
 
   async remove(id: string): Promise<{ deleted: boolean; message?: string }> {
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {

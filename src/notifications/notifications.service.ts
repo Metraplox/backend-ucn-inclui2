@@ -35,7 +35,6 @@ const existingNotification = await this.notificationRepository.findOneByFilter(f
 
 async createAdjustmentNotification(dto: AdjustmentNotificationDto): Promise<Notification> {
   const notificationType = this.mapAdjustmentTypeToNotificationType(dto.notificationType);
-    console.log('reason:', dto.reason);
 
 
   const createDto: CreateNotificationDto = {
@@ -45,7 +44,7 @@ async createAdjustmentNotification(dto: AdjustmentNotificationDto): Promise<Noti
     type: notificationType,            // <- aquí asignas el tipo correcto para la BD
     semester: dto.semester,
     isRead: false,
-    priority: NotificationPriority.MEDIUM,
+    priority: NotificationPriority.HIGH,
     adjustmentId: dto.adjustmentId.toString(),
     metadata: {
       adjustmentIndex: dto.adjustmentIndex,
