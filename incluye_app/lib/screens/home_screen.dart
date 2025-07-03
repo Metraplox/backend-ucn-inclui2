@@ -7,6 +7,7 @@ import 'package:incluye_app/screens/courses/courses_list_screen.dart';
 import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/screens/students/student_career_screen.dart';
 import 'package:incluye_app/screens/teachers/teachers_by_career.dart';
+import 'package:incluye_app/screens/teachers/teachers_list.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/auth_service.dart';
@@ -422,7 +423,12 @@ class _HomeScreenState extends State<HomeScreen> {
             Icons.warning,
             Colors.red,
             onTap: () {
-              /* ... */
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              );
             },
           ),
           const SizedBox(height: 24),
@@ -656,6 +662,45 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const StudentListScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Gestión de Profesores',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          _buildFeatureCard(
+            'Listado de Profesores',
+            'Ver todos Docentes',
+            Icons.list_alt,
+            Colors.indigo,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TeachersListScreen(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 24),
+          const Text(
+            'Gestión de Usuarios',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          _buildFeatureCard(
+            'Creación, edición, eliminación de usuarios',
+            'Ver todos los usuarios',
+            Icons.list_alt,
+            Colors.indigo,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TeachersListScreen(),
                 ),
               );
             },

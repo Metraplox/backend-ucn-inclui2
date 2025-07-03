@@ -232,7 +232,7 @@ class NotificationService {
     String studentName,
   ) async {
     final body = jsonEncode({
-      'userId': userId,
+      'userId': '684a18607351fc59d85c09c9',
       'adjustmentId': idAdjustment,
       'notificationType': 'adjustment_help_requested',
       'reason':
@@ -265,5 +265,55 @@ class NotificationService {
         "Error al solicitar ajuste: ${response.statusCode} - ${response.statusMessage}",
       );
     }
+  }
+
+  static Future<void> teacherAdjustmentReadNotification(
+    String courseName,
+    String studentName,
+  ) async {
+    final token = ApiService.getToken();
+    try {
+      final body = jsonEncode({
+        "userId": "684a18607351fc59d85c09c9", //ID COORDINADOR ADMIN
+        "title": "Ajuste razonable leído",
+        "message":
+            "Ajuste del alumno: $studentName en curso: $courseName leído.",
+        "type": "TEACHER_ACKNOWLEDGMENT_RECEIVED",
+        "semester": "2025-1",
+        "priority": "MEDIUM",
+        "studentId": "68631c4b6b6a1fcb94c337cf",
+        "adjustmentId": "6864c4b015905714bc177ef5",
+        "courseId": "684bc8341d1770fb2d6f6837",
+        "expiresAt": "2025-12-31T23:59:59.999Z",
+        "isRead": false,
+      });
+      final response = await ApiService.dio.post(
+        '/notifications',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          validateStatus: (status) => status! < 500,
+        ),
+        data: body,
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      } else if (response.statusCode == 409) {
+        throw Exception('Notificación duplicada');
+      } else {
+        throw Exception(
+          "Error al solicitar ajuste: ${response.statusCode} - ${response.statusMessage}",
+        );
+      }
+    } catch (e) {
+      throw Exception("Error al envíar notificacion de lectura ajuste: $e");
+    }
+  }
+
+  static Future<void> sendCreateStudentNotification()async{
+
   }
 }

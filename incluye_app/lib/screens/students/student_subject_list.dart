@@ -250,6 +250,9 @@ class _StudentSubjectListScreenState extends State<StudentSubjectListScreen> {
                                                 (context) =>
                                                     StudentAdjustmentSubjectScreen(
                                                       studentId: student.id,
+                                                      studentName:
+                                                          student
+                                                              .nombreCompleto,
                                                       courseNrc:
                                                           widget.courseNrc,
                                                       courseId: widget.courseId,

@@ -73,7 +73,7 @@ class NotificationsScreenState extends State<NotificationsScreen>
               matchesTab = !notification.isRead;
             } else if (_tabController.index == 2) {
               // Importantes
-              matchesTab = notification.priority == 'HIGH';
+              matchesTab = notification.priority == NotificationPriority.HIGH;
             }
 
             return matchesType && matchesReadStatus && matchesTab;
@@ -565,7 +565,7 @@ class NotificationsScreenState extends State<NotificationsScreen>
         return 'Ajuste creado';
       case 'NotificationType.ADJUSTMENT_UPDATED':
         return 'Ajuste actualizado';
-      case 'NotificationType.ADJUSMENT_APPROVAL_NEEDED':
+      case 'NotificationType.ADJUSTMENT_APPROVAL_NEEDED':
         return 'Ajuste necesita aprobación';
       case 'NotificationType.ADJUSMENT_APPROVED':
         return 'Ajuste fue aprobado';

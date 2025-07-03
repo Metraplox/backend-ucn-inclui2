@@ -1,5 +1,6 @@
 // services/student_service.dart
 import 'package:dio/dio.dart';
+import 'package:incluye_app/models/course_model.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 import 'package:incluye_app/models/user_model.dart';
@@ -248,8 +249,9 @@ class StudentService {
     //print("StudentService: Solicitando estudiante por ID: $id");
     try {
       final response = await ApiService.dio.get('/students/$id');
+      print(response);
       if (response.statusCode == 200) {
-        final responseBody = response.data;
+        final responseBody = response.data['data'];
         if (responseBody is Map &&
             responseBody.containsKey('data') &&
             responseBody['data'] is Map) {
@@ -329,5 +331,31 @@ class StudentService {
   static Future<String> getStudentId() async {
     final studentProfileData = await getStudentProfile();
     return studentProfileData!.id;
+  }
+
+  static Future<List<Course>> getStudentCourses(String studentId) async {
+    final token = await ApiService.getToken();
+    try {
+      final response = await ApiService.dio.get(
+        '/courses/student/$studentId',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        final listData = response.data['data']['data'];
+        final cursos =
+            listData.map<Course>((json) => Course.fromJson(json)).toList();
+        return cursos;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      throw Exception("Error al obtener los cursos del estudiante: $e");
+    }
   }
 }

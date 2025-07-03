@@ -142,4 +142,29 @@ class CareerService {
       return [];
     }
   }
+
+  static Future<List<dynamic>> getAllTeachers() async {
+    final token = await ApiService.getToken();
+    if (token != null) {
+      try {
+        final response = await ApiService.dio.get(
+          '/users/teachers',
+          options: Options(
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          ),
+        );
+        final responseData = response.data;
+        final List<dynamic> teacherList = response.data['data']['data'];
+
+        return teacherList;
+      } catch (e) {
+        throw Exception("Error al obtener los profesores: $e");
+      }
+    }
+    return [];
+  }
 }

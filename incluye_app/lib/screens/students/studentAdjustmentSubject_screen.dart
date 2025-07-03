@@ -6,16 +6,19 @@ import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/course_service.dart';
+import 'package:incluye_app/services/notification_service.dart';
 
 class StudentAdjustmentSubjectScreen extends StatefulWidget {
   final String studentId;
   final String courseNrc;
   final String courseId;
+  final String studentName;
   const StudentAdjustmentSubjectScreen({
     super.key,
     required this.studentId,
     required this.courseNrc,
     required this.courseId,
+    required this.studentName,
   });
 
   @override
@@ -109,12 +112,18 @@ class _StudentAdjustmentSubjectScreenState
   Future<void> _sendCheckAdjustment(
     String adjustmentId,
     int adjustmentIndex,
+    String courseName,
+    String studentName,
   ) async {
     setState(() {
       _checkLoading = true;
     });
     try {
       await AdjustmentService.setReadAdjustment(adjustmentId, adjustmentIndex);
+      await NotificationService.teacherAdjustmentReadNotification(
+        courseName,
+        studentName,
+      );
       setState(() {
         _adjustmentChecked[adjustmentId] = true;
       });
@@ -168,7 +177,12 @@ class _StudentAdjustmentSubjectScreenState
                               final adjustmentIndex =
                                   _adjustmentsWithIds[index]['adjustmentIndex']
                                       as int;
-                              _sendCheckAdjustment(saId, adjustmentIndex);
+                              _sendCheckAdjustment(
+                                saId,
+                                adjustmentIndex,
+                                widget.courseNrc,
+                                widget.studentName,
+                              );
                             }
                           },
                         ),
