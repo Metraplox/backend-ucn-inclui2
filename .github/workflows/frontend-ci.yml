@@ -1,0 +1,36 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.12.0
+        with:
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        working-directory: front/backend-ucn-inclui2/incluye_app
+        run: flutter pub get
+
+      - name: Static analysis (no fatal infos)
+        working-directory: front/backend-ucn-inclui2/incluye_app
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Run unit tests
+        working-directory: front/backend-ucn-inclui2/incluye_app
+        run: flutter test
+
+      - name: Build Web artefact (optional)
+        if: github.event_name == 'push'
+        working-directory: front/backend-ucn-inclui2/incluye_app
+        run: flutter build web --release 

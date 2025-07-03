@@ -39,6 +39,10 @@ jobs:
         working-directory: back/backend-ucn-inclui2
         run: npm run test -- --runInBand
 
+      - name: Run e2e tests
+        working-directory: back/backend-ucn-inclui2
+        run: npm run test:e2e -- --runInBand
+
       - name: Tear down
         if: always()
         run: docker compose -f back/backend-ucn-inclui2/docker-compose.yml down -v 
