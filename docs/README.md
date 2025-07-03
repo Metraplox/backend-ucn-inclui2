@@ -1,56 +1,51 @@
-# 📚 Documentación UCN INCLUI2 Backend
+# 📚 Documentación UCN INCLUI2
 
-> **🎉 PROYECTO COMPLETAMENTE FINALIZADO - PRODUCTION READY**  
-> **📅 Última actualización:** 19/06/2025  
-> **🎯 Estado:** ✅ Listo para equipo Frontend
-
----
-
-## 🚀 ¡BIENVENIDOS DESARROLLADORES FRONTEND!
-
-El backend UCN INCLUI2 está **100% completado, probado y documentado**. Esta carpeta contiene toda la información necesaria para integrar el frontend exitosamente.
+> **🎯 Estado:** 🟢 **FASE 2 DE DESARROLLO ACTIVA**
+> **📅 Última actualización:** 03 de Julio 2025
+> **🗺️ Guía Principal:** **[Hoja de Ruta de Desarrollo - Fase 2](05-roadmap/project-management/11_ROADMAP_FASE_2_PLANNING.md)**
 
 ---
 
-## 📋 GUÍAS RÁPIDAS
+## 🚀 ¡BIENVENIDOS AL DESARROLLO DE LA FASE 2!
 
-### 🎯 **Para Desarrolladores Frontend**
-- **[🏁 Estado Final del Proyecto](ESTADO_FINAL_PROYECTO.md)** - ¡EMPEZAR AQUÍ!
-- **[🚀 Proyecto Finalizado](../PROYECTO_FINALIZADO_README.md)** - Guía completa de entrega
-- **[📊 Endpoints Disponibles](ALL_ENDPOINTS_SWAGGER.md)** - API Reference completa
+El proyecto ha entrado en una nueva fase de desarrollo para implementar funcionalidades de negocio avanzadas. La documentación ha sido reorganizada para facilitar el acceso a la información relevante.
 
-### ⚡ **Setup Inmediato**
-- **[🎬 Getting Started](00-getting-started/)** - Configuración paso a paso
-- **[🔧 Quick Setup](00-getting-started/quick-setup.md)** - Inicio en 5 minutos
-- **[📖 Project Overview](00-getting-started/project-overview.md)** - Visión general
+**La nueva hoja de ruta es el documento central que guía todo el trabajo de desarrollo. Por favor, consúltalo antes de empezar.**
 
 ---
 
-## 🏗️ ARQUITECTURA Y DESARROLLO
+## 📋 GUÍAS RÁPIDAS Y ESTRUCTURA
 
-### 📐 **Arquitectura del Sistema**
-- **[🏛️ Database Design](01-architecture/database-design.md)** - Modelo de datos
-- **[📡 API Documentation](01-architecture/API_DOCUMENTATION.md)** - Documentación técnica
-- **[🔄 System Architecture](01-architecture/system-architecture.md)** - Arquitectura completa
+### 🗺️ **Planificación y Gestión**
+- **[📍 Hoja de Ruta Activa](05-roadmap/project-management/11_ROADMAP_FASE_2_PLANNING.md)** - ¡EMPEZAR AQUÍ!
+- **[🔄 Changelog del Proyecto](05-roadmap/project-management/changelog.md)** - Historial de cambios.
+- **[Sprint 2 - Resumen](05-roadmap/project-management/10_SPRINT_2_RESUMEN_EJECUTIVO_03072025.md)** - Últimos logros.
 
-### 👨‍💻 **Guías de Desarrollo**
-- **[💻 Coding Standards](02-development/coding-standards.md)** - Estándares de código
-- **[🔐 Authentication Guide](02-development/auth-guide.md)** - Implementación auth
-- **[🛡️ Consent System](02-development/consent-system.md)** - Sistema de consentimientos
+### 🏗️ **Arquitectura y Guías Técnicas**
+- **[🏁 Getting Started](00-getting-started/)** - Configuración inicial del proyecto.
+- **[🏛️ Arquitectura del Sistema](01-architecture/)** - Diseño de la API y base de datos.
+- **[🧪 Guías de Testing](03-testing/)** - Cómo probar y validar el código.
+- **[🚀 Guías de Deployment](04-deployment/)** - Cómo desplegar el proyecto.
+- **[📱 Documentación Frontend](frontend/)** - Guías específicas de Flutter.
+
+### 📦 **Recursos Archivados**
+- **[🗄️ Archivo](archive/)** - Documentos de fases anteriores o reportes obsoletos.
 
 ---
 
-## 🧪 TESTING Y VALIDACIÓN
+## 🎯 FOCO ACTUAL: FASE 1 DEL ROADMAP
 
-### ✅ **Testing Completo**
-- **[📋 Testing Guide](TESTING_ENDPOINTS_GUIDE.md)** - Guía de testing
-- **[🎯 Comprehensive Report](03-testing/COMPREHENSIVE_TESTING_REPORT.md)** - Reporte completo
-- **[🔍 Testing Scripts](03-testing/scripts/)** - Scripts automatizados
+Actualmente estamos trabajando en las tareas definidas en la **Fase 1** de la hoja de ruta:
 
-### 📊 **Reportes de Estado**
-- **[📈 Sistema 100% Operativo](ESTADO_SISTEMA_19-06-2025.md)** - Estado actual
-- **[🧹 Backend Limpio](LIMPIEZA_BACKEND_19-06-2025.md)** - Limpieza realizada
-- **[📋 Plan Ejecutivo](PLAN_EJECUTIVO_100_PERCENT.md)** - Plan completado
+1.  **Refactorización Técnica del Frontend:**
+    - Implementación del Patrón Repositorio.
+    - Adopción de Provider para estado global.
+    - Centralización de constantes.
+2.  **Módulo de Gestión de Plazos (Backend y Frontend):**
+    - Creación del `SemesterConfig`.
+    - Desarrollo de la UI de gestión.
+
+Cualquier duda sobre las tareas actuales o futuras debe ser resuelta consultando la **[Hoja de Ruta Activa](05-roadmap/project-management/11_ROADMAP_FASE_2_PLANNING.md)**.
 
 ---
 
