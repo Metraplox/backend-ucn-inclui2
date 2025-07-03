@@ -12,7 +12,7 @@
 
 ## Fase 3: Desarrollo Avanzado (En Progreso)
 - **Funcionalidad Multi-Rol (Completada):** Implementación de la capacidad para que un usuario pueda tener múltiples roles y cambiar entre ellos.
-- **Notificaciones:** Desarrollo del sistema de notificaciones para alertar a los usuarios sobre eventos importantes.
+- **Notificaciones (Completada):** Desarrollo del sistema de notificaciones para alertar a los usuarios sobre eventos importantes.
 - **Reportes:** Implementación de la generación de reportes personalizados por rol.
 - **Gestión de Documentos:** Sistema para la carga, verificación y gestión de documentos.
 
