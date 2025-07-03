@@ -1,0 +1,2058 @@
+[{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_field",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_field",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the field '_totalAdjustments' isn't used.\nTry removing the field, or using it.",
+	"source": "dart",
+	"startLineNumber": 43,
+	"startColumn": 7,
+	"endLineNumber": 43,
+	"endColumn": 24
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_field",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_field",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the field '_pendingAlerts' isn't used.\nTry removing the field, or using it.",
+	"source": "dart",
+	"startLineNumber": 44,
+	"startColumn": 7,
+	"endLineNumber": 44,
+	"endColumn": 21
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_element",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_element",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The declaration '_buildStatCard' isn't referenced.\nTry removing the declaration of '_buildStatCard'.",
+	"source": "dart",
+	"startLineNumber": 629,
+	"startColumn": 10,
+	"endLineNumber": 629,
+	"endColumn": 24
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_element",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_element",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The declaration '_buildUnitItem' isn't referenced.\nTry removing the declaration of '_buildUnitItem'.",
+	"source": "dart",
+	"startLineNumber": 701,
+	"startColumn": 10,
+	"endLineNumber": 701,
+	"endColumn": 24
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "empty_catches",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/empty_catches",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Empty catch block.\nTry adding statements to the block, adding a comment to the block, or removing the 'catch' clause.",
+	"source": "dart",
+	"startLineNumber": 155,
+	"startColumn": 19,
+	"endLineNumber": 155,
+	"endColumn": 21
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 239,
+	"startColumn": 11,
+	"endLineNumber": 239,
+	"endColumn": 16
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 241,
+	"startColumn": 13,
+	"endLineNumber": 241,
+	"endColumn": 18
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_career_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_field",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_field",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the field '_checkLoading' isn't used.\nTry removing the field, or using it.",
+	"source": "dart",
+	"startLineNumber": 22,
+	"startColumn": 8,
+	"endLineNumber": 22,
+	"endColumn": 21
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_career_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "dead_null_aware_expression",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/dead_null_aware_expression",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The left operand can't be null, so the right operand is never executed.\nTry removing the operator and the right operand.",
+	"source": "dart",
+	"startLineNumber": 94,
+	"startColumn": 21,
+	"endLineNumber": 94,
+	"endColumn": 26
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_element",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_element",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The declaration '_formatDateString' isn't referenced.\nTry removing the declaration of '_formatDateString'.",
+	"source": "dart",
+	"startLineNumber": 99,
+	"startColumn": 10,
+	"endLineNumber": 99,
+	"endColumn": 27
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_element",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_element",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The declaration '_formatDateTime' isn't referenced.\nTry removing the declaration of '_formatDateTime'.",
+	"source": "dart",
+	"startLineNumber": 112,
+	"startColumn": 10,
+	"endLineNumber": 112,
+	"endColumn": 25
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_local_variable",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_local_variable",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the local variable 'adjustment' isn't used.\nTry removing the variable or using it.",
+	"source": "dart",
+	"startLineNumber": 399,
+	"startColumn": 35,
+	"endLineNumber": 399,
+	"endColumn": 45
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 35,
+	"startColumn": 5,
+	"endLineNumber": 35,
+	"endColumn": 10
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 42,
+	"startColumn": 5,
+	"endLineNumber": 42,
+	"endColumn": 10
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 43,
+	"startColumn": 5,
+	"endLineNumber": 43,
+	"endColumn": 10
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 51,
+	"startColumn": 9,
+	"endLineNumber": 51,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 73,
+	"startColumn": 9,
+	"endLineNumber": 73,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 88,
+	"startColumn": 7,
+	"endLineNumber": 88,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 89,
+	"startColumn": 7,
+	"endLineNumber": 89,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 107,
+	"startColumn": 7,
+	"endLineNumber": 107,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 129,
+	"startColumn": 7,
+	"endLineNumber": 129,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 140,
+	"startColumn": 5,
+	"endLineNumber": 140,
+	"endColumn": 10
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 175,
+	"startColumn": 7,
+	"endLineNumber": 175,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_subject_list.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_field",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_field",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the field '_checkLoading' isn't used.\nTry removing the field, or using it.",
+	"source": "dart",
+	"startLineNumber": 25,
+	"startColumn": 8,
+	"endLineNumber": 25,
+	"endColumn": 21
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_subject_list.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "dead_null_aware_expression",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/dead_null_aware_expression",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The left operand can't be null, so the right operand is never executed.\nTry removing the operator and the right operand.",
+	"source": "dart",
+	"startLineNumber": 84,
+	"startColumn": 21,
+	"endLineNumber": 84,
+	"endColumn": 26
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/studentAdjustmentSubject_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_field",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_field",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the field '_isLoading' isn't used.\nTry removing the field, or using it.",
+	"source": "dart",
+	"startLineNumber": 26,
+	"startColumn": 8,
+	"endLineNumber": 26,
+	"endColumn": 18
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/studentAdjustmentSubject_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_field",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_field",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the field '_adjustments' isn't used.\nTry removing the field, or using it.",
+	"source": "dart",
+	"startLineNumber": 32,
+	"startColumn": 26,
+	"endLineNumber": 32,
+	"endColumn": 38
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/studentAdjustmentSubject_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "dead_null_aware_expression",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/dead_null_aware_expression",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The left operand can't be null, so the right operand is never executed.\nTry removing the operator and the right operand.",
+	"source": "dart",
+	"startLineNumber": 155,
+	"startColumn": 42,
+	"endLineNumber": 155,
+	"endColumn": 52
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/studentAdjustmentSubject_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "dead_null_aware_expression",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/dead_null_aware_expression",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The left operand can't be null, so the right operand is never executed.\nTry removing the operator and the right operand.",
+	"source": "dart",
+	"startLineNumber": 158,
+	"startColumn": 49,
+	"endLineNumber": 158,
+	"endColumn": 66
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/studentAdjustmentSubject_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "file_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/file_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The file name 'studentAdjustmentSubject_screen.dart' isn't a lower_case_with_underscores identifier.\nTry changing the name to follow the lower_case_with_underscores style.\nYou may need to close the file and restart VS Code after renaming a file by only casing.",
+	"source": "dart",
+	"startLineNumber": 1,
+	"startColumn": 1,
+	"endLineNumber": 1,
+	"endColumn": 1
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/studentAdjustmentSubject_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "use_build_context_synchronously",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/use_build_context_synchronously",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't use 'BuildContext's across async gaps.\nTry rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check.",
+	"source": "dart",
+	"startLineNumber": 49,
+	"startColumn": 28,
+	"endLineNumber": 49,
+	"endColumn": 35
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/studentAdjustmentSubject_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "use_build_context_synchronously",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/use_build_context_synchronously",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't use 'BuildContext's across async gaps.\nTry rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check.",
+	"source": "dart",
+	"startLineNumber": 100,
+	"startColumn": 9,
+	"endLineNumber": 100,
+	"endColumn": 16
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/studentAdjustmentSubject_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "use_build_context_synchronously",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/use_build_context_synchronously",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't use 'BuildContext's across async gaps.\nTry rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check.",
+	"source": "dart",
+	"startLineNumber": 118,
+	"startColumn": 28,
+	"endLineNumber": 118,
+	"endColumn": 35
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/widgets/app_scaffold.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_import",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_import",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "Unused import: 'package:incluye_app/services/api_service.dart'.\nTry removing the import directive.",
+	"source": "dart",
+	"startLineNumber": 2,
+	"startColumn": 8,
+	"endLineNumber": 2,
+	"endColumn": 55
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/diddec/resource_uploader_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "library_private_types_in_public_api",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/library_private_types_in_public_api",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Invalid use of a private type in a public API.\nTry making the private type public, or making the API that uses the private type also be private.",
+	"source": "dart",
+	"startLineNumber": 9,
+	"startColumn": 3,
+	"endLineNumber": 9,
+	"endColumn": 31
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "library_private_types_in_public_api",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/library_private_types_in_public_api",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Invalid use of a private type in a public API.\nTry making the private type public, or making the API that uses the private type also be private.",
+	"source": "dart",
+	"startLineNumber": 14,
+	"startColumn": 3,
+	"endLineNumber": 14,
+	"endColumn": 19
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/home_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": "todo",
+	"severity": 2,
+	"message": "TODO: Navegar a la pantalla de notificaciones",
+	"source": "dart",
+	"startLineNumber": 136,
+	"startColumn": 12,
+	"endLineNumber": 136,
+	"endColumn": 57
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/profile/change_password_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "library_private_types_in_public_api",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/library_private_types_in_public_api",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Invalid use of a private type in a public API.\nTry making the private type public, or making the API that uses the private type also be private.",
+	"source": "dart",
+	"startLineNumber": 9,
+	"startColumn": 3,
+	"endLineNumber": 9,
+	"endColumn": 29
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/splash_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "library_private_types_in_public_api",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/library_private_types_in_public_api",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Invalid use of a private type in a public API.\nTry making the private type public, or making the API that uses the private type also be private.",
+	"source": "dart",
+	"startLineNumber": 11,
+	"startColumn": 3,
+	"endLineNumber": 11,
+	"endColumn": 21
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/students/student_create_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "curly_braces_in_flow_control_structures",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/curly_braces_in_flow_control_structures",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Statements in an if should be enclosed in a block.\nTry wrapping the statement in a block.",
+	"source": "dart",
+	"startLineNumber": 372,
+	"startColumn": 13,
+	"endLineNumber": 372,
+	"endColumn": 52
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/students/student_create_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "curly_braces_in_flow_control_structures",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/curly_braces_in_flow_control_structures",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Statements in an if should be enclosed in a block.\nTry wrapping the statement in a block.",
+	"source": "dart",
+	"startLineNumber": 389,
+	"startColumn": 7,
+	"endLineNumber": 389,
+	"endColumn": 31
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "deprecated_member_use",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/deprecated_member_use",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.\nTry replacing the use of the deprecated member with the replacement.",
+	"source": "dart",
+	"startLineNumber": 243,
+	"startColumn": 34,
+	"endLineNumber": 243,
+	"endColumn": 45,
+	"tags": [
+		2
+	]
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/students/student_own_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "deprecated_member_use",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/deprecated_member_use",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "'v' is deprecated and shouldn't be used. [Level.verbose] is being deprecated in favor of [Level.trace], use [t] instead.\nTry replacing the use of the deprecated member with the replacement.",
+	"source": "dart",
+	"startLineNumber": 72,
+	"startColumn": 13,
+	"endLineNumber": 72,
+	"endColumn": 14,
+	"tags": [
+		2
+	]
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": "todo",
+	"severity": 2,
+	"message": "TODO: Cargar desde el backend",
+	"source": "dart",
+	"startLineNumber": 30,
+	"startColumn": 30,
+	"endLineNumber": 30,
+	"endColumn": 59
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": "todo",
+	"severity": 2,
+	"message": "TODO: Aquí también deberías llamar a métodos para cargar _cursosPorPeriodo y _ajustes",
+	"source": "dart",
+	"startLineNumber": 72,
+	"startColumn": 8,
+	"endLineNumber": 72,
+	"endColumn": 93
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/services/auth_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "invalid_runtime_check_with_js_interop_types",
+		"target": {
+			"$mid": 1,
+			"path": "/lints/invalid_runtime_check_with_js_interop_types",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Runtime check between 'JSAny' and 'JSString' involves a non-trivial runtime check between two JS interop types that might not be platform-consistent.\nTry using a JS interop member like 'isA' from 'dart:js_interop' to check the underlying type of JS interop values.",
+	"source": "dart",
+	"startLineNumber": 86,
+	"startColumn": 29,
+	"endLineNumber": 86,
+	"endColumn": 47
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/services/notification_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": "todo",
+	"severity": 2,
+	"message": "TODO: Implementar lógica real consultando backend o caché.",
+	"source": "dart",
+	"startLineNumber": 108,
+	"startColumn": 8,
+	"endLineNumber": 108,
+	"endColumn": 66
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/services/notification_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": "todo",
+	"severity": 2,
+	"message": "TODO: Guardar en almacenamiento local la última fecha de revisión.",
+	"source": "dart",
+	"startLineNumber": 113,
+	"startColumn": 8,
+	"endLineNumber": 113,
+	"endColumn": 74
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/services/notification_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": "todo",
+	"severity": 2,
+	"message": "TODO: Eliminar la llamada a este método en home_screen.dart y luego eliminar este método.",
+	"source": "dart",
+	"startLineNumber": 185,
+	"startColumn": 8,
+	"endLineNumber": 185,
+	"endColumn": 97
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/utils/logger.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "deprecated_member_use",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/deprecated_member_use",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "'printTime' is deprecated and shouldn't be used. Use `dateTimeFormat` with `DateTimeFormat.onlyTimeAndSinceStart` or `DateTimeFormat.none` instead.\nTry replacing the use of the deprecated member with the replacement.",
+	"source": "dart",
+	"startLineNumber": 11,
+	"startColumn": 5,
+	"endLineNumber": 11,
+	"endColumn": 14,
+	"tags": [
+		2
+	]
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/widgets/change_password_dialog.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "library_private_types_in_public_api",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/library_private_types_in_public_api",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Invalid use of a private type in a public API.\nTry making the private type public, or making the API that uses the private type also be private.",
+	"source": "dart",
+	"startLineNumber": 10,
+	"startColumn": 3,
+	"endLineNumber": 10,
+	"endColumn": 29
+},{
+	"resource": "/c:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/front/backend-ucn-inclui2/incluye_app/lib/widgets/user_form_dialog.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "library_private_types_in_public_api",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/library_private_types_in_public_api",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Invalid use of a private type in a public API.\nTry making the private type public, or making the API that uses the private type also be private.",
+	"source": "dart",
+	"startLineNumber": 12,
+	"startColumn": 3,
+	"endLineNumber": 12,
+	"endColumn": 23
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/models/courseWithAdjustment_model.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "file_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/file_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The file name 'courseWithAdjustment_model.dart' isn't a lower_case_with_underscores identifier.\nTry changing the name to follow the lower_case_with_underscores style.\nYou may need to close the file and restart VS Code after renaming a file by only casing.",
+	"source": "dart",
+	"startLineNumber": 1,
+	"startColumn": 1,
+	"endLineNumber": 1,
+	"endColumn": 1
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/models/studentAdjustment.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "file_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/file_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The file name 'studentAdjustment.dart' isn't a lower_case_with_underscores identifier.\nTry changing the name to follow the lower_case_with_underscores style.\nYou may need to close the file and restart VS Code after renaming a file by only casing.",
+	"source": "dart",
+	"startLineNumber": 1,
+	"startColumn": 1,
+	"endLineNumber": 1,
+	"endColumn": 1
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/models/teacherStats_model.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "file_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/file_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The file name 'teacherStats_model.dart' isn't a lower_case_with_underscores identifier.\nTry changing the name to follow the lower_case_with_underscores style.\nYou may need to close the file and restart VS Code after renaming a file by only casing.",
+	"source": "dart",
+	"startLineNumber": 1,
+	"startColumn": 1,
+	"endLineNumber": 1,
+	"endColumn": 1
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/auth/google_signin_inerop.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "non_constant_identifier_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/non_constant_identifier_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The variable name 'client_id' isn't a lowerCamelCase identifier.\nTry changing the name to follow the lowerCamelCase style.",
+	"source": "dart",
+	"startLineNumber": 15,
+	"startColumn": 23,
+	"endLineNumber": 15,
+	"endColumn": 32
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/auth/google_signin_inerop.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "non_constant_identifier_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/non_constant_identifier_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The variable name 'auto_select' isn't a lowerCamelCase identifier.\nTry changing the name to follow the lowerCamelCase style.",
+	"source": "dart",
+	"startLineNumber": 17,
+	"startColumn": 21,
+	"endLineNumber": 17,
+	"endColumn": 32
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/auth/google_signin_inerop.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "non_constant_identifier_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/non_constant_identifier_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The variable name 'client_id' isn't a lowerCamelCase identifier.\nTry changing the name to follow the lowerCamelCase style.",
+	"source": "dart",
+	"startLineNumber": 20,
+	"startColumn": 12,
+	"endLineNumber": 20,
+	"endColumn": 21
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/auth/google_signin_inerop.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "non_constant_identifier_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/non_constant_identifier_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The variable name 'auto_select' isn't a lowerCamelCase identifier.\nTry changing the name to follow the lowerCamelCase style.",
+	"source": "dart",
+	"startLineNumber": 22,
+	"startColumn": 10,
+	"endLineNumber": 22,
+	"endColumn": 21
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/auth/login_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 47,
+	"startColumn": 7,
+	"endLineNumber": 47,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/auth/login_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 48,
+	"startColumn": 7,
+	"endLineNumber": 48,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/auth/login_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 136,
+	"startColumn": 9,
+	"endLineNumber": 136,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/courses/courses_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 27,
+	"startColumn": 7,
+	"endLineNumber": 27,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_create_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 60,
+	"startColumn": 7,
+	"endLineNumber": 60,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_create_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 121,
+	"startColumn": 5,
+	"endLineNumber": 121,
+	"endColumn": 10
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 57,
+	"startColumn": 7,
+	"endLineNumber": 57,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 58,
+	"startColumn": 7,
+	"endLineNumber": 58,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 62,
+	"startColumn": 9,
+	"endLineNumber": 62,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 66,
+	"startColumn": 7,
+	"endLineNumber": 66,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 70,
+	"startColumn": 7,
+	"endLineNumber": 70,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 74,
+	"startColumn": 7,
+	"endLineNumber": 74,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 78,
+	"startColumn": 11,
+	"endLineNumber": 78,
+	"endColumn": 16
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 89,
+	"startColumn": 9,
+	"endLineNumber": 89,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 91,
+	"startColumn": 7,
+	"endLineNumber": 91,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 100,
+	"startColumn": 7,
+	"endLineNumber": 100,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "deprecated_member_use",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/deprecated_member_use",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss.\nTry replacing the use of the deprecated member with the replacement.",
+	"source": "dart",
+	"startLineNumber": 267,
+	"startColumn": 34,
+	"endLineNumber": 267,
+	"endColumn": 45,
+	"tags": [
+		2
+	]
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_list_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 383,
+	"startColumn": 33,
+	"endLineNumber": 383,
+	"endColumn": 38
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": "todo",
+	"severity": 2,
+	"message": "TODO: Cargar desde el backend",
+	"source": "dart",
+	"startLineNumber": 26,
+	"startColumn": 30,
+	"endLineNumber": 26,
+	"endColumn": 59
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": "todo",
+	"severity": 2,
+	"message": "TODO: Aquí también deberías llamar a métodos para cargar _cursosPorPeriodo y _ajustes",
+	"source": "dart",
+	"startLineNumber": 75,
+	"startColumn": 8,
+	"endLineNumber": 75,
+	"endColumn": 93
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 81,
+	"startColumn": 5,
+	"endLineNumber": 81,
+	"endColumn": 10
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 93,
+	"startColumn": 9,
+	"endLineNumber": 93,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 98,
+	"startColumn": 9,
+	"endLineNumber": 98,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 111,
+	"startColumn": 7,
+	"endLineNumber": 111,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "curly_braces_in_flow_control_structures",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/curly_braces_in_flow_control_structures",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Statements in an if should be enclosed in a block.\nTry wrapping the statement in a block.",
+	"source": "dart",
+	"startLineNumber": 142,
+	"startColumn": 7,
+	"endLineNumber": 142,
+	"endColumn": 30
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "curly_braces_in_flow_control_structures",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/curly_braces_in_flow_control_structures",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Statements in an if should be enclosed in a block.\nTry wrapping the statement in a block.",
+	"source": "dart",
+	"startLineNumber": 661,
+	"startColumn": 11,
+	"endLineNumber": 661,
+	"endColumn": 54
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "curly_braces_in_flow_control_structures",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/curly_braces_in_flow_control_structures",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Statements in an if should be enclosed in a block.\nTry wrapping the statement in a block.",
+	"source": "dart",
+	"startLineNumber": 663,
+	"startColumn": 11,
+	"endLineNumber": 663,
+	"endColumn": 53
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "curly_braces_in_flow_control_structures",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/curly_braces_in_flow_control_structures",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Statements in an if should be enclosed in a block.\nTry wrapping the statement in a block.",
+	"source": "dart",
+	"startLineNumber": 750,
+	"startColumn": 11,
+	"endLineNumber": 750,
+	"endColumn": 55
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/screens/students/student_profile_screen.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "curly_braces_in_flow_control_structures",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/curly_braces_in_flow_control_structures",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Statements in an if should be enclosed in a block.\nTry wrapping the statement in a block.",
+	"source": "dart",
+	"startLineNumber": 752,
+	"startColumn": 11,
+	"endLineNumber": 752,
+	"endColumn": 54
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/adjustment_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "non_constant_identifier_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/non_constant_identifier_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The variable name 'IdSubject' isn't a lowerCamelCase identifier.\nTry changing the name to follow the lowerCamelCase style.",
+	"source": "dart",
+	"startLineNumber": 206,
+	"startColumn": 12,
+	"endLineNumber": 206,
+	"endColumn": 21
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/adjustment_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 255,
+	"startColumn": 7,
+	"endLineNumber": 255,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/auth_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 39,
+	"startColumn": 7,
+	"endLineNumber": 39,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/auth_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 63,
+	"startColumn": 11,
+	"endLineNumber": 63,
+	"endColumn": 16
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/auth_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 68,
+	"startColumn": 9,
+	"endLineNumber": 68,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/auth_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 69,
+	"startColumn": 9,
+	"endLineNumber": 69,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/auth_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "invalid_runtime_check_with_js_interop_types",
+		"target": {
+			"$mid": 1,
+			"path": "/lints/invalid_runtime_check_with_js_interop_types",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Runtime check between 'JSAny' and 'JSString' involves a non-trivial runtime check between two JS interop types that might not be platform-consistent.\nTry using a JS interop member like 'isA' from 'dart:js_interop' to check the underlying type of JS interop values.",
+	"source": "dart",
+	"startLineNumber": 107,
+	"startColumn": 29,
+	"endLineNumber": 107,
+	"endColumn": 47
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 8,
+	"startColumn": 5,
+	"endLineNumber": 8,
+	"endColumn": 10
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 12,
+	"startColumn": 7,
+	"endLineNumber": 12,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 32,
+	"startColumn": 13,
+	"endLineNumber": 32,
+	"endColumn": 18
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 44,
+	"startColumn": 11,
+	"endLineNumber": 44,
+	"endColumn": 16
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 51,
+	"startColumn": 11,
+	"endLineNumber": 51,
+	"endColumn": 16
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 57,
+	"startColumn": 9,
+	"endLineNumber": 57,
+	"endColumn": 14
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 63,
+	"startColumn": 7,
+	"endLineNumber": 63,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 67,
+	"startColumn": 7,
+	"endLineNumber": 67,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 68,
+	"startColumn": 7,
+	"endLineNumber": 68,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 75,
+	"startColumn": 5,
+	"endLineNumber": 75,
+	"endColumn": 10
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 78,
+	"startColumn": 7,
+	"endLineNumber": 78,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 96,
+	"startColumn": 11,
+	"endLineNumber": 96,
+	"endColumn": 16
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/career_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 132,
+	"startColumn": 11,
+	"endLineNumber": 132,
+	"endColumn": 16
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/course_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 12,
+	"startColumn": 7,
+	"endLineNumber": 12,
+	"endColumn": 12
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/services/course_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "non_constant_identifier_names",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/non_constant_identifier_names",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "The variable name 'IdSubject' isn't a lowerCamelCase identifier.\nTry changing the name to follow the lowerCamelCase style.",
+	"source": "dart",
+	"startLineNumber": 66,
+	"startColumn": 60,
+	"endLineNumber": 66,
+	"endColumn": 69
+},{
+	"resource": "/C:/Users/fabi_/Desktop/U/Proyecto Plataformas V2/V1/remote_branch/incluye_app/lib/widgets/edit_student_dialog.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "avoid_print",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/avoid_print",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 2,
+	"message": "Don't invoke 'print' in production code.\nTry using a logging framework.",
+	"source": "dart",
+	"startLineNumber": 78,
+	"startColumn": 7,
+	"endLineNumber": 78,
+	"endColumn": 12
+}]

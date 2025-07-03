@@ -4,20 +4,27 @@ import {
   UnauthorizedException,
   InternalServerErrorException,
   ConflictException, // Importar ConflictException
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
-import { User } from '../users/schemas/user.schema';
+import { User, UserRole } from '../users/schemas/user.schema';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
+import { TeacherRegisterDto } from './dto/teacher-register.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private notificationsGateway: NotificationsGateway,
+    private configService: ConfigService,
   ) {}
 
   async validateUser(
@@ -83,6 +90,36 @@ export class AuthService {
     return null;
   }
 
+  async getTokens(userId: string, email: string, roles: UserRole[]) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(
+        { sub: userId, email, roles },
+        {
+          secret: this.configService.get<string>('JWT_SECRET'),
+          expiresIn: this.configService.get<string>('JWT_EXPIRES_IN'),
+        },
+      ),
+      this.jwtService.signAsync(
+        { sub: userId, email, roles },
+        {
+          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+          expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+        },
+      ),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.usersService.update(userId, {
+      refreshToken: hashedRefreshToken,
+    });
+  }
 
   async login(user: Omit<User, 'password_hash' | 'googleId'> | UserPublicData | User) {
     // Convertir a objeto plano si es un documento Mongoose
@@ -97,24 +134,62 @@ export class AuthService {
       ? (typeof userSafeData._id === 'string' ? userSafeData._id : userSafeData._id.toString())
       : ''; 
 
-    const payload = {
-      email: userSafeData.email,
-      sub: userIdAsString,
-      roles: userSafeData.roles,
-    };
+    if (!userIdAsString) {
+      throw new InternalServerErrorException('User ID not found after login');
+    }
+
+    const tokens = await this.getTokens(userIdAsString, userSafeData.email, userSafeData.roles);
+    await this.updateRefreshToken(userIdAsString, tokens.refreshToken);
 
     return {
-      access_token: this.jwtService.sign(payload),
+      ...tokens,
       user: {
         _id: userIdAsString,
         email: userSafeData.email,
         nombreCompleto: userSafeData.nombreCompleto,
         roles: userSafeData.roles,
         isActive: userSafeData.isActive,
-        createdAt: userSafeData.createdAt, // Incluir si es útil para el frontend
-        updatedAt: userSafeData.updatedAt, // Incluir si es útil para el frontend
       },
     };
+  }
+
+  async refreshToken(userId: string, refreshToken: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('Access Denied');
+    }
+
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+
+    if (!refreshTokenMatches) {
+      throw new UnauthorizedException('Access Denied');
+    }
+
+    const tokens = await this.getTokens(user.id, user.email, user.roles);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+    return tokens;
+  }
+
+  async registerTeacher(teacherRegisterDto: TeacherRegisterDto): Promise<UserPublicData> {
+    // La validación del formato del email ya la hizo el DTO con class-validator.
+    // Aquí podríamos añadir lógica de negocio extra si fuese necesario.
+
+    const createUserDto: CreateUserDto = {
+      ...teacherRegisterDto,
+      roles: [UserRole.DOCENTE],
+      isActive: true, // Los profesores se activan inmediatamente
+    };
+
+    try {
+      return await this.usersService.create(createUserDto);
+    } catch (error) {
+      // El usersService ya lanza ConflictException si el email existe,
+      // así que simplemente re-lanzamos el error.
+      throw error;
+    }
   }
 
   async register(createUserDto: CreateUserDto): Promise<UserPublicData> {
@@ -123,5 +198,30 @@ export class AuthService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<boolean> {
+    const user = await this.usersService.findById(userId); // Obtiene el documento completo
+
+    const isPasswordMatching = await bcrypt.compare(
+      changePasswordDto.oldPassword,
+      user.password_hash,
+    );
+
+    if (!isPasswordMatching) {
+      throw new UnauthorizedException('La contraseña actual es incorrecta.');
+    }
+
+    // El servicio de update ya maneja el hasheo
+    await this.usersService.update(userId, { password: changePasswordDto.newPassword });
+    
+    // Enviar notificación de seguridad
+    this.notificationsGateway.sendNotification(userId, {
+      title: 'Alerta de Seguridad',
+      message: 'Tu contraseña ha sido cambiada exitosamente. Si no reconoces esta acción, por favor contacta a soporte.',
+      type: 'SECURITY_ALERT',
+    });
+
+    return true;
   }
 }

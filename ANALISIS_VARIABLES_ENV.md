@@ -23,6 +23,8 @@ MONGODB_URI=mongodb://localhost:27017/ucn_inclui2_test
 ```env
 JWT_SECRET=ucn-inclui2-super-secret-jwt-key-2025-prod-ready
 JWT_EXPIRES_IN=7d
+JWT_REFRESH_SECRET=ucn-inclui2-super-secret-jwt-refresh-key-2025-prod-ready
+JWT_REFRESH_EXPIRES_IN=30d
 ```
 ✅ **ESTADO:** CORRECTO  
 ✅ **USO EN CÓDIGO:** auth.module.ts líneas 20, 31  
@@ -99,13 +101,15 @@ LOG_LEVEL=debug
 1. **MONGODB_URI** → app.module.ts ✅
 2. **JWT_SECRET** → auth.module.ts ✅
 3. **JWT_EXPIRES_IN** → auth.module.ts ✅
-4. **HAWAII_BASE_URL** → hawaii-real-data.service.ts ✅
-5. **HAWAII_AUTH_*** → hawaii-real-data.service.ts ✅
-6. **CURRENT_SEMESTER** → scheduler/semester-scheduler.service.ts ✅
-7. **DEFAULT_USER_PASSWORD** → sync.service.ts ✅
-8. **PORT** → main.ts ✅
-9. **FRONTEND_URL** → main.ts ✅
-10. **NEE_STUDENTS_FILE** → hawaii-real-data.service.ts ✅
+4. **JWT_REFRESH_SECRET** → auth.module.ts ✅
+5. **JWT_REFRESH_EXPIRES_IN** → auth.module.ts ✅
+6. **HAWAII_BASE_URL** → hawaii-real-data.service.ts ✅
+7. **HAWAII_AUTH_*** → hawaii-real-data.service.ts ✅
+8. **CURRENT_SEMESTER** → scheduler/semester-scheduler.service.ts ✅
+9. **DEFAULT_USER_PASSWORD** → sync.service.ts ✅
+10. **PORT** → main.ts ✅
+11. **FRONTEND_URL** → main.ts ✅
+12. **NEE_STUDENTS_FILE** → hawaii-real-data.service.ts ✅
 
 ### ✅ **NO HAY HARDCODING CRÍTICO:**
 - ❌ No se encontraron passwords hardcodeados

@@ -940,36 +940,55 @@ export class DocumentsController {
     @Param('fileName') fileName: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const templatePath = path.join(TEMPLATES_LOCATION, fileName);
-
-    try {
-      // Verificar si el archivo existe
-      await fs.promises.access(templatePath);
-
-      // Determinar el tipo MIME basado en la extensión del archivo
-      let contentType = 'application/octet-stream'; // Por defecto
-      if (fileName.endsWith('.pdf')) {
-        contentType = 'application/pdf';
-      } else if (fileName.endsWith('.docx')) {
-        contentType =
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      } else if (fileName.endsWith('.doc')) {
-        contentType = 'application/msword';
-      }
-
-      // Configurar headers de respuesta
-      res.set({
-        'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-      });
-
-      // Crear stream de lectura del archivo
-      const fileStream = fs.createReadStream(templatePath);
-
-      return new StreamableFile(fileStream);
-    } catch (error) {
-      throw new NotFoundException(`Plantilla "${fileName}" no encontrada.`);
+    const filePath = path.join(TEMPLATES_LOCATION, fileName);
+    if (!fs.existsSync(filePath)) {
+      throw new NotFoundException(`La plantilla con nombre "${fileName}" no fue encontrada.`);
     }
+
+    const fileStream = fs.createReadStream(filePath);
+    res.set({
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="${fileName}"`,
+    });
+    return new StreamableFile(fileStream);
+  }
+
+  @Get('templates/consent-form')
+  @ApiOperation({
+    summary: 'Descargar el formulario de consentimiento estándar',
+    description: 'Proporciona el archivo PDF del formulario de consentimiento oficial para ser firmado por el estudiante.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Archivo PDF del consentimiento.',
+    content: {
+      'application/pdf': {
+        schema: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Archivo de plantilla no encontrado en el servidor.' })
+  async downloadConsentForm(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const consentFileName = 'Formato consentimiento 2025.pdf';
+    // Apuntar a la ruta correcta donde verificamos que está el archivo
+    const consentFilePath = path.join(__dirname, '..', '..', 'docs', 'assets', 'documents', consentFileName);
+
+    if (!fs.existsSync(consentFilePath)) {
+      console.error(`Error Crítico: El archivo de consentimiento no se encuentra en la ruta esperada: ${consentFilePath}`);
+      throw new NotFoundException('El archivo del formulario de consentimiento no fue encontrado en el servidor.');
+    }
+
+    const fileStream = fs.createReadStream(consentFilePath);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${consentFileName}"`,
+    });
+    return new StreamableFile(fileStream);
   }
 
   // Endpoint para que los estudiantes suban sus propios documentos

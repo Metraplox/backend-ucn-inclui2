@@ -1,7 +1,7 @@
 # 🛡️ GUÍA DE PROTECCIÓN DE CÓDIGO FUENTE
 ## Proyecto: Plataforma Inclusiva UCN - Estrategias de Deployment Seguro
 
-### 📅 **Última Actualización**: Enero 2025
+### 📅 **Última Actualización**: 06 Julio 2025
 ### 🎯 **Objetivo**: Proteger el código fuente al entregar en producción
 
 ---
@@ -250,3 +250,20 @@ networks:
 ---
 
 > **💡 Nota**: La protección del código fuente es tanto técnica como legal. La combinación de build compilado + contratos adecuados ofrece la mejor protección. 
+
+## 🚀 Convención de nombres de ramas (Branch Naming)
+
+| Prefijo | Propósito                    | Ejemplo                       |
+|---------|------------------------------|-------------------------------|
+| `b/`    | Funcionalidad Backend        | `b/notifications-pagination`  |
+| `f/`    | Funcionalidad Frontend       | `f/notifications-ui`          |
+| `ops/`  | DevOps / Infraestructura     | `ops/ci-frontend-workflow`    |
+| `docs/` | Documentación                | `docs/roadmap-cleanup`        |
+| `hotfix/` | Corrección crítica en prod | `hotfix/fix-null-pointer`      |
+
+**Buenas prácticas**
+
+1. Usa verbos en inglés en minúscula y separados con guiones.
+2. Mantén el nombre breve y descriptivo (< 30 caracteres) para facilitar `git log`.
+3. Evita usar tildes, espacios o caracteres especiales.
+4. Cierra tu rama mediante Pull Request: revisiones en español y mensajes claros. 

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, PipelineStage } from 'mongoose';
+import * as bcrypt from 'bcrypt';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student, StudentDocument } from './schemas/student.schema';
@@ -70,19 +71,36 @@ export class StudentsService {
   ) {}
 
   async create(createStudentDto: CreateStudentDto): Promise<Student> {
+    // Validar que la fecha de nacimiento exista, ya que será la contraseña
+    if (!createStudentDto.fechaNacimiento) {
+      throw new BadRequestException('La fecha de nacimiento es obligatoria para crear al estudiante.');
+    }
+
     // Iniciar una sesión de transacción
     const session = await this.studentModel.db.startSession();
     session.startTransaction();
 
     try {
+      // --- Lógica de Contraseña ---
+      // Formatear la fecha de nacimiento a 'ddmmyyyy'
+      const parts = createStudentDto.fechaNacimiento.split('-'); // YYYY-MM-DD
+      if (parts.length !== 3) {
+        throw new BadRequestException('El formato de la fecha de nacimiento debe ser YYYY-MM-DD.');
+      }
+      const password = `${parts[2]}${parts[1]}${parts[0]}`; // ddmmyyyy
+
+      // Hashear la contraseña
+      const hashedPassword = await bcrypt.hash(password, 10);
+      // --------------------------
+
       // 1. Crear el usuario primero
       const user = new this.userModel({
         email: createStudentDto.email.toLowerCase(),
         nombreCompleto: `${createStudentDto.nombres} ${createStudentDto.apellidos}`.trim(),
         roles: [UserRole.ESTUDIANTE],
         isActive: true,
-        isProfileComplete: false, // El perfil se completará con la autenticación de Google
-        password_hash: null, // Se establecerá con Google Auth
+        isProfileComplete: false, 
+        password_hash: hashedPassword, // Usar la contraseña hasheada
       });
 
       const savedUser = await user.save({ session });

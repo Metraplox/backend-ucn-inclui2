@@ -127,6 +127,13 @@ export class User extends Document {
   googleId?: string;
 
   @ApiPropertyOptional({
+    description: 'Hashed refresh token',
+    example: '$2b$10$...'
+  })
+  @Prop({ type: String, required: false })
+  refreshToken?: string;
+
+  @ApiPropertyOptional({
     description: 'Fecha del último inicio de sesión',
     example: '2025-05-27T12:00:00.000Z'
   })

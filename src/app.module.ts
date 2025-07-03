@@ -23,6 +23,7 @@ import { DiddecModule } from './diddec/diddec.module';
 import { ConsentModule } from './consent/consent.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { SemesterSchedulerModule } from './scheduler/semester-scheduler.module';
+import { SemesterConfigModule } from './semester-config/semester-config.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { SemesterSchedulerModule } from './scheduler/semester-scheduler.module';
     ConsentModule,
     EnrollmentsModule,
     SemesterSchedulerModule,
+    SemesterConfigModule,
   ],
   controllers: [AppController],
   providers: [

@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -17,10 +18,16 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
 import { User, UserRole } from '../users/schemas/user.schema';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiExcludeEndpoint } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiExcludeEndpoint, ApiBearerAuth } from '@nestjs/swagger';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SystemRolesDto } from './dto/roles.dto';
+import { TeacherRegisterDto } from './dto/teacher-register.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { GetUser } from './decorators/get-user.decorator';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '90627838122-cv4i0d2124tgm1cbh06cbpotuu128b8v.apps.googleusercontent.com'; // REEMPLAZA ESTO SI ES NECESARIO
 
@@ -86,6 +93,11 @@ export class AuthController {
           type: 'string', 
           example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
           description: 'Token JWT para autenticación'
+        },
+        refreshToken: {
+          type: 'string',
+          example: '...',
+          description: 'Token para refrescar la sesión'
         }
       }
     }
@@ -110,6 +122,20 @@ export class AuthController {
       throw new UnauthorizedException('Usuario no autenticado.');
     }
     return this.authService.login(req.user);
+  }
+
+  @UseGuards(RefreshTokenGuard)
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refrescar token de acceso' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Tokens renovados exitosamente.'})
+  @ApiResponse({ status: 401, description: 'No autorizado, el refresh token es inválido o ha expirado.'})
+  async refreshToken(@GetUser() user: any) {
+    if (!user || !user.sub || !user.refreshToken) {
+      throw new UnauthorizedException('Token de refresco inválido o usuario no encontrado');
+    }
+    return this.authService.refreshToken(user.sub, user.refreshToken);
   }
 
   @Post('google')
@@ -208,6 +234,44 @@ export class AuthController {
         }
         // Para otros errores inesperados
         throw new InternalServerErrorException('Error interno del servidor al procesar el inicio de sesión con Google.');
+    }
+  }
+
+  @Post('register-teacher')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Registrar un nuevo docente',
+    description: 'Permite que un docente se registre en el sistema. El correo debe ser institucional UCN (no de alumno).',
+  })
+  @ApiBody({
+    type: TeacherRegisterDto,
+    description: 'Datos del nuevo docente a registrar.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Docente registrado exitosamente.',
+    type: User,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos inválidos. El email no es un correo UCN válido o la contraseña es muy corta.',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflicto - El email ya está registrado.',
+  })
+  async registerTeacher(
+    @Body() teacherRegisterDto: TeacherRegisterDto,
+  ): Promise<UserPublicData> {
+    try {
+      return await this.authService.registerTeacher(teacherRegisterDto);
+    } catch (error) {
+      // Re-lanzar excepciones conocidas para que Nest maneje la respuesta HTTP
+      if (error instanceof ConflictException || error instanceof BadRequestException) {
+        throw error;
+      }
+      // Para cualquier otro error, devolver una respuesta genérica de servidor
+      throw new InternalServerErrorException('Ocurrió un error inesperado durante el registro.');
     }
   }
 
@@ -327,5 +391,24 @@ export class AuthController {
       ],
       info: 'Los roles determinan el acceso a diferentes funcionalidades del sistema UCN INCLUI2'
     };
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Cambiar la contraseña del usuario actual',
+    description: 'Permite a un usuario autenticado cambiar su propia contraseña. Requiere la contraseña actual y la nueva.',
+  })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiResponse({ status: 200, description: 'Contraseña cambiada exitosamente.' })
+  @ApiResponse({ status: 401, description: 'La contraseña actual es incorrecta.' })
+  async changePassword(
+    @CurrentUser() user: UserPublicData,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.changePassword(user._id, changePasswordDto);
+    return { message: 'Contraseña actualizada exitosamente.' };
   }
 }

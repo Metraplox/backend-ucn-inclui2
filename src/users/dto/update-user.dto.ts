@@ -62,4 +62,8 @@ export class UpdateUserDto {
   @IsBoolean({ message: 'El estado activo debe ser un valor booleano.' })
   @IsOptional()
   isActive?: boolean;
+
+  @IsString()
+  @IsOptional()
+  refreshToken?: string;
 }

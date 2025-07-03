@@ -12,6 +12,7 @@ import { User, UserRole } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserPublicData } from './interfaces/user-public-data.interface';
+import { AdminChangePasswordDto } from './dto/admin-change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -202,14 +203,32 @@ export class UsersService {
     }
   }
 
-  async remove(id: string): Promise<{ deleted: boolean; message?: string }> {
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      throw new BadRequestException('El ID proporcionado no es válido.');
-    }
-    const result = await this.userModel.deleteOne({ _id: id }).exec();
-    if (result.deletedCount === 0) {
+  async remove(id: string): Promise<void> {
+    const result = await this.userModel.findByIdAndDelete(id).exec();
+    if (!result) {
       throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
     }
-    return { deleted: true };
+  }
+
+  async adminSetPassword(
+    id: string,
+    adminChangePasswordDto: AdminChangePasswordDto,
+  ): Promise<void> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID "${id}" no encontrado`);
+    }
+
+    const hashedPassword = await bcrypt.hash(
+      adminChangePasswordDto.newPassword,
+      10,
+    );
+    
+    await this.userModel.updateOne({ _id: id }, { password_hash: hashedPassword }).exec();
+  }
+
+  // --- Métodos de ayuda ---
+  private mapToPublicData(user: UserDocument): UserPublicData {
+    // ... existing code ...
   }
 }

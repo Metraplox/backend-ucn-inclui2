@@ -84,6 +84,48 @@ Renovar token JWT expirado.
 
 **Headers:** `Authorization: Bearer <refresh_token>`
 
+### **POST /auth/register-teacher**
+Permite el auto-registro de un nuevo docente.
+
+**Request:**
+```json
+{
+  "nombreCompleto": "Ana Torres",
+  "email": "ana.torres@ucn.cl",
+  "password": "unaClaveSegura123!"
+}
+```
+**Validaciones:**
+- El `email` debe terminar en `@ucn.cl` pero no en `@alumnos.ucn.cl`.
+- La `password` debe tener al menos 8 caracteres.
+
+**Response (201 Created):**
+```json
+{
+    "_id": "675f7e123456789abcdef098",
+    "email": "ana.torres@ucn.cl",
+    "nombreCompleto": "Ana Torres",
+    "roles": ["DOCENTE"],
+    "isActive": true,
+    "createdAt": "2025-07-03T10:00:00.000Z",
+    "updatedAt": "2025-07-03T10:00:00.000Z"
+}
+```
+
+### **POST /auth/change-password**
+Permite a un usuario autenticado cambiar su propia contraseña.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{ "oldPassword": "miClaveAntigua123!", "newPassword": "miClaveSuperNueva456!" }
+```
+**Response (200 OK):**
+```json
+{ "message": "Contraseña actualizada exitosamente", "statusCode": 200 }
+```
+
 ---
 
 ## 👨‍🎓 ESTUDIANTES (6 endpoints)
@@ -235,9 +277,25 @@ Actualizar departamento.
 ### **GET /departments/:id/stats**
 Estadísticas detalladas del departamento.
 
+### **GET /documents/templates/consent-form**
+Descarga la plantilla oficial del formulario de consentimiento en formato PDF.
+
+**Response (200 OK):**
+- **Content-Type:** `application/pdf`
+- **Body:** Flujo de datos del archivo PDF.
+
+### **POST /documents/upload**
+Sube un documento para un estudiante.
+
+**Headers:** `Authorization: Bearer <token>`
+**Content-Type:** `multipart/form-data`
+
+### **GET /documents/student/:studentId**
+Lista los documentos de un estudiante específico.
+
 ---
 
-## 📄 DOCUMENTOS (5 endpoints)
+## 📄 DOCUMENTOS (3 endpoints)
 
 ### **GET /documents**
 Listar documentos del usuario o todos (según permisos).
@@ -473,25 +531,38 @@ Estado del cache de Hawaii.
 
 ---
 
-## 👥 USUARIOS (6 endpoints)
+## 👥 USUARIOS (7 endpoints)
 
 ### **GET /users**
-Listar usuarios del sistema.
+Obtener lista de todos los usuarios del sistema. Protegido para `COORDINADOR`.
 
 ### **POST /users**
-Crear nuevo usuario.
+Crear un nuevo usuario con rol específico. Protegido para `COORDINADOR`.
 
 ### **GET /users/:id**
-Obtener usuario por ID.
+Obtener un usuario por su ID.
 
 ### **PATCH /users/:id**
-Actualizar usuario.
+Actualizar los datos de un usuario (nombre, email, roles, estado).
 
 ### **DELETE /users/:id**
-Eliminar usuario.
+Eliminar un usuario del sistema (soft delete).
 
 ### **PATCH /users/:id/roles**
-Actualizar roles del usuario.
+Actualizar roles de un usuario específico.
+
+### **POST /users/:id/admin-change-password**
+Permite a un `COORDINADOR` cambiar la contraseña de otro usuario.
+
+**Headers:** `Authorization: Bearer <token>`
+**Request:**
+```json
+{ "newPassword": "claveForzadaPorAdmin123!" }
+```
+**Response (200 OK):**
+```json
+{ "message": "Contraseña actualizada para el usuario.", "statusCode": 200 }
+```
 
 ---
 

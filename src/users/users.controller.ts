@@ -9,6 +9,7 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -28,6 +29,8 @@ import {
   ApiBearerAuth,
   ApiSecurity,
 } from '@nestjs/swagger';
+import { CreateUserDto } from './dto/create-user.dto';
+import { AdminChangePasswordDto } from './dto/admin-change-password.dto';
 
 @ApiTags('users')
 @ApiBearerAuth('JWT-auth')
@@ -36,20 +39,18 @@ import {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // El endpoint de creación directa de usuarios (si es necesario) también estaría aquí
-  // y protegido por roles. Por ahora, el registro es vía AuthController.
-  // @Post()
-  // @Roles(UserRole.COORDINADOR)
-  // @HttpCode(HttpStatus.CREATED)
-  // @ApiOperation({ summary: 'Crear un nuevo usuario (Admin)' })
-  // @ApiBody({ type: CreateUserDto })
-  // @ApiResponse({ status: 201, description: 'Usuario creado exitosamente.', type: User })
-  // @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
-  // @ApiResponse({ status: 401, description: 'No autorizado.' })
-  // @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
-  // async create(@Body() createUserDto: CreateUserDto): Promise<UserPublicData> {
-  //   return this.usersService.create(createUserDto);
-  // }
+  @Post()
+  @Roles(UserRole.COORDINADOR)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Crear un nuevo usuario (Admin)' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({ status: 201, description: 'Usuario creado exitosamente.', type: UserPublicDataDto })
+  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  async create(@Body() createUserDto: CreateUserDto): Promise<UserPublicData> {
+    return this.usersService.create(createUserDto);
+  }
 
   @Get()
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
@@ -221,5 +222,56 @@ export class UsersController {
   async remove(@Param('id') id: string): Promise<void> {
     // Cambiado el tipo de retorno
     await this.usersService.remove(id);
+  }
+
+  @Post(':id/admin-change-password')
+  @Roles(UserRole.COORDINADOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Cambiar la contraseña de un usuario (Admin)',
+    description: 'Permite a un coordinador establecer una nueva contraseña para cualquier usuario. Esta es una operación privilegiada.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del usuario cuya contraseña se cambiará',
+    type: String,
+  })
+  @ApiBody({ type: AdminChangePasswordDto })
+  @ApiResponse({ status: 200, description: 'Contraseña cambiada exitosamente.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  async adminChangePassword(
+    @Param('id') id: string,
+    @Body() adminChangePasswordDto: AdminChangePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.usersService.adminSetPassword(id, adminChangePasswordDto);
+    return { message: 'Contraseña actualizada exitosamente.' };
+  }
+
+  @Patch(':id/roles')
+  @Roles(UserRole.COORDINADOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Actualizar los roles de un usuario (Admin)',
+    description: 'Permite a un coordinador actualizar la lista de roles de un usuario.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del usuario a actualizar',
+    type: String,
+  })
+  @ApiBody({
+    description: 'Lista de roles a asignar al usuario',
+    type: [String],
+    enum: UserRole,
+  })
+  @ApiResponse({ status: 200, description: 'Roles actualizados exitosamente.' })
+  @ApiResponse({ status: 403, description: 'Prohibido. Rol no permitido.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  async updateRoles(
+    @Param('id') id: string,
+    @Body() roles: UserRole[],
+  ): Promise<UserPublicData> {
+    return this.usersService.update(id, { roles });
   }
 }
