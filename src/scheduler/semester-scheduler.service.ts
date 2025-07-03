@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
+import { NotificationsService } from '../notifications/notifications.service';
 
 interface SyncResult {
   success: boolean;
@@ -18,6 +19,7 @@ export class SemesterSchedulerService implements OnModuleInit {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async onModuleInit() {
@@ -74,6 +76,23 @@ export class SemesterSchedulerService implements OnModuleInit {
       this.logger.log('✅ Verificación de integridad completada:', result);
     } catch (error) {
       this.logger.error('❌ Error en verificación de integridad:', error);
+    }
+  }
+
+  /**
+   * Cron Job: Limpieza de notificaciones antiguas
+   * Ejecuta todos los días a las 03:30 AM
+   */
+  @Cron('30 3 * * *', { name: 'notificationsCleanup' })
+  async handleNotificationsCleanup() {
+    if (!this.isInitialized) return;
+
+    this.logger.log('🧹 Iniciando limpieza de notificaciones antiguas (>90 días)');
+    try {
+      await this.notificationsService.cleanupOldNotifications(90);
+      this.logger.log('✅ Limpieza de notificaciones completada');
+    } catch (error) {
+      this.logger.error('❌ Error en limpieza de notificaciones:', error);
     }
   }
 
@@ -257,5 +276,5 @@ export class SemesterSchedulerService implements OnModuleInit {
     nextMonday.setHours(5, 0, 0, 0);
     
     return nextMonday;
-} 
+  }
 } 
