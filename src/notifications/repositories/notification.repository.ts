@@ -24,14 +24,21 @@ export class NotificationRepository {
     return createdNotification.save();
   }
 
-  async findAll(userId: string, semester?: string): Promise<Notification[]> {
+  async findAll(userId: string, semester?: string, page = 1, limit = 20): Promise<Notification[]> {
     const query: any = { userId: new Types.ObjectId(userId) };
 
     if (semester) {
       query.semester = semester;
     }
 
-    return this.notificationModel.find(query).sort({ createdAt: -1 }).exec();
+    const skip = (page - 1) * limit;
+
+    return this.notificationModel
+      .find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .exec();
   }
 
   async findOne(id: string): Promise<Notification | null> {

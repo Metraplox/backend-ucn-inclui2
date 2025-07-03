@@ -17,12 +17,12 @@ export class NotificationsService {
     return this.notificationRepository.create(createNotificationDto);
   }
 
-  async findAll(userId: string, semester?: string): Promise<Notification[]> {
+  async findAll(userId: string, semester?: string, page = 1, limit = 20): Promise<Notification[]> {
     if (!Types.ObjectId.isValid(userId)) {
       throw new NotFoundException(`ID de usuario inválido: ${userId}`);
     }
 
-    return this.notificationRepository.findAll(userId, semester);
+    return this.notificationRepository.findAll(userId, semester, page, limit);
   }
 
   async findOne(id: string): Promise<Notification> {

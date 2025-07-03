@@ -50,6 +50,18 @@ export class NotificationsController {
       pattern: '^\\d{4}-[1-2]$'
     }
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Número de página (default 1)',
+    schema: { type: 'integer', minimum: 1, default: 1 }
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Resultados por página (máx 100, default 20)',
+    schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 }
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de notificaciones del usuario',
@@ -108,8 +120,12 @@ export class NotificationsController {
   async findAll(
     @GetUser('_id') userId: string,
     @Query('semester') semester?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
   ): Promise<Notification[]> {
-    return this.notificationsService.findAll(userId, semester);
+    const pageNum = Math.max(1, parseInt(page as any, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit as any, 10) || 20));
+    return this.notificationsService.findAll(userId, semester, pageNum, limitNum);
   }
 
   @Get('unread-count')
