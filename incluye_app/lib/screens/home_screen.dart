@@ -1,7 +1,6 @@
 // screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/courseWithAdjustment_model.dart';
-import 'package:incluye_app/models/notification_model.dart';
 import 'package:incluye_app/screens/adjustments/student_adjustments_screen.dart';
 import 'package:incluye_app/screens/courses/courses_list_screen.dart';
 import 'package:incluye_app/screens/notifications/notifications_screen.dart';
@@ -9,7 +8,6 @@ import 'package:incluye_app/screens/students/student_career_screen.dart';
 import 'package:incluye_app/screens/teachers/teachers_by_career.dart';
 import 'package:incluye_app/screens/teachers/teachers_list.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
-import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/app_scaffold.dart';

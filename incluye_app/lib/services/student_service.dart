@@ -92,35 +92,26 @@ class StudentService {
 
   static Future<bool> isStudent() async {
     final roles = await getUserRoles();
-    // Usar el método hasRole del UserModel si estuviera disponible globalmente
-    // o comparar con las variantes de nombre de rol.
-    return roles.any(
-      (r) => r.toLowerCase() == 'estudiante' || r.toLowerCase() == 'student',
-    );
+    // Comparamos siempre en minúsculas.
+    return roles.any((r) => r.toLowerCase() == 'estudiante');
   }
 
   static Future<bool> isAdmin() async {
     final roles = await getUserRoles();
-    return roles.any(
-      (r) =>
-          r.toLowerCase() == 'COORDINADOR' || r.toLowerCase() == 'coordinador',
-    );
+    // Comparamos siempre en minúsculas.
+    return roles.any((r) => r.toLowerCase() == 'coordinador');
   }
 
   static Future<bool> isTeacher() async {
     final roles = await getUserRoles();
-    return roles.any(
-      (r) => r.toLowerCase() == 'docente' || r.toLowerCase() == 'DOCENTE',
-    );
+    // Comparamos siempre en minúsculas.
+    return roles.any((r) => r.toLowerCase() == 'docente');
   }
 
   static Future<bool> isHead() async {
     final roles = await getUserRoles();
-    return roles.any(
-      (r) =>
-          r.toLowerCase() == 'JEFE_CARRERA' ||
-          r.toLowerCase() == 'jefe_carrera',
-    );
+    // Comparamos siempre en minúsculas.
+    return roles.any((r) => r.toLowerCase() == 'jefe_carrera');
   }
 
   // getCurrentUserInfo:

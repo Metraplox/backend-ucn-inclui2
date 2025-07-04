@@ -1,6 +1,7 @@
 // services/api_service.dart
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:incluye_app/config/app_config.dart';
 // import 'dart:developer'; // Reemplazado por print para consistencia
 // import 'package:jwt_decoder/jwt_decoder.dart'; // No se usa directamente aquí
 
@@ -9,7 +10,7 @@ class ApiService {
   // Para emulador Android: 'http://10.0.2.2:3000'
   // Para localhost si corres en web o iOS en Mac: 'http://localhost:3000'
   // Para dispositivo físico: IP de tu máquina en la red local, ej: 'http://192.168.X.X:3000'
-  static final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+  static final Dio _dio = Dio(BaseOptions(baseUrl: AppConfig.apiBaseUrl));
   static bool _isInterceptorSetup = false;
 
   static Dio get dio {

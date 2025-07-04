@@ -5,7 +5,7 @@ import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/screens/home_screen.dart';
 import 'package:incluye_app/config/app_config.dart';
 import 'package:incluye_app/config/test_credentials.dart';
-import 'dart:html' as html;
+
 
 // import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 

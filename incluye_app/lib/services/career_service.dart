@@ -1,9 +1,7 @@
 // services/career_service.dart
 import 'package:dio/dio.dart';
 import 'package:incluye_app/models/career_model.dart';
-import 'package:incluye_app/models/student_model.dart';
-import 'package:incluye_app/services/auth_service.dart';
-import 'package:incluye_app/services/student_service.dart';
+
 import 'api_service.dart'; // Usaremos la instancia de Dio de ApiService
 
 class CareerService {
