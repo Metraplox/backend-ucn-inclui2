@@ -1,7 +1,7 @@
 // screens/students/student_own_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:incluye_app/models/student_adjustment.dart';
+import 'package:incluye_app/models/student_adjustment_model.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/adjustment_model.dart';
 import 'package:incluye_app/services/adjustment_service.dart';

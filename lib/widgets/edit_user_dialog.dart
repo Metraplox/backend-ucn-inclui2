@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/department_model.dart';
 import 'package:incluye_app/models/career_model.dart';
-import 'package:incluye_app/models/fullUser_model.dart';
+import 'package:incluye_app/models/full_user_model.dart';
 import 'package:incluye_app/models/user_model.dart';
 import 'package:incluye_app/services/department_service.dart';
 import 'package:incluye_app/services/career_service.dart';
