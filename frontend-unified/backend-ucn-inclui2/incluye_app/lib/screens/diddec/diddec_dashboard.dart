@@ -9,6 +9,8 @@ import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/models/adjustment_model.dart';
 import 'package:incluye_app/screens/diddec/pending_list_screen.dart';
 import 'package:incluye_app/screens/diddec/resource_uploader_screen.dart';
+import 'package:incluye_app/screens/notifications/notifications_screen.dart';
+import 'package:incluye_app/screens/students/student_list_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
 class DiddecDashboard extends StatefulWidget {
@@ -97,6 +99,10 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
                   children: [
                     _buildWelcomeSection(),
                     const SizedBox(height: 24),
+                    _buildResourcesSection(),
+                    const SizedBox(height: 24),
+                    _buildAlertsSection(),
+                    const SizedBox(height: 24),
                     _buildStatisticsGrid(),
                     const SizedBox(height: 24),
                     _buildQuickActions(),
@@ -147,6 +153,86 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildResourcesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Gestión de Recursos',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          color: Colors.blue.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.upload_file, color: Colors.white),
+            ),
+            title: const Text('Subir Recursos'),
+            subtitle: const Text('Materiales educativos y apoyo técnico'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToResourceUploader,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colors.green.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.green,
+              child: Icon(Icons.pending_actions, color: Colors.white),
+            ),
+            title: const Text('Solicitudes Pendientes'),
+            subtitle: Text('$_pendingResources recursos por revisar'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToPendingList,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAlertsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Alertas y Soporte',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          color: Colors.orange.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.orange,
+              child: Icon(Icons.help_outline, color: Colors.white),
+            ),
+            title: const Text('Nuevas Solicitudes'),
+            subtitle: Text('$_newRequests solicitudes de apoyo técnico'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToNotifications,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colors.purple.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.purple,
+              child: Icon(Icons.analytics, color: Colors.white),
+            ),
+            title: const Text('Estadísticas Generales'),
+            subtitle: Text('$_totalStudents estudiantes con NEE registrados'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToStudentList,
+          ),
+        ),
+      ],
     );
   }
 
@@ -305,7 +391,10 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
 
   // Métodos de navegación
   void _navigateToNotifications() {
-    Navigator.pushNamed(context, '/notifications');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+    );
   }
 
   void _navigateToStudentsList() {
@@ -354,5 +443,26 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
     if (adjustmentId != null) {
       Navigator.pushNamed(context, '/adjustments/$adjustmentId');
     }
+  }
+
+  void _navigateToResourceUploader() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ResourceUploaderScreen()),
+    );
+  }
+
+  void _navigateToPendingList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PendingListScreen()),
+    );
+  }
+
+  void _navigateToStudentList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StudentListScreen()),
+    );
   }
 }

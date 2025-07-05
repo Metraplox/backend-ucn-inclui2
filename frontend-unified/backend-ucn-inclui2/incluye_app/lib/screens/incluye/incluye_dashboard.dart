@@ -7,6 +7,8 @@ import 'package:incluye_app/widgets/statistic_card.dart';
 import 'package:incluye_app/widgets/alert_badge.dart';
 import 'package:incluye_app/widgets/quick_action_button.dart';
 import 'package:incluye_app/screens/user_management_screen.dart';
+import 'package:incluye_app/screens/notifications/notifications_screen.dart';
+import 'package:incluye_app/screens/students/student_list_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
 /// Dashboard principal para el rol Incluye (Coordinadora/Educadora Social)
@@ -96,6 +98,10 @@ class _IncluyeDashboardState extends State<IncluyeDashboard> {
                   children: [
                     _buildWelcomeSection(),
                     const SizedBox(height: 24),
+                    _buildInclusionSection(),
+                    const SizedBox(height: 24),
+                    _buildProgramsSection(),
+                    const SizedBox(height: 24),
                     _buildStatisticsGrid(),
                     const SizedBox(height: 24),
                     _buildQuickActions(),
@@ -146,6 +152,86 @@ class _IncluyeDashboardState extends State<IncluyeDashboard> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInclusionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Inclusión Educativa',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          color: Colors.green.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.green,
+              child: Icon(Icons.accessibility_new, color: Colors.white),
+            ),
+            title: const Text('Estudiantes con NEE'),
+            subtitle: Text('$_totalStudents estudiantes registrados'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToStudentList,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colors.blue.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.assignment, color: Colors.white),
+            ),
+            title: const Text('Ajustes Activos'),
+            subtitle: Text('$_activeAdjustments ajustes en proceso'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToNotifications,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgramsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Programas y Apoyo',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          color: Colors.purple.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.purple,
+              child: Icon(Icons.psychology, color: Colors.white),
+            ),
+            title: const Text('Apoyo Psicopedagógico'),
+            subtitle: const Text('Seguimiento y orientación especializada'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToUserManagement,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colors.orange.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.orange,
+              child: Icon(Icons.folder_special, color: Colors.white),
+            ),
+            title: const Text('Documentos Pendientes'),
+            subtitle: Text('$_pendingDocuments documentos por revisar'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToNotifications,
+          ),
+        ),
+      ],
     );
   }
 
@@ -304,15 +390,25 @@ class _IncluyeDashboardState extends State<IncluyeDashboard> {
   }
 
   // Métodos de navegación
+  void _navigateToNotifications() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+    );
+  }
+
+  void _navigateToStudentList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StudentListScreen()),
+    );
+  }
+
   void _navigateToUserManagement() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const UserManagementScreen()),
     );
-  }
-
-  void _navigateToNotifications() {
-    Navigator.pushNamed(context, '/notifications');
   }
 
   void _navigateToStudentsList() {
