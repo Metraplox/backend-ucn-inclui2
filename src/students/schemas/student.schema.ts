@@ -17,7 +17,7 @@ export class Student {
     description: 'RUT único del estudiante',
     example: '12345678-9',
   })
-  @Prop({ required: true, unique: true, trim: true }) // trim para limpiar espacios
+  @Prop({ required: true, unique: true, trim: true })
   rut: string;
 
   @ApiProperty({
@@ -38,14 +38,14 @@ export class Student {
     description: 'Correo electrónico único del estudiante',
     example: 'juan.perez@example.com',
   })
-  @Prop({ required: true, unique: true, lowercase: true, trim: true, index: true })
+  @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
 
   @ApiProperty({
     description: 'ID del usuario asociado al estudiante',
     example: '605c72ef9167f86c2cabc123',
   })
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
   @ApiProperty({

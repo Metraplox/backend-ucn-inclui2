@@ -13,13 +13,15 @@ describe('ReportsService', () => {
   let mockDocumentsService: Partial<DocumentsService>;
 
   beforeEach(async () => {
-    // Mocks para las dependencias
-    mockReportModel = {
-      save: jest.fn(),
-      find: jest.fn(),
-      exec: jest.fn(),
-      constructor: jest.fn(),
+    // Mock correcto para el modelo que funciona como constructor
+    const mockReportDocument = {
+      save: jest.fn().mockResolvedValue({}),
     };
+    
+    mockReportModel = jest.fn().mockImplementation(() => mockReportDocument);
+    mockReportModel.find = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([]),
+    });
 
     mockStudentsService = {
       findOne: jest.fn(),
@@ -31,7 +33,7 @@ describe('ReportsService', () => {
     };
 
     mockDocumentsService = {
-      // Mock methods as needed
+      getDocumentsByStudentId: jest.fn().mockResolvedValue([]),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -91,13 +93,7 @@ describe('ReportsService', () => {
 
       // Assert
       expect(result).toEqual(mockStudents);
-      expect(mockStudentsService.findAllWithNEE).toHaveBeenCalledWith(
-        {
-          semester: '2025-1',
-          isActive: true,
-        },
-        mockUser,
-      );
+      expect(mockStudentsService.findAllWithNEE).toHaveBeenCalledWith('2025-1');
     });
 
     it('should handle empty results gracefully', async () => {
@@ -182,14 +178,14 @@ describe('ReportsService', () => {
         save: jest.fn().mockResolvedValue(this),
       };
 
-      mockReportModel.constructor = jest.fn().mockReturnValue(mockCreatedReport);
+      mockReportModel.mockImplementation((data) => mockCreatedReport);
 
       // Act
       const result = await service.create(createReportDto);
 
       // Assert
       expect(result).toBeDefined();
-      expect(mockReportModel.constructor).toHaveBeenCalledWith(createReportDto);
+      expect(mockReportModel).toHaveBeenCalledWith(createReportDto);
       expect(mockCreatedReport.save).toHaveBeenCalled();
     });
   });

@@ -23,7 +23,11 @@ describe('CoursesService', () => {
         {
           provide: getModelToken(Adjustment.name),
           useValue: {
-            find: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([]) }),
+            find: jest.fn().mockReturnValue({ 
+              lean: jest.fn().mockReturnValue({
+                exec: jest.fn().mockResolvedValue([])
+              })
+            }),
           },
         },
         { provide: getModelToken('Student'), useValue: {} },

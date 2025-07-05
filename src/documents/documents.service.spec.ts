@@ -7,6 +7,7 @@ import { DocumentEntity } from './schemas/document.schema';
 import { Student } from '../students/schemas/student.schema';
 import { UserRole } from '../users/schemas/user.schema';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
+import { ConsentService } from '../consent/consent.service';
 
 const mockDocumentId = new Types.ObjectId().toHexString();
 const ownerStudentId = new Types.ObjectId().toHexString();
@@ -69,6 +70,15 @@ describe('DocumentsService', () => {
         {
           provide: getModelToken(Student.name),
           useValue: {}, // No se usa directamente en authorizeAccess
+        },
+        {
+          provide: ConsentService,
+          useValue: {
+            hasActiveConsent: jest.fn().mockResolvedValue(true),
+            createConsent: jest.fn(),
+            getConsentStatus: jest.fn(),
+            canViewDocuments: jest.fn().mockResolvedValue(true),
+          },
         },
       ],
     }).compile();

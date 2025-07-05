@@ -5,6 +5,7 @@ import { Department } from '../../../src/departments/schemas/department.schema';
 import { DepartmentStatsResponseDto } from '../../../src/departments/dto/department-stats-response.dto';
 import { DepartmentStudentsNeeResponseDto } from '../../../src/departments/dto/department-student-nee-response.dto';
 import { DepartmentTeachersResponseDto } from '../../../src/departments/dto/department-teachers-response.dto';
+import { Types } from 'mongoose';
 
 describe('DepartmentHeadsController', () => {
   let controller: DepartmentHeadsController;
@@ -14,55 +15,63 @@ describe('DepartmentHeadsController', () => {
     _id: 'dept1',
     name: 'Departamento de Ingeniería',
     currentSemester: '2023-1',
-    head: {
-      userId: 'user1',
-      name: 'Jefe de Departamento',
-      email: 'jefe@ucn.cl',
-    },
+    headId: new Types.ObjectId('507f1f77bcf86cd799439011'),
+    code: 'ING01',
+    faculty: 'Ingeniería',
+    campus: 'Antofagasta',
   };
 
   const mockStatsResponse: DepartmentStatsResponseDto = {
-    departmentId: 'dept1',
-    departmentName: 'Departamento de Ingeniería',
+    totalTeachers: 15,
+    totalStudentsWithNEE: 10,
+    totalAdjustments: 25,
+    implementedAdjustments: 20,
+    pendingAdjustments: 5,
+    totalCourses: 30,
+    implementationRate: 80,
+    generatedAt: new Date(),
     semester: '2023-1',
-    totalStudents: 150,
-    studentsWithNee: 10,
-    adjustmentsByType: [
-      { type: 'Tiempo adicional', count: 5 },
-      { type: 'Sala separada', count: 3 },
-    ],
   };
 
   const mockStudentsNeeResponse: DepartmentStudentsNeeResponseDto = {
     departmentId: 'dept1',
     departmentName: 'Departamento de Ingeniería',
-    semester: '2023-1',
+    totalStudents: 10,
     students: [
       {
-        studentId: 'stud1',
-        name: 'Estudiante Ejemplo',
+        _id: new Types.ObjectId(),
+        fullName: 'Estudiante Ejemplo',
         rut: '12345678-9',
+        email: 'estudiante@alumnos.ucn.cl',
         career: 'Ingeniería Civil Informática',
-        adjustments: ['Tiempo adicional'],
+        adjustmentsCount: 3,
+        implementedAdjustments: 2,
+        implementationRate: 66.7,
+        semester: '2023-1',
       },
     ],
-    total: 1,
+    generatedAt: new Date(),
+    semester: '2023-1',
   };
 
   const mockTeachersResponse: DepartmentTeachersResponseDto = {
     departmentId: 'dept1',
     departmentName: 'Departamento de Ingeniería',
-    semester: '2023-1',
+    totalTeachers: 15,
     teachers: [
       {
-        teacherId: 'teacher1',
-        name: 'Profesor Ejemplo',
+        _id: 'teacher1',
+        fullName: 'Profesor Ejemplo',
         email: 'profesor@ucn.cl',
         coursesCount: 3,
         studentsWithNeeCount: 5,
+        adjustmentsCount: 8,
+        implementedAdjustments: 6,
+        implementationRate: 75,
       },
     ],
-    total: 1,
+    generatedAt: new Date(),
+    semester: '2023-1',
   };
 
   beforeEach(async () => {
