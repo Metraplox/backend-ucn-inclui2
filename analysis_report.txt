@@ -1,0 +1,181 @@
+Analyzing incluye_app...                                        
+
+  error - Target of URI doesn't exist: 'package:incluye_app/models/user.dart' - lib\features\authentication\repositories\auth_repository.dart:2:8 - uri_does_not_exist
+   info - The file name 'courseWithAdjustment_model.dart' isn't a lower_case_with_underscores identifier - lib\models\courseWithAdjustment_model.dart:1:1 - file_names
+   info - The file name 'studentAdjustment.dart' isn't a lower_case_with_underscores identifier - lib\models\studentAdjustment.dart:1:1 - file_names
+   info - The file name 'teacherStats_model.dart' isn't a lower_case_with_underscores identifier - lib\models\teacherStats_model.dart:1:1 - file_names
+   info - The variable name 'client_id' isn't a lowerCamelCase identifier - lib\screens\auth\google_signin_inerop.dart:15:23 - non_constant_identifier_names
+   info - The variable name 'auto_select' isn't a lowerCamelCase identifier - lib\screens\auth\google_signin_inerop.dart:17:21 - non_constant_identifier_names
+   info - The variable name 'client_id' isn't a lowerCamelCase identifier - lib\screens\auth\google_signin_inerop.dart:20:12 - non_constant_identifier_names
+   info - The variable name 'auto_select' isn't a lowerCamelCase identifier - lib\screens\auth\google_signin_inerop.dart:22:10 - non_constant_identifier_names
+warning - Unused import: 'package:incluye_app/services/auth_service.dart' - lib\screens\auth\login_screen.dart:4:8 - unused_import
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\auth\login_screen.dart:40:9 - use_build_context_synchronously
+   info - Parameter 'key' could be a super parameter - lib\screens\auth\teacher_register_screen.dart:8:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\screens\auth\teacher_register_screen.dart:11:3 - library_private_types_in_public_api
+  error - The method 'registerTeacher' isn't defined for the type 'AuthService' - lib\screens\auth\teacher_register_screen.dart:41:27 - undefined_method
+   info - Use of 'return' in a 'finally' clause - lib\screens\auth\teacher_register_screen.dart:61:23 - control_flow_in_finally
+   info - Don't invoke 'print' in production code - lib\screens\courses\courses_list_screen.dart:27:7 - avoid_print
+warning - The value of the field '_recentStudents' isn't used - lib\screens\diddec\diddec_dashboard.dart:26:17 - unused_field
+warning - The method doesn't override an inherited method - lib\screens\diddec\pending_list_screen.dart:70:16 - override_on_non_overriding_member
+   info - Use of 'return' in a 'finally' clause - lib\screens\diddec\pending_list_screen.dart:90:21 - control_flow_in_finally
+   info - Don't use 'BuildContext's across async gaps - lib\screens\diddec\pending_list_screen.dart:100:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\diddec\pending_list_screen.dart:108:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\diddec\pending_list_screen.dart:148:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\diddec\pending_list_screen.dart:156:30 - use_build_context_synchronously
+  error - The argument type 'File' can't be assigned to the parameter type 'PlatformFile'.  - lib\screens\diddec\resource_uploader_screen.dart:46:9 - argument_type_not_assignable
+   info - Don't use 'BuildContext's across async gaps - lib\screens\diddec\resource_uploader_screen.dart:59:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\diddec\resource_uploader_screen.dart:70:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\diddec\resource_uploader_screen.dart:78:28 - use_build_context_synchronously
+warning - The value of the field '_studentService' isn't used - lib\screens\docente\docente_dashboard.dart:22:24 - unused_field
+warning - The value of the field '_adjustmentService' isn't used - lib\screens\docente\docente_dashboard.dart:23:27 - unused_field
+warning - The value of the field '_courseService' isn't used - lib\screens\docente\docente_dashboard.dart:24:23 - unused_field
+warning - The declaration '_navigateToCourseDetail' isn't referenced - lib\screens\docente\docente_dashboard.dart:411:8 - unused_element
+warning - Unused import: 'dart:io' - lib\screens\documents\student_documents_screen.dart:7:8 - unused_import
+   info - Don't use 'BuildContext's across async gaps - lib\screens\documents\student_documents_screen.dart:108:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\documents\student_documents_screen.dart:115:28 - use_build_context_synchronously
+warning - The value of the field '_currentCourses' isn't used - lib\screens\estudiante\estudiante_dashboard.dart:29:16 - unused_field
+warning - Unused import: 'package:incluye_app/widgets/app_scaffold.dart' - lib\screens\home_screen.dart:7:8 - unused_import
+warning - The value of the field '_headCareerId' isn't used - lib\screens\home_screen.dart:39:11 - unused_field
+warning - The value of the field '_pendingAdjustmentsCount' isn't used - lib\screens\home_screen.dart:41:7 - unused_field
+warning - The value of the field '_students' isn't used - lib\screens\home_screen.dart:44:17 - unused_field
+warning - The value of the field '_totalStudents' isn't used - lib\screens\home_screen.dart:45:7 - unused_field
+warning - The value of the field '_totalAdjustments' isn't used - lib\screens\home_screen.dart:46:7 - unused_field
+warning - The value of the field '_pendingAlerts' isn't used - lib\screens\home_screen.dart:47:7 - unused_field
+warning - The value of the field '_coursesStudent' isn't used - lib\screens\home_screen.dart:53:16 - unused_field
+   info - Empty catch block - lib\screens\home_screen.dart:171:19 - empty_catches
+   info - Don't invoke 'print' in production code - lib\screens\home_screen.dart:255:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\home_screen.dart:257:13 - avoid_print
+warning - The declaration '_viewOwnProfile' isn't referenced - lib\screens\home_screen.dart:264:8 - unused_element
+warning - The declaration '_onEditDemo' isn't referenced - lib\screens\home_screen.dart:272:15 - unused_element
+  error - Instance member 'logout' can't be accessed using static access - lib\screens\home_screen.dart:331:29 - static_access_to_instance_member
+   info - Don't use 'BuildContext's across async gaps - lib\screens\home_screen.dart:332:32 - use_build_context_synchronously
+warning - The declaration '_buildStatCard' isn't referenced - lib\screens\home_screen.dart:404:10 - unused_element
+warning - The declaration '_buildAlertCard' isn't referenced - lib\screens\home_screen.dart:430:10 - unused_element
+warning - The declaration '_buildFeatureCard' isn't referenced - lib\screens\home_screen.dart:453:10 - unused_element
+warning - The declaration '_buildUnitItem' isn't referenced - lib\screens\home_screen.dart:476:10 - unused_element
+warning - The value of the local variable 'theme' isn't used - lib\screens\incluye\incluye_dashboard.dart:67:11 - unused_local_variable
+   info - Parameter 'key' could be a super parameter - lib\screens\profile\change_password_screen.dart:6:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\screens\profile\change_password_screen.dart:9:3 - library_private_types_in_public_api
+  error - Instance member 'changePassword' can't be accessed using static access - lib\screens\profile\change_password_screen.dart:25:41 - static_access_to_instance_member
+  error - The method 'saveLastCheckTime' isn't defined for the type 'NotificationService' - lib\screens\settings\settings_screen.dart:36:31 - undefined_method
+   info - The file name 'studentAdjustmentSubject_screen.dart' isn't a lower_case_with_underscores identifier - lib\screens\students\studentAdjustmentSubject_screen.dart:1:1 - file_names
+warning - The value of the field '_isLoading' isn't used - lib\screens\students\studentAdjustmentSubject_screen.dart:28:8 - unused_field
+warning - The value of the field '_adjustments' isn't used - lib\screens\students\studentAdjustmentSubject_screen.dart:34:26 - unused_field
+   info - Don't use 'BuildContext's across async gaps - lib\screens\students\studentAdjustmentSubject_screen.dart:51:28 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\students\studentAdjustmentSubject_screen.dart:102:9 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\students\studentAdjustmentSubject_screen.dart:120:28 - use_build_context_synchronously
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\studentAdjustmentSubject_screen.dart:157:42 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\studentAdjustmentSubject_screen.dart:160:49 - dead_null_aware_expression
+warning - The value of the field '_checkLoading' isn't used - lib\screens\students\student_career_screen.dart:22:8 - unused_field
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\student_career_screen.dart:94:21 - dead_null_aware_expression
+   info - Don't invoke 'print' in production code - lib\screens\students\student_create_screen.dart:60:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_create_screen.dart:121:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:57:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:58:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:62:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:66:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:70:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:74:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:78:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:89:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:91:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:100:7 - avoid_print
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\students\student_list_screen.dart:267:34 - deprecated_member_use
+   info - Don't invoke 'print' in production code - lib\screens\students\student_list_screen.dart:383:33 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:35:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:42:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:43:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:51:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:73:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:88:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:89:7 - avoid_print
+warning - The declaration '_formatDateString' isn't referenced - lib\screens\students\student_own_profile_screen.dart:99:10 - unused_element
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:107:7 - avoid_print
+warning - The declaration '_formatDateTime' isn't referenced - lib\screens\students\student_own_profile_screen.dart:112:10 - unused_element
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:129:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:140:5 - avoid_print
+  error - The argument type 'File' can't be assigned to the parameter type 'PlatformFile'.  - lib\screens\students\student_own_profile_screen.dart:155:9 - argument_type_not_assignable
+  error - The named parameter 'documentType' isn't defined - lib\screens\students\student_own_profile_screen.dart:157:9 - undefined_named_parameter
+   info - Don't invoke 'print' in production code - lib\screens\students\student_own_profile_screen.dart:175:7 - avoid_print
+warning - The value of the local variable 'adjustment' isn't used - lib\screens\students\student_own_profile_screen.dart:399:35 - unused_local_variable
+   info - Don't invoke 'print' in production code - lib\screens\students\student_profile_screen.dart:77:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_profile_screen.dart:89:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_profile_screen.dart:94:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_profile_screen.dart:107:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\students\student_profile_screen.dart:140:7 - avoid_print
+warning - The declaration '_buildAjustesTable' isn't referenced - lib\screens\students\student_profile_screen.dart:731:10 - unused_element
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\student_profile_screen.dart:810:36 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\student_profile_screen.dart:816:47 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\student_profile_screen.dart:826:52 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\student_profile_screen.dart:828:68 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\student_profile_screen.dart:833:77 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\student_profile_screen.dart:844:77 - dead_null_aware_expression
+warning - The value of the field '_checkLoading' isn't used - lib\screens\students\student_subject_list.dart:25:8 - unused_field
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\students\student_subject_list.dart:84:21 - dead_null_aware_expression
+  error - Target of URI doesn't exist: 'package:incluye_app/models/user.dart' - lib\screens\user_management_screen.dart:2:8 - uri_does_not_exist
+   info - Parameter 'key' could be a super parameter - lib\screens\user_management_screen.dart:8:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\screens\user_management_screen.dart:11:3 - library_private_types_in_public_api
+  error - The name 'User' isn't a type, so it can't be used as a type argument - lib\screens\user_management_screen.dart:15:20 - non_type_as_type_argument
+  error - Undefined class 'User' - lib\screens\user_management_screen.dart:29:25 - undefined_class
+   info - Don't use 'BuildContext's across async gaps - lib\screens\user_management_screen.dart:52:36 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\user_management_screen.dart:60:36 - use_build_context_synchronously
+  error - Undefined class 'User' - lib\screens\user_management_screen.dart:73:34 - undefined_class
+   info - Don't use 'BuildContext's across async gaps - lib\screens\user_management_screen.dart:84:36 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\user_management_screen.dart:92:36 - use_build_context_synchronously
+  error - Undefined class 'User' - lib\screens\user_management_screen.dart:105:23 - undefined_class
+   info - Don't use 'BuildContext's across async gaps - lib\screens\user_management_screen.dart:122:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\user_management_screen.dart:125:40 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\user_management_screen.dart:129:40 - use_build_context_synchronously
+   info - The 'child' argument should be last in widget constructor invocations - lib\screens\user_management_screen.dart:137:15 - sort_child_properties_last
+  error - The name 'User' isn't a type, so it can't be used as a type argument - lib\screens\user_management_screen.dart:150:32 - non_type_as_type_argument
+   info - The 'child' argument should be last in widget constructor invocations - lib\screens\user_management_screen.dart:225:9 - sort_child_properties_last
+   info - The variable name 'IdSubject' isn't a lowerCamelCase identifier - lib\services\adjustment_service.dart:206:12 - non_constant_identifier_names
+   info - Don't invoke 'print' in production code - lib\services\adjustment_service.dart:255:7 - avoid_print
+warning - Unused import: 'api_service.dart' - lib\services\auth_service.dart:7:8 - unused_import
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:51:7 - avoid_print
+   info - Runtime check between 'JSAny' and 'JSString' involves a non-trivial runtime check between two JS interop types that might not be platform-consistent - lib\services\auth_service.dart:64:29 - invalid_runtime_check_with_js_interop_types
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:98:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:107:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:8:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:12:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:32:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:44:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:51:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:57:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:63:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:67:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:68:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:75:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:78:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:96:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\career_service.dart:132:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\course_service.dart:12:7 - avoid_print
+   info - The variable name 'IdSubject' isn't a lowerCamelCase identifier - lib\services\course_service.dart:66:60 - non_constant_identifier_names
+   info - The imported package 'http' isn't a dependency of the importing package - lib\services\document_service.dart:8:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:incluye_app/config/api.dart' - lib\services\document_service.dart:9:8 - uri_does_not_exist
+   info - The imported package 'path' isn't a dependency of the importing package - lib\services\document_service.dart:11:8 - depend_on_referenced_packages
+  error - Undefined name 'API' - lib\services\document_service.dart:217:24 - undefined_identifier
+   info - The prefix 'IO' isn't a lower_case_with_underscores identifier - lib\services\notification_service.dart:2:60 - library_prefixes
+   info - Don't invoke 'print' in production code - lib\services\notification_service.dart:32:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\notification_service.dart:45:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\notification_service.dart:50:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\notification_service.dart:55:7 - avoid_print
+  error - Target of URI doesn't exist: 'package:incluye_app/models/user.dart' - lib\services\user_service.dart:1:8 - uri_does_not_exist
+  error - The name 'User' isn't a type, so it can't be used as a type argument - lib\services\user_service.dart:6:22 - non_type_as_type_argument
+  error - Undefined name 'User' - lib\services\user_service.dart:18:39 - undefined_identifier
+  error - The name 'User' isn't a type, so it can't be used as a type argument - lib\services\user_service.dart:28:17 - non_type_as_type_argument
+  error - Undefined name 'User' - lib\services\user_service.dart:38:16 - undefined_identifier
+  error - The name 'User' isn't a type, so it can't be used as a type argument - lib\services\user_service.dart:48:17 - non_type_as_type_argument
+  error - Undefined name 'User' - lib\services\user_service.dart:61:16 - undefined_identifier
+  error - Instance member 'logout' can't be accessed using static access - lib\widgets\app_scaffold.dart:48:23 - static_access_to_instance_member
+  error - The method 'saveLastCheckTime' isn't defined for the type 'NotificationService' - lib\widgets\app_scaffold.dart:77:35 - undefined_method
+   info - Parameter 'key' could be a super parameter - lib\widgets\change_password_dialog.dart:7:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\widgets\change_password_dialog.dart:11:3 - library_private_types_in_public_api
+   info - Parameter 'key' could be a super parameter - lib\widgets\custom_button.dart:8:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\widgets\custom_text_field.dart:11:9 - use_super_parameters
+   info - Don't invoke 'print' in production code - lib\widgets\edit_student_dialog.dart:78:7 - avoid_print
+  error - Target of URI doesn't exist: 'package:incluye_app/models/user.dart' - lib\widgets\user_form_dialog.dart:2:8 - uri_does_not_exist
+  error - Undefined class 'User' - lib\widgets\user_form_dialog.dart:6:9 - undefined_class
+   info - Parameter 'key' could be a super parameter - lib\widgets\user_form_dialog.dart:9:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\widgets\user_form_dialog.dart:13:3 - library_private_types_in_public_api
+
