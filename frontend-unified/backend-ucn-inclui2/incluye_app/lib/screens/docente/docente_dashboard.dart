@@ -9,6 +9,8 @@ import 'package:incluye_app/widgets/quick_action_button.dart';
 import 'package:incluye_app/models/course_with_adjustment_model.dart';
 import 'package:incluye_app/screens/docente/student_adjustments_screen.dart';
 import 'package:incluye_app/screens/students/student_subject_list.dart';
+import 'package:incluye_app/screens/courses/courses_list_screen.dart';
+import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
 /// Dashboard principal para el rol Docente
@@ -23,10 +25,12 @@ class DocenteDashboard extends StatefulWidget {
 class _DocenteDashboardState extends State<DocenteDashboard> {
   bool _isLoading = true;
   String? _currentTeacherId;
+  String? _teacherName;
   int _totalCourses = 0;
   int _studentsWithNEE = 0;
   int _pendingAdjustments = 0;
   int _helpRequests = 0;
+  int _unreadNotifications = 0;
   List<CourseAdjustment> _courses = [];
 
   @override
@@ -42,13 +46,17 @@ class _DocenteDashboardState extends State<DocenteDashboard> {
       // Obtener información del docente actual
       final userInfo = await StudentService.getCurrentUserInfo();
       _currentTeacherId = userInfo?.id;
+      _teacherName = userInfo?.nombreCompleto;
 
-      if (_currentTeacherId != null) {
-        // Cargar cursos del docente
+      if (_currentTeacherId != null && _teacherName != null) {
+        // Cargar cursos del docente usando el nombre completo (como en HomeScreen monolítico)
         final courses = await CourseService.getTeacherCourses(
-          _currentTeacherId!,
+          _teacherName!,
         );
         final adjustments = await AdjustmentService.getAllAdjustments();
+
+        // Simular carga de notificaciones (como en HomeScreen monolítico)
+        final notificationCount = await _loadNotificationsCount();
 
         // Calcular estadísticas
         final studentsInCourses =
@@ -67,6 +75,7 @@ class _DocenteDashboardState extends State<DocenteDashboard> {
           _studentsWithNEE = studentsInCourses;
           _pendingAdjustments = pendingAdj;
           _helpRequests = helpReq;
+          _unreadNotifications = notificationCount;
           _isLoading = false;
         });
       } else {
@@ -90,6 +99,15 @@ class _DocenteDashboardState extends State<DocenteDashboard> {
           ),
         );
       }
+    }
+  }
+
+  Future<int> _loadNotificationsCount() async {
+    try {
+      // Simular carga de notificaciones como en HomeScreen monolítico
+      return (_studentsWithNEE / 3).round();
+    } catch (e) {
+      return 0;
     }
   }
 
@@ -124,6 +142,10 @@ class _DocenteDashboardState extends State<DocenteDashboard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildWelcomeSection(),
+                    const SizedBox(height: 24),
+                    _buildNotificationsSection(),
+                    const SizedBox(height: 24),
+                    _buildCoursesSection(),
                     const SizedBox(height: 24),
                     _buildStatisticsGrid(),
                     const SizedBox(height: 24),
@@ -171,6 +193,58 @@ class _DocenteDashboardState extends State<DocenteDashboard> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNotificationsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Alertas y notificaciones',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          color: Colors.red.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.red,
+              child: Icon(Icons.warning, color: Colors.white),
+            ),
+            title: const Text('Notificaciones sin revisar'),
+            subtitle: Text('$_unreadNotifications notificaciones sin abrir'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToNotifications,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCoursesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Mis Asignaturas',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          color: Colors.blue.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.book, color: Colors.white),
+            ),
+            title: const Text('Asignaturas semestre actual'),
+            subtitle: Text('$_totalCourses asignaturas a cargo'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToCoursesList,
+          ),
+        ),
+      ],
     );
   }
 
@@ -385,11 +459,17 @@ class _DocenteDashboardState extends State<DocenteDashboard> {
 
   // Métodos de navegación
   void _navigateToNotifications() {
-    Navigator.pushNamed(context, '/notifications');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+    );
   }
 
   void _navigateToCoursesList() {
-    Navigator.pushNamed(context, '/courses');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CoursesListScreen()),
+    );
   }
 
   void _navigateToStudentsNEE() {
