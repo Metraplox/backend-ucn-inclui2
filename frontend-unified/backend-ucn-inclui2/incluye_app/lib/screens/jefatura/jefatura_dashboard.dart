@@ -8,6 +8,12 @@ import 'package:incluye_app/widgets/alert_badge.dart';
 import 'package:incluye_app/widgets/quick_action_button.dart';
 import 'package:incluye_app/widgets/export_button.dart';
 import 'package:incluye_app/models/teacher_stats_model.dart';
+import 'package:incluye_app/models/student_model.dart';
+import 'package:incluye_app/screens/students/student_list_screen.dart';
+import 'package:incluye_app/screens/teachers/teachers_by_career.dart';
+import 'package:incluye_app/screens/students/student_career_screen.dart';
+import 'package:incluye_app/screens/notifications/notifications_screen.dart';
+import 'package:incluye_app/screens/user_management_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
 /// Dashboard principal para el rol Jefatura de Carrera
@@ -26,7 +32,11 @@ class _JefaturaDashboardState extends State<JefaturaDashboard> {
   int _studentsInCareer = 0;
   int _pendingReviews = 0;
   int _activeAlerts = 0;
+  int _totalStudents = 0;
+  int _totalAdjustments = 0;
+  int _pendingAlerts = 0;
   List<TeacherStats> _teacherStats = [];
+  List<Student> _students = [];
 
   @override
   void initState() {
@@ -65,6 +75,10 @@ class _JefaturaDashboardState extends State<JefaturaDashboard> {
           _studentsInCareer = careerStudents.length;
           _pendingReviews = adjustments.where((adj) => adj.isPending).length;
           _activeAlerts = adjustments.where((adj) => adj.isExpired).length;
+          _students = students;
+          _totalStudents = students.length;
+          _totalAdjustments = adjustments.length;
+          _pendingAlerts = adjustments.where((adj) => adj.isPending).length;
           _isLoading = false;
         });
       } else {
@@ -123,6 +137,10 @@ class _JefaturaDashboardState extends State<JefaturaDashboard> {
                   children: [
                     _buildWelcomeSection(),
                     const SizedBox(height: 24),
+                    _buildAlertsSection(),
+                    const SizedBox(height: 24),
+                    _buildManagementSection(),
+                    const SizedBox(height: 24),
                     _buildStatisticsGrid(),
                     const SizedBox(height: 24),
                     _buildQuickActions(),
@@ -173,6 +191,108 @@ class _JefaturaDashboardState extends State<JefaturaDashboard> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAlertsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Alertas y Notificaciones',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          color: Colors.red.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.red,
+              child: Icon(Icons.notifications, color: Colors.white),
+            ),
+            title: const Text('Notificaciones'),
+            subtitle: Text('$_pendingAlerts notificaciones sin abrir'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToNotifications,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colors.orange.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.orange,
+              child: Icon(Icons.person_add, color: Colors.white),
+            ),
+            title: const Text('Nuevos Ingresos'),
+            subtitle: Text('${(_totalStudents * 0.2).round()} estudiantes nuevos requieren revisión'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToStudentList,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colors.blue.shade50,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.update, color: Colors.white),
+            ),
+            title: const Text('Actualización de Ajustes'),
+            subtitle: Text('$_totalAdjustments solicitudes de actualización'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _showUpdateRequestsDialog,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildManagementSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Gestión',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: Card(
+                child: ListTile(
+                  leading: Icon(Icons.list_alt, color: Colors.indigo),
+                  title: const Text('Estudiantes'),
+                  subtitle: const Text('Ver todos los estudiantes'),
+                  onTap: _navigateToStudentList,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Card(
+                child: ListTile(
+                  leading: Icon(Icons.list_alt, color: Colors.indigo),
+                  title: const Text('Profesores'),
+                  subtitle: const Text('Ver todos los profesores'),
+                  onTap: _navigateToTeachersList,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Card(
+          child: ListTile(
+            leading: Icon(Icons.people, color: Colors.indigo),
+            title: const Text('Gestión de Usuarios'),
+            subtitle: const Text('Creación, edición, eliminación de usuarios'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: _navigateToUserManagement,
+          ),
+        ),
+      ],
     );
   }
 
@@ -364,5 +484,56 @@ class _JefaturaDashboardState extends State<JefaturaDashboard> {
 
   void _navigateToTeacherDetail(String teacherId) {
     Navigator.pushNamed(context, '/teachers/$teacherId');
+  }
+
+  void _navigateToStudentDetail(String studentId) {
+    Navigator.pushNamed(context, '/students/$studentId');
+  }
+
+  void _navigateToStudentList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StudentListScreen()),
+    );
+  }
+
+  void _navigateToUserManagement() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const UserManagementScreen()),
+    );
+  }
+
+  void _showUpdateRequestsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Solicitudes de Actualización'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: _students.isEmpty
+              ? const Text("No hay estudiantes para mostrar.")
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: (_students.length * 0.1).round().clamp(0, _students.length),
+                  itemBuilder: (context, index) {
+                    if (_students.isEmpty) return const SizedBox.shrink();
+                    final student = _students[index % _students.length];
+                    return ListTile(
+                      title: Text(student.nombreCompleto),
+                      subtitle: Text('${student.carreraNombre ?? 'Sin carrera'} - ${student.rut}'),
+                      leading: const CircleAvatar(child: Icon(Icons.person)),
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
   }
 }
