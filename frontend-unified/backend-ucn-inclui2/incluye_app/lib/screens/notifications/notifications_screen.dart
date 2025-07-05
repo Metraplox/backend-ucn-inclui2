@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:incluye_app/utils/responsive_utils.dart';
-import 'package:incluye_app/services/notification_service.dart';
 import 'package:incluye_app/models/notification_model.dart';
+import 'package:incluye_app/services/notification_service.dart';
+import 'package:incluye_app/utils/responsive_utils.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -14,11 +14,8 @@ class NotificationsScreenState extends State<NotificationsScreen>
     with SingleTickerProviderStateMixin {
   bool isLoading = true;
   late TabController _tabController;
-  final NotificationService _service = NotificationService();
-  List<NotificationModel> notifications = [];
-  List<NotificationModel> filteredNotifications = [];
-  int _currentPage = 1;
-  final int _limit = 20;
+  List<Notifications> _notifications = [];
+  List<Notifications> _filteredNotifications = [];
 
   // Filtros
   String? selectedType;
@@ -44,32 +41,20 @@ class NotificationsScreenState extends State<NotificationsScreen>
     super.dispose();
   }
 
-  Future<void> _loadNotifications({bool refresh = false}) async {
-    if (refresh) {
-      _currentPage = 1;
-      notifications.clear();
-    }
+  Future<void> _loadNotifications() async {
+    final notificacions = await NotificationService.getAllNotifications();
 
-    final list = await _service.getNotifications(
-      page: _currentPage,
-      limit: _limit,
-    );
     setState(() {
-      if (refresh) {
-        notifications = list;
-      } else {
-        notifications.addAll(list);
-      }
-      filteredNotifications = notifications;
+      _notifications = notificacions;
+      _filteredNotifications = _notifications;
       isLoading = false;
-      _currentPage++;
     });
   }
 
   void _filterNotifications() {
     setState(() {
-      filteredNotifications =
-          notifications.where((notification) {
+      _filteredNotifications =
+          _notifications.where((notification) {
             // Filtro por tipo
             final matchesType =
                 selectedType == null || notification.type == selectedType;
@@ -88,7 +73,7 @@ class NotificationsScreenState extends State<NotificationsScreen>
               matchesTab = !notification.isRead;
             } else if (_tabController.index == 2) {
               // Importantes
-              matchesTab = notification.priority == 'HIGH';
+              matchesTab = notification.priority == NotificationPriority.HIGH;
             }
 
             return matchesType && matchesReadStatus && matchesTab;
@@ -209,7 +194,7 @@ class NotificationsScreenState extends State<NotificationsScreen>
 
   void _markAllAsRead() {
     setState(() {
-      for (var notification in notifications) {
+      for (var notification in _notifications) {
         notification.isRead = true;
       }
     });
@@ -222,19 +207,20 @@ class NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  void _markAsRead(String notificationId) {
+  void _markAsRead(String notificationId) async {
     setState(() {
-      final notification = notifications.firstWhere(
+      final notification = _notifications.firstWhere(
         (n) => n.id == notificationId,
       );
       notification.isRead = true;
     });
+    await NotificationService.setNotificationRead(notificationId, context);
     _filterNotifications();
   }
 
   void _deleteNotification(String notificationId) {
     setState(() {
-      notifications.removeWhere((n) => n.id == notificationId);
+      _notifications.removeWhere((n) => n.id == notificationId);
     });
     _filterNotifications();
 
@@ -253,11 +239,11 @@ class NotificationsScreenState extends State<NotificationsScreen>
 
   Color _getPriorityColor(String priority) {
     switch (priority) {
-      case 'high':
+      case 'NotificationPriority.HIGH':
         return Colors.red;
-      case 'medium':
+      case 'NotificationPriority.MEDIUM':
         return Colors.orange;
-      case 'low':
+      case 'NotificationPriority.LOW':
         return Colors.blue;
       default:
         return Colors.grey;
@@ -289,9 +275,13 @@ class NotificationsScreenState extends State<NotificationsScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Todas'),
-            Tab(text: 'No leídas'),
-            Tab(text: 'Importantes'),
+            Tab(child: Text('Leidas', style: TextStyle(color: Colors.white))),
+            Tab(
+              child: Text('No Leídas', style: TextStyle(color: Colors.white)),
+            ),
+            Tab(
+              child: Text('Importantes', style: TextStyle(color: Colors.white)),
+            ),
           ],
           onTap: (index) {
             _filterNotifications();
@@ -370,7 +360,7 @@ class NotificationsScreenState extends State<NotificationsScreen>
                     // Lista de notificaciones
                     Expanded(
                       child:
-                          filteredNotifications.isEmpty
+                          _filteredNotifications.isEmpty
                               ? Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -392,10 +382,10 @@ class NotificationsScreenState extends State<NotificationsScreen>
                                 ),
                               )
                               : ListView.builder(
-                                itemCount: filteredNotifications.length,
+                                itemCount: _filteredNotifications.length,
                                 itemBuilder: (context, index) {
                                   final notification =
-                                      filteredNotifications[index];
+                                      _filteredNotifications[index];
                                   return Dismissible(
                                     key: Key(notification.id),
                                     background: Container(
@@ -433,11 +423,11 @@ class NotificationsScreenState extends State<NotificationsScreen>
                                       child: ListTile(
                                         leading: Badge(
                                           backgroundColor: _getPriorityColor(
-                                            notification.priority,
+                                            notification.priority.toString(),
                                           ),
                                           label: const SizedBox.shrink(),
                                           child: _getTypeIcon(
-                                            notification.type,
+                                            notification.type.toString(),
                                           ),
                                         ),
                                         title: Text(
@@ -459,8 +449,8 @@ class NotificationsScreenState extends State<NotificationsScreen>
                                               children: [
                                                 Text(
                                                   _formatDate(
-                                                    notification.createdAt
-                                                        .toIso8601String(),
+                                                    notification.updatedAt
+                                                        .toString(),
                                                   ),
                                                   style:
                                                       Theme.of(
@@ -468,32 +458,50 @@ class NotificationsScreenState extends State<NotificationsScreen>
                                                       ).textTheme.bodySmall,
                                                 ),
                                                 const SizedBox(width: 8),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 2,
+
+                                                // NUEVO CÓDIGO CON COLOR DE FONDO Y CONTRASTE DE TEXTO
+                                                Builder(
+                                                  builder: (context) {
+                                                    final backgroundColor =
+                                                        _getPriorityColor(
+                                                          notification.priority
+                                                              .toString(),
+                                                        ).withAlpha(30);
+                                                    final isDarkBackground =
+                                                        ThemeData.estimateBrightnessForColor(
+                                                          backgroundColor,
+                                                        ) ==
+                                                        Brightness.dark;
+
+                                                    return Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 6,
+                                                            vertical: 2,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: backgroundColor,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              4,
+                                                            ),
                                                       ),
-                                                  decoration: BoxDecoration(
-                                                    color: _getPriorityColor(
-                                                      notification.priority,
-                                                    ).withValues(
-                                                      alpha: 26,
-                                                    ), // 0.1 * 255 ≈ 26
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          4,
+                                                      child: Text(
+                                                        getNotificationTypeLabel(
+                                                          notification.type
+                                                              .toString(),
                                                         ),
-                                                  ),
-                                                  child: Text(
-                                                    notification.type,
-                                                    style: TextStyle(
-                                                      fontSize: 10,
-                                                      color: _getPriorityColor(
-                                                        notification.priority,
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          color:
+                                                              isDarkBackground
+                                                                  ? Colors.white
+                                                                  : Colors
+                                                                      .black,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ),
+                                                    );
+                                                  },
                                                 ),
                                               ],
                                             ),
@@ -551,8 +559,45 @@ class NotificationsScreenState extends State<NotificationsScreen>
     }
   }
 
-  void _handleNotificationAction(NotificationModel notification) {
-    switch (notification.actionType) {
+  String getNotificationTypeLabel(String type) {
+    switch (type) {
+      case 'NotificationType.ADJUSTMENT_CREATED':
+        return 'Ajuste creado';
+      case 'NotificationType.ADJUSTMENT_UPDATED':
+        return 'Ajuste actualizado';
+      case 'NotificationType.ADJUSTMENT_APPROVAL_NEEDED':
+        return 'Ajuste necesita aprobación';
+      case 'NotificationType.ADJUSMENT_APPROVED':
+        return 'Ajuste fue aprobado';
+      case 'NotificationType.ADJUSMENT_REJECTED':
+        return 'Ajuste fue rechazado';
+      case 'NotificationType.NEW_STUDENT':
+        return 'Nuevo estudiante';
+      case 'NotificationType.STUDENT_UPDATE':
+        return 'Estudiante ha sido actualizado';
+      case 'NotificationType.TEACHER_ASSIGNMENT':
+        return 'Asignatura de un profesor.';
+      case 'NotificationType.TEACHER_ACKNOWLEDGMENT_NEEDED':
+        return 'Necesita confirmación de lectura del profesor';
+      case 'NotificationType.TEACHER_ACKNOWLEDGMENT_RECEIVED':
+        return 'Confirmación de lectura del profesor';
+      case 'NotificationType.NEW_RESOURCE_AVAILABLE':
+        return 'Nuevo recurso disponible';
+      case 'NotificationType.REMINDER':
+        return 'Recordatorio del Sistema';
+      case 'NotificationType.SYSTEM_ALERT':
+        return 'Alerta del sistema';
+      case 'NotificationType.HELP_REQUEST':
+        return 'Solicitud de ayuda';
+      case 'NotificationType.HELP_REQUEST_RESPONSE':
+        return 'Respuesta a solicitud de ayuda';
+      default:
+        return type;
+    }
+  }
+
+  void _handleNotificationAction(Notifications notification) {
+    switch (notification.type) {
       case 'view_student':
         // Implementar navegación a perfil de estudiante
         break;

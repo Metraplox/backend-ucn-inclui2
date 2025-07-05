@@ -192,7 +192,7 @@ class NotificationService {
   }
 
   // Specialized notification methods
-  void showAdjustmentNotification({
+  static void showAdjustmentNotification({
     required int pendingCount,
     required Function onTap,
   }) {
@@ -228,7 +228,7 @@ class NotificationService {
     messengerKey.currentState?.showSnackBar(snackBar);
   }
 
-  void showDocumentNotification({
+  static void showDocumentNotification({
     required int pendingCount,
     required Function onTap,
   }) {
@@ -262,22 +262,6 @@ class NotificationService {
     );
 
     messengerKey.currentState?.showSnackBar(snackBar);
-  }
-
-  Future<void> checkForPendingAdjustments({
-    required Function getPendingCount,
-    required Function onAdjustmentsTap,
-  }) async {
-    if (await shouldCheckForNotifications()) {
-      final pendingCount = await getPendingCount();
-      if (pendingCount > 0) {
-        showAdjustmentNotification(
-          pendingCount: pendingCount,
-          onTap: onAdjustmentsTap,
-        );
-      }
-      await saveLastCheckTime();
-    }
   }
 
   // API methods for notification management
@@ -331,7 +315,7 @@ class NotificationService {
     try {
       final token = ApiService.getToken();
       final response = await ApiService.dio.patch(
-        '/notifications/$notificationId/read',
+        '/notifications/${notificationId}/read',
         options: Options(
           headers: {
             'Accept': 'application/json',
@@ -378,6 +362,22 @@ class NotificationService {
     } catch (e) {
       log.e('Error getting notifications by type: $e');
       return 0;
+    }
+  }
+
+  static Future<void> checkForPendingAdjustments({
+    required Function getPendingCount,
+    required Function onAdjustmentsTap,
+  }) async {
+    if (await shouldCheckForNotifications()) {
+      final pendingCount = await getPendingCount();
+      if (pendingCount > 0) {
+        showAdjustmentNotification(
+          pendingCount: pendingCount,
+          onTap: onAdjustmentsTap,
+        );
+      }
+      await saveLastCheckTime();
     }
   }
 
@@ -478,11 +478,147 @@ class NotificationService {
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
-    _isConnected.value = false;
   }
 
   void reconnect() async {
     dispose();
     await init();
+  }
+}
+
+  void dispose() {
+    _socket?.dispose();
+    _socket = null;
+    _isConnected.value = false;
+  }
+
+  // --- Métodos requeridos por UI (stubs temporales) ---
+  Future<List<NotificationModel>> getNotifications({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/notifications',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((json) => NotificationModel.fromJson(json))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      log.e('NotificationService.getNotifications error: $e');
+      return [];
+    }
+  }
+
+  Future<void> saveLastCheckTime(DateTime dateTime) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'notifications_last_check',
+      dateTime.toIso8601String(),
+    );
+  }
+
+  // --- Metodos antiguos (mantener por compatibilidad por ahora) ---
+
+  static void showAdjustmentNotification({
+    required int pendingCount,
+    required Function onTap,
+  }) {
+    if (pendingCount <= 0) return;
+
+    final message =
+        pendingCount == 1
+            ? 'Tienes 1 ajuste pendiente de revisar'
+            : 'Tienes $pendingCount ajustes pendientes de revisar';
+
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.blue,
+      duration: const Duration(seconds: 10),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(8),
+      action: SnackBarAction(
+        label: 'Ver',
+        textColor: Colors.white,
+        onPressed: () {
+          messengerKey.currentState?.hideCurrentSnackBar();
+          onTap();
+        },
+      ),
+    );
+
+    messengerKey.currentState?.showSnackBar(snackBar);
+  }
+
+  static void showDocumentNotification({
+    required int pendingCount,
+    required Function onTap,
+  }) {
+    if (pendingCount <= 0) return;
+
+    final message =
+        pendingCount == 1
+            ? 'Tienes 1 documento pendiente de aprobación'
+            : 'Tienes $pendingCount documentos pendientes de aprobación';
+
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.orange,
+      duration: const Duration(seconds: 10),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(8),
+      action: SnackBarAction(
+        label: 'Ver',
+        textColor: Colors.white,
+        onPressed: () {
+          messengerKey.currentState?.hideCurrentSnackBar();
+          onTap();
+        },
+      ),
+    );
+
+    messengerKey.currentState?.showSnackBar(snackBar);
+  }
+
+  static Future<void> checkForPendingAdjustments({
+    required Function getPendingCount,
+    required Function onAdjustmentsTap,
+  }) async {
+    // Este método se deja vacío intencionadamente para evitar errores de compilación
+    // en home_screen.dart. La lógica de notificaciones ahora se maneja por WebSockets.
+    // TODO: Eliminar la llamada a este método en home_screen.dart y luego eliminar este método.
+    return;
+  }
+
+  // --- Nuevos métodos REST ---
+  Future<bool> markAsRead(String id) async {
+    try {
+      final response = await ApiService.dio.patch('/notifications/$id/read');
+      return response.statusCode == 200;
+    } catch (e) {
+      log.e('NotificationService.markAsRead error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> markAllRead() async {
+    try {
+      final response = await ApiService.dio.patch(
+        '/notifications/mark-all-read',
+      );
+      if (response.statusCode == 200) {
+        _unreadCount.value = 0;
+        return true;
+      }
+      return false;
+    } catch (e) {
+      log.e('NotificationService.markAllRead error: $e');
+      return false;
+    }
   }
 }
