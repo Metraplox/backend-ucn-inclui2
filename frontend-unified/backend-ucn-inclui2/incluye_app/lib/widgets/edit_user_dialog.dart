@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:incluye_app/models/department_model.dart';
 import 'package:incluye_app/models/career_model.dart';
 import 'package:incluye_app/models/fullUser_model.dart';
+import 'package:incluye_app/models/user_model.dart';
 import 'package:incluye_app/services/department_service.dart';
 import 'package:incluye_app/services/career_service.dart';
 import 'package:incluye_app/services/user_service.dart';
@@ -158,7 +159,8 @@ class _EditUserDialogState extends State<EditUserDialog> {
     );
 
     // Simulamos los dos casos para que el análisis vea que ambos se usan:
-    bool success = await UserService.updateUser(updatedUser.id, updatedUser);
+    User? result = await UserService.updateUser(updatedUser.id, updatedUser.toJson());
+    bool success = result != null;
     // Aleatorio
 
     if (!mounted) return;

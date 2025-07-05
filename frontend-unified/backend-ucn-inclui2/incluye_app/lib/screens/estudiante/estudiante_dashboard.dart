@@ -473,3 +473,4 @@ class _EstudianteDashboardState extends State<EstudianteDashboard> {
         return Icons.info;
     }
   }
+}

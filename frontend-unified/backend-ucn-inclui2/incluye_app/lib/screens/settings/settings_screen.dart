@@ -33,7 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _resetNotifications() async {
-    await NotificationService().saveLastCheckTime(DateTime.now());
+    await NotificationService.saveLastCheckTime();
 
     if (!mounted) return;
 

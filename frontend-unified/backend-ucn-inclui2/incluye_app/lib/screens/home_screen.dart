@@ -20,7 +20,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final NotificationService _notificationService = NotificationService();
   int _unreadNotifications = 0;
 
   @override
@@ -39,10 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       // Fallback: contar manualmente
-      final list = await _notificationService.getNotifications(
-        page: 1,
-        limit: 50,
-      );
+      final list = await NotificationService.getAllNotifications();
       if (!mounted) return;
       setState(() {
         _unreadNotifications = list.where((n) => !n.isRead).length;

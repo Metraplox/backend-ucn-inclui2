@@ -10,9 +10,6 @@ import 'package:incluye_app/widgets/export_button.dart';
 import 'package:incluye_app/models/teacher_stats_model.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/screens/students/student_list_screen.dart';
-import 'package:incluye_app/screens/teachers/teachers_by_career.dart';
-import 'package:incluye_app/screens/students/student_career_screen.dart';
-import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/screens/user_management_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
@@ -484,10 +481,6 @@ class _JefaturaDashboardState extends State<JefaturaDashboard> {
 
   void _navigateToTeacherDetail(String teacherId) {
     Navigator.pushNamed(context, '/teachers/$teacherId');
-  }
-
-  void _navigateToStudentDetail(String studentId) {
-    Navigator.pushNamed(context, '/students/$studentId');
   }
 
   void _navigateToStudentList() {

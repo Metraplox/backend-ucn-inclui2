@@ -74,7 +74,7 @@ class AppScaffold extends StatelessWidget {
             icon: const Icon(Icons.notifications),
             tooltip: 'Notificaciones',
             onPressed: () async {
-              await NotificationService().saveLastCheckTime(DateTime.now());
+              await NotificationService.saveLastCheckTime();
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Notificaciones revisadas')),
