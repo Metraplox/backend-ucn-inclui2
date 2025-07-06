@@ -55,9 +55,8 @@ class NotificationsScreenState extends State<NotificationsScreen>
     setState(() {
       _filteredNotifications =
           _notifications.where((notification) {
-            // Filtro por tipo
-            final matchesType =
-                selectedType == null || notification.type == selectedType;
+            // Filtro por tipo - Mapeo de enums a categorías del filtro
+            final matchesType = selectedType == null || _matchesTypeFilter(notification.type, selectedType);
 
             // Filtro por estado de lectura
             final matchesReadStatus =
@@ -598,17 +597,17 @@ class NotificationsScreenState extends State<NotificationsScreen>
 
   void _handleNotificationAction(Notifications notification) {
     switch (notification.type) {
-      case 'view_student':
+      case NotificationType.ADJUSTMENT_APPROVAL_NEEDED:
+        // Implementar navegación a ajustes pendientes
+        break;
+      case NotificationType.NEW_STUDENT:
         // Implementar navegación a perfil de estudiante
         break;
-      case 'view_documents':
-        // Implementar navegación a documentos de estudiante
-        break;
-      case 'view_adjustments':
+      case NotificationType.TEACHER_ACKNOWLEDGMENT_NEEDED:
         // Implementar navegación a ajustes de estudiante
         break;
-      case 'view_report':
-        // Implementar navegación a reporte
+      case NotificationType.SYSTEM_ALERT:
+        // Implementar navegación a alertas del sistema
         break;
       default:
         // No hacer nada
@@ -730,5 +729,34 @@ class NotificationsScreenState extends State<NotificationsScreen>
         );
       },
     );
+  }
+
+  // Método auxiliar para mapear tipos de notificación enum a categorías del filtro
+  bool _matchesTypeFilter(NotificationType type, String? selectedCategory) {
+    if (selectedCategory == null) return true;
+    
+    switch (selectedCategory) {
+      case 'Ajustes':
+        return type == NotificationType.ADJUSTMENT_CREATED ||
+               type == NotificationType.ADJUSTMENT_UPDATED ||
+               type == NotificationType.ADJUSTMENT_APPROVAL_NEEDED ||
+               type == NotificationType.ADJUSTMENT_APPROVED ||
+               type == NotificationType.ADJUSTMENT_REJECTED;
+      case 'Documentos':
+        return type == NotificationType.NEW_RESOURCE_AVAILABLE;
+      case 'Estudiantes':
+        return type == NotificationType.NEW_STUDENT ||
+               type == NotificationType.STUDENT_UPDATE ||
+               type == NotificationType.TEACHER_ASSIGNMENT ||
+               type == NotificationType.TEACHER_ACKNOWLEDGMENT_NEEDED ||
+               type == NotificationType.TEACHER_ACKNOWLEDGMENT_RECEIVED;
+      case 'Sistema':
+        return type == NotificationType.REMINDER ||
+               type == NotificationType.SYSTEM_ALERT ||
+               type == NotificationType.HELP_REQUEST ||
+               type == NotificationType.HELP_REQUEST_RESPONSE;
+      default:
+        return false;
+    }
   }
 }
