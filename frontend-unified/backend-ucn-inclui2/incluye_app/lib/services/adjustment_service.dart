@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:incluye_app/models/course_with_adjustment_model.dart';
-import 'package:incluye_app/models/student_adjustment.dart';
+import 'package:incluye_app/models/student_adjustment_model.dart';
 import 'api_service.dart';
 import 'package:incluye_app/models/adjustment_model.dart'; // Ajusta según tu estructura
 import 'package:incluye_app/models/document_model.dart'; // Ajusta según tu estructura

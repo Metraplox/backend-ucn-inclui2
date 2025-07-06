@@ -25,6 +25,7 @@ class DepartmentService {
         );
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error en getDepartments: $e');
       rethrow;
     }
