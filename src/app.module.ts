@@ -23,12 +23,14 @@ import { DiddecModule } from './diddec/diddec.module';
 import { ConsentModule } from './consent/consent.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { SemesterSchedulerModule } from './scheduler/semester-scheduler.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(
       process.env.MONGODB_URI || 'mongodb://localhost:27017/ucn_inclui2',
     ),

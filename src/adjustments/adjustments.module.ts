@@ -19,6 +19,7 @@ import { AdjustmentCrudService } from './services/adjustment-crud.service';
 import { AdjustmentQueryService } from './services/adjustment-query.service';
 import { AdjustmentWorkflowService } from './services/adjustment-workflow.service';
 import { AdjustmentStatsService } from './services/adjustment-stats.service';
+import { AdjustmentTasksService } from './tasks/adjustment-tasks.service'; 
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AdjustmentStatsService } from './services/adjustment-stats.service';
     AdjustmentQueryService,
     AdjustmentWorkflowService,
     AdjustmentStatsService,
+    AdjustmentTasksService,
   ],
   exports: [
     // Servicios principales
