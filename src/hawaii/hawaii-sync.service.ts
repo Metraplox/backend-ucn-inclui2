@@ -472,4 +472,159 @@ export class HawaiiSyncService {
     result.success = result.errors.length === 0;
     return result;
   }
+
+  /**
+   * Ejecuta la sincronización completa de TODOS los datos de la universidad usando pre-carga optimizada
+   * @param semester Semestre actual (formato YYYYPP)
+   */
+  async syncFullUniversityData(semester: string): Promise<{
+    success: boolean;
+    students: number;
+    courses: number;
+    enrollments: number;
+    errors: Array<{ rut?: string; nrc?: string; error: string }>;
+    cacheStats: {
+      totalApiCalls: number;
+      cachingEnabled: boolean;
+      preloadUsed: boolean;
+    };
+  }> {
+    try {
+      this.logger.log(`🚀 Iniciando sincronización COMPLETA de la universidad para semestre ${semester}`);
+      const startTime = Date.now();
+      this.errors = [];
+
+      this.logger.log('📦 Pre-cargando todos los datos de Hawaii...');
+      const preloadData = await this.hawaiiCacheService.preloadSemesterData(semester);
+      this.logger.log(`📊 Pre-carga completada: ${preloadData.cacheStats.totalApiCalls}/3 llamadas API realizadas`);
+
+      this.logger.log('👥 Sincronizando TODOS los estudiantes...');
+      const studentsResult = await this.syncAllStudentsFromPreload(preloadData.students, semester);
+
+      this.logger.log('📚 Sincronizando TODOS los cursos y matrículas...');
+      const coursesResult = await this.syncAllCoursesAndEnrollmentsFromPreload(
+        preloadData.courses,
+        preloadData.enrollments,
+        semester,
+      );
+
+      const duration = Date.now() - startTime;
+      const overallSuccess = studentsResult.success && coursesResult.success && this.errors.length === 0;
+
+      this.logger.log(`🎉 Sincronización COMPLETA finalizada en ${duration}ms:`);
+      this.logger.log(`   👥 Estudiantes: ${studentsResult.synchronized}`);
+      this.logger.log(`   📚 Cursos: ${coursesResult.courses}`);
+      this.logger.log(`   📝 Matrículas: ${coursesResult.enrollments}`);
+      this.logger.log(`   🌐 Llamadas API: ${preloadData.cacheStats.totalApiCalls}/3`);
+
+      return {
+        success: overallSuccess,
+        students: studentsResult.synchronized,
+        courses: coursesResult.courses,
+        enrollments: coursesResult.enrollments,
+        errors: this.errors,
+        cacheStats: {
+          totalApiCalls: preloadData.cacheStats.totalApiCalls,
+          cachingEnabled: true,
+          preloadUsed: true,
+        },
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      this.logger.error(`❌ Error en syncFullUniversityData: ${errorMessage}`, error instanceof Error ? error.stack : '');
+      this.errors.push({ error: `Error en sincronización completa: ${errorMessage}` });
+      return {
+        success: false,
+        students: 0,
+        courses: 0,
+        enrollments: 0,
+        errors: this.errors,
+        cacheStats: { totalApiCalls: 0, cachingEnabled: true, preloadUsed: false },
+      };
+    }
+  }
+
+  /**
+   * Sincroniza TODOS los estudiantes desde datos pre-cargados, marcando los NEE.
+   */
+  private async syncAllStudentsFromPreload(allStudents: HawaiiStudentDto[], semester: string): Promise<{
+    success: boolean;
+    synchronized: number;
+    errors: any[];
+  }> {
+    const result = { success: false, synchronized: 0, errors: [] as any[] };
+
+    for (const student of allStudents) {
+      try {
+        await this.studentModel.findOneAndUpdate(
+          { rut: student.rut },
+          {
+            rut: student.rut,
+            firstName: student.nombres,
+            lastName: student.apellidos,
+            email: student.email_ucn,
+            fullName: `${student.nombres} ${student.apellidos}`.trim(),
+            semester: semester,
+            // Marcamos si el estudiante tiene NEE basado en la lista cargada
+            hasNee: this.neeRuts.includes(student.rut),
+            updatedAt: new Date(),
+          },
+          { upsert: true, new: true },
+        );
+        result.synchronized++;
+      } catch (error) {
+        result.errors.push({ rut: student.rut, error: error.message });
+      }
+    }
+
+    result.success = result.errors.length === 0;
+    return result;
+  }
+
+  /**
+   * Sincroniza TODOS los cursos e inscripciones desde datos pre-cargados.
+   */
+  private async syncAllCoursesAndEnrollmentsFromPreload(
+    allCourses: HawaiiCourseDto[],
+    allEnrollments: HawaiiEnrollmentDto[],
+    semester: string,
+  ): Promise<{
+    success: boolean;
+    courses: number;
+    enrollments: number;
+    errors: any[];
+  }> {
+    const result = { success: false, courses: 0, enrollments: 0, errors: [] as any[] };
+
+    // Sincronizar todos los cursos
+    for (const course of allCourses) {
+      try {
+        await this.courseModel.findOneAndUpdate(
+          { nrc: course.nrc, semester: semester },
+          {
+            nrc: course.nrc,
+            code: course.codigo,
+            name: course.asignatura,
+            parallel: course.paralelo,
+            department: course.departamento,
+            campus: course.sede,
+            semester: semester,
+            teacherRut: course.getProfesorRut() || '',
+            teacherName: course.getProfesorNombre() || '',
+            updatedAt: new Date(),
+          },
+          { upsert: true, new: true },
+        );
+        result.courses++;
+      } catch (error) {
+        result.errors.push({ nrc: course.nrc, error: error.message });
+      }
+    }
+
+    // Sincronizar todas las inscripciones
+    result.enrollments = await this.syncEnrollments(allEnrollments, semester);
+
+    result.success = result.errors.length === 0;
+    return result;
+  }
 }

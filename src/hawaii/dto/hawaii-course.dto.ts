@@ -31,8 +31,10 @@ export class HawaiiCourseDto {
    */
   getProfesorRut(): string | null {
     if (!this.profesores) return null;
-    const parts = this.profesores.split(',');
-    return parts.length > 0 ? parts[0] : null;
+    // Tomar solo el primer profesor si hay varios (separados por ;)
+    const primerProfesor = this.profesores.split(';')[0];
+    const parts = primerProfesor.split(',');
+    return parts.length > 0 ? parts[0].trim() : null;
   }
 
   /**
@@ -41,8 +43,10 @@ export class HawaiiCourseDto {
    */
   getProfesorNombre(): string | null {
     if (!this.profesores) return null;
-    const parts = this.profesores.split(',');
-    return parts.length > 1 ? parts[1] : null;
+    // Tomar solo el primer profesor si hay varios (separados por ;)
+    const primerProfesor = this.profesores.split(';')[0];
+    const parts = primerProfesor.split(',');
+    return parts.length > 1 ? parts[1].trim() : null;
   }
 
   /**
