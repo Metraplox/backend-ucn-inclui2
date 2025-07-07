@@ -197,8 +197,7 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
       return const Center(child: Text('No se pudo cargar la información de consentimiento'));
     }
 
-    final allowTeachers = _consentData!['allowTeachers'] ?? false;
-    final allowedCourses = List<String>.from(_consentData!['allowedCourses'] ?? []);
+    final allowsDataSharing = _consentData!['allowsDataSharing'] ?? false;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -219,26 +218,24 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
                   Row(
                     children: [
                       Icon(
-                        allowTeachers ? Icons.check_circle : Icons.cancel,
-                        color: allowTeachers ? Colors.green : Colors.red,
+                        allowsDataSharing ? Icons.check_circle : Icons.cancel,
+                        color: allowsDataSharing ? Colors.green : Colors.red,
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        allowTeachers
-                            ? 'Autorizado para compartir con docentes'
-                            : 'No autorizado para compartir con docentes',
+                        allowsDataSharing
+                            ? 'Autorizado para compartir datos'
+                            : 'No autorizado para compartir datos',
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  if (allowedCourses.isNotEmpty) ...[
-                    const Text('Cursos autorizados:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: allowedCourses.map((course) => Chip(label: Text(course))).toList(),
-                    ),
-                  ],
+                  Text(
+                    allowsDataSharing 
+                        ? 'Los coordinadores y educadores pueden acceder a la información del estudiante para brindar mejor apoyo académico.'
+                        : 'Los datos del estudiante no serán compartidos con coordinadores y educadores.',
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ],
               ),
             ),
@@ -620,14 +617,12 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
     showDialog(
       context: context,
       builder: (context) => _ConsentEditDialog(
-        initialAllowTeachers: _consentData?['allowTeachers'] ?? false,
-        initialAllowedCourses: List<String>.from(_consentData?['allowedCourses'] ?? []),
-        onSave: (allowTeachers, allowedCourses) async {
+        initialAllowsDataSharing: _consentData?['allowsDataSharing'] ?? false,
+        onSave: (allowsDataSharing) async {
           try {
             await ConsentService.updateConsent(
               studentId: widget.studentId,
-              allowTeachers: allowTeachers,
-              allowedCourses: allowedCourses,
+              allowsDataSharing: allowsDataSharing,
             );
             _loadData();
             if (mounted) {
@@ -655,13 +650,11 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
 }
 
 class _ConsentEditDialog extends StatefulWidget {
-  final bool initialAllowTeachers;
-  final List<String> initialAllowedCourses;
-  final Function(bool, List<String>) onSave;
+  final bool initialAllowsDataSharing;
+  final Function(bool) onSave;
 
   const _ConsentEditDialog({
-    required this.initialAllowTeachers,
-    required this.initialAllowedCourses,
+    required this.initialAllowsDataSharing,
     required this.onSave,
   });
 
@@ -670,14 +663,12 @@ class _ConsentEditDialog extends StatefulWidget {
 }
 
 class _ConsentEditDialogState extends State<_ConsentEditDialog> {
-  late bool _allowTeachers;
-  late List<String> _allowedCourses;
+  late bool _allowsDataSharing;
 
   @override
   void initState() {
     super.initState();
-    _allowTeachers = widget.initialAllowTeachers;
-    _allowedCourses = List.from(widget.initialAllowedCourses);
+    _allowsDataSharing = widget.initialAllowsDataSharing;
   }
 
   @override
@@ -689,20 +680,18 @@ class _ConsentEditDialogState extends State<_ConsentEditDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             SwitchListTile(
-              title: const Text('Permitir acceso a profesores'),
-              subtitle: const Text('Los profesores pueden ver documentos relacionados'),
-              value: _allowTeachers,
+              title: const Text('Permitir compartir datos'),
+              subtitle: const Text('Autoriza el compartir información académica y documentos'),
+              value: _allowsDataSharing,
               onChanged: (value) {
                 setState(() {
-                  _allowTeachers = value;
+                  _allowsDataSharing = value;
                 });
               },
             ),
             const SizedBox(height: 16),
-            const Text('Cursos con acceso permitido:'),
-            const SizedBox(height: 8),
             const Text(
-              'Esta funcionalidad puede expandirse para seleccionar cursos específicos',
+              'Al autorizar el consentimiento, permite que coordinadores y educadores accedan a información relevante para brindar mejor apoyo académico.',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
@@ -715,7 +704,7 @@ class _ConsentEditDialogState extends State<_ConsentEditDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            widget.onSave(_allowTeachers, _allowedCourses);
+            widget.onSave(_allowsDataSharing);
             Navigator.pop(context);
           },
           child: const Text('Guardar'),

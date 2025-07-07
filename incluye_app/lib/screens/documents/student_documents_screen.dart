@@ -9,8 +9,8 @@ import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/document_model.dart';
 import 'package:incluye_app/services/document_service.dart';
-import 'package:incluye_app/services/consent_service.dart';
-import 'package:incluye_app/services/api_service.dart';
+import 'package:incluye_app/services/document_consent_service.dart' as ConsentServices;
+
 
 // Widget principal para la pantalla de documentos
 class StudentDocumentsScreen extends StatefulWidget {
@@ -163,7 +163,11 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
   // Método para dar consentimiento (sólo para administradores)
   Future<void> _giveConsent() async {
     try {
-      final success = await ConsentService.giveConsent(widget.studentId);
+      final result = await ConsentServices.ConsentService.updateConsent(
+        studentId: widget.studentId,
+        allowsDataSharing: true,
+      );
+      final success = result != null;
       
       // Verificar si el widget sigue montado después de la operación asíncrona
       if (!mounted) return;
