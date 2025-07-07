@@ -10,6 +10,8 @@ import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/document_service.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
 
 class StudentOwnProfileScreen extends StatefulWidget {
   const StudentOwnProfileScreen({super.key});
@@ -117,9 +119,8 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
     }
   }
 
-  Future<void> _downloadTemplate() async {
-    /* ... */
-  }
+  Future<void> _downloadTemplate() async {}
+
   Future<void> _uploadSignedConsent() async {
     final String? targetUserId = _studentData?.userId?.id;
     if (targetUserId == null || targetUserId.isEmpty) {
