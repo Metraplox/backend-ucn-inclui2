@@ -50,6 +50,8 @@ try {
         fileSize: 10 * 1024 * 1024, // 10 MB (mismo límite que se intentó en ParseFilePipe)
       },
       fileFilter: (req, file, cb) => {
+          console.log('Archivo recibido:', file.mimetype); // <-- 👀 Esto te mostrará el tipo real
+
         // Validación básica de tipo de archivo (se puede expandir)
         // TODO: Reemplazar esto con una validación más robusta si el FileTypeValidator de ParseFilePipe sigue dando problemas.
         const allowedMimeTypes = [
@@ -57,6 +59,7 @@ try {
           'image/png',
           'application/pdf',
           'application/msword',
+          'application/octet-stream',
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         ];
         if (allowedMimeTypes.includes(file.mimetype)) {

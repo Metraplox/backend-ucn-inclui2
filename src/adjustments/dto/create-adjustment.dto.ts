@@ -15,7 +15,7 @@ export class CurrentAdjustmentDto {
     description: 'ID de la categoría del ajuste',
     example: '605c72ef9167f86c2cabc456',
   })
-  @IsMongoId()
+  @IsString()
   type: string;
 
   @ApiProperty({

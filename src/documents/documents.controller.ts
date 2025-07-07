@@ -66,7 +66,7 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post('upload')
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL,UserRole.ESTUDIANTE)
   @UseInterceptors(FileInterceptor('file', { dest: UPLOAD_LOCATION }))
   @ApiOperation({
     summary: 'Subir documento para estudiante (Staff)',
@@ -174,7 +174,7 @@ export class DocumentsController {
   }
 
   @Get('student/:studentId')
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL,UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Obtener documentos de estudiante',
     description: 'Obtiene todos los documentos de un estudiante específico. Requiere que el estudiante haya dado consentimiento para compartir documentos. Solo staff autorizado puede acceder.',
@@ -250,7 +250,7 @@ export class DocumentsController {
     if (!Types.ObjectId.isValid(studentId)) {
       throw new BadRequestException('ID de estudiante inválido.');
     }
-
+    console.log("ID STUDIANTE CONSENT",studentId);
     // Verificar autorización basada en consentimientos
     const userRole = req.user.roles.includes(UserRole.COORDINADOR) 
       ? UserRole.COORDINADOR 
