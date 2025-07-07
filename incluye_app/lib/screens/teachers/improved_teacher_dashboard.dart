@@ -12,7 +12,6 @@ class ImprovedTeacherDashboard extends StatefulWidget {
 }
 
 class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
-  List<CourseAdjustment> _allCourses = [];
   List<CourseAdjustment> _teacherCourses = [];
   bool _isLoading = true;
   String? _teacherName;
@@ -58,7 +57,6 @@ class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
       }).toList();
 
       setState(() {
-        _allCourses = allCourses;
         _teacherCourses = teacherCourses;
         _isLoading = false;
       });
@@ -172,7 +170,7 @@ class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
 
   Widget _buildStatsCard() {
     final coursesWithAdjustments = _teacherCourses.where((course) => 
-      course.studentAdjustments?.isNotEmpty ?? false
+      course.studentsWithNee.isNotEmpty
     ).length;
 
     return Card(
@@ -288,7 +286,7 @@ class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
   }
 
   Widget _buildCourseCard(CourseAdjustment course) {
-    final studentsWithAdjustments = course.studentAdjustments?.length ?? 0;
+    final studentsWithAdjustments = course.studentsWithNee.length;
     final hasAdjustments = studentsWithAdjustments > 0;
 
     return Card(
@@ -302,13 +300,13 @@ class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
           ),
         ),
         title: Text(
-          course.nombre ?? 'Curso sin nombre',
+          course.nombre,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('NRC: ${course.nrc ?? 'N/A'}'),
+            Text('NRC: ${course.nrc}'),
             if (hasAdjustments)
               Text(
                 '$studentsWithAdjustments estudiante(s) con ajustes',
@@ -325,7 +323,7 @@ class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildCourseDetail('Código', course.codigo ?? 'N/A'),
+                _buildCourseDetail('Código', course.codigo),
                 _buildCourseDetail('Semestre', course.semestre ?? 'N/A'),
                 _buildCourseDetail('Profesor', course.profesor ?? 'N/A'),
                 
@@ -336,7 +334,7 @@ class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  ...course.studentAdjustments!.map((adjustment) =>
+                  ...course.studentsWithNee.map((adjustment) =>
                     Card(
                       color: Colors.orange.shade50,
                       child: ListTile(
@@ -344,8 +342,8 @@ class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
                           backgroundColor: Colors.orange,
                           child: Icon(Icons.person, color: Colors.white),
                         ),
-                        title: Text(adjustment.studentName ?? 'Estudiante'),
-                        subtitle: Text('Tipo: ${adjustment.adjustmentType ?? 'N/A'}'),
+                        title: Text(adjustment['studentName'] ?? 'Estudiante'),
+                        subtitle: Text('Tipo: ${adjustment['adjustmentType'] ?? 'N/A'}'),
                       ),
                     ),
                   ),
@@ -469,17 +467,17 @@ class _ImprovedTeacherDashboardState extends State<ImprovedTeacherDashboard> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(course.nombre ?? 'Detalles del Curso'),
+        title: Text(course.nombre),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('NRC: ${course.nrc ?? 'N/A'}'),
-            Text('Código: ${course.codigo ?? 'N/A'}'),
+            Text('NRC: ${course.nrc}'),
+            Text('Código: ${course.codigo}'),
             Text('Semestre: ${course.semestre ?? 'N/A'}'),
             Text('Profesor: ${course.profesor ?? 'N/A'}'),
             const SizedBox(height: 8),
-            Text('Estudiantes con ajustes: ${course.studentAdjustments?.length ?? 0}'),
+            Text('Estudiantes con ajustes: ${course.studentsWithNee.length}'),
           ],
         ),
         actions: [
