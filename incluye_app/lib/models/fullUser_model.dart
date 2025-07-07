@@ -25,33 +25,34 @@ class FullUser {
 
   factory FullUser.fromJson(Map<String, dynamic> json) {
     return FullUser(
-      id: json['_id'],
-      email: json['email'],
+      id: json['_id'] ?? '', // ✅ CORREGIDO: Valor por defecto si el ID es nulo
+      email: json['email'] ?? '', // ✅ CORREGIDO: Valor por defecto si el email es nulo
       passwordHash: json['password_hash'],
-      roles: List<String>.from(json['roles']),
-      nombreCompleto: json['nombreCompleto'],
-      isActive: json['isActive'],
+      roles: List<String>.from(json['roles'] ?? []), // ✅ CORREGIDO: Lista vacía si 'roles' es nulo
+      nombreCompleto: json['nombreCompleto'] ?? 'Sin Nombre', // ✅ CORREGIDO: Valor por defecto
+      isActive: json['isActive'] ?? true, // ✅ CORREGIDO: Default a 'true' si es nulo
       additionalResponsibilities: AdditionalResponsibilities.fromJson(
-        json['additionalResponsibilities'],
+        json['additionalResponsibilities'] ?? {}, // ✅ CORREGIDO: Objeto vacío si es nulo
       ),
-      isProfileComplete: json['isProfileComplete'],
+      isProfileComplete: json['isProfileComplete'] ?? false, // ✅ CORREGIDO: Default a 'false' si es nulo
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
     );
   }
 
   Map<String, dynamic> toJson() => {
-    '_id': id,
-    'email': email,
-    'password_hash': passwordHash,
-    'roles': roles,
-    'nombreCompleto': nombreCompleto,
-    'isActive': isActive,
-    'additionalResponsibilities': additionalResponsibilities.toJson(),
-    'isProfileComplete': isProfileComplete,
-    'createdAt': createdAt.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(),
-  };
+        // Enviar solo lo necesario para una actualización PATCH.
+        // El backend debería ignorar campos que no puede cambiar.
+        if (id.isNotEmpty) '_id': id,
+        'email': email,
+        if (passwordHash != null) 'password_hash': passwordHash,
+        'roles': roles,
+        'nombreCompleto': nombreCompleto,
+        'isActive': isActive,
+        'additionalResponsibilities': additionalResponsibilities.toJsonForUpdate(), // Usamos un método específico
+        'isProfileComplete': isProfileComplete,
+        // No se suelen enviar createdAt y updatedAt
+      };
 }
 
 class AdditionalResponsibilities {
@@ -60,7 +61,7 @@ class AdditionalResponsibilities {
   final bool isDIDDECStaff;
   final List<String> departmentIds;
   final List<String> careerIds;
-  final String id;
+  final String? id; // El ID puede no estar siempre, lo hacemos opcional.
 
   AdditionalResponsibilities({
     required this.isDepartmentHead,
@@ -68,28 +69,39 @@ class AdditionalResponsibilities {
     required this.isDIDDECStaff,
     required this.departmentIds,
     required this.careerIds,
-    required this.id,
+    this.id,
   });
 
   factory AdditionalResponsibilities.fromJson(Map<String, dynamic> json) {
     return AdditionalResponsibilities(
-      isDepartmentHead: json['isDepartmentHead'],
-      isCareerHead: json['isCareerHead'],
-      isDIDDECStaff: json['isDIDDECStaff'],
-      departmentIds: List<String>.from(json['departmentIds']),
-      careerIds: List<String>.from(json['careerIds']),
-      id: json['_id'],
+      isDepartmentHead: json['isDepartmentHead'] ?? false, // ✅ CORREGIDO
+      isCareerHead: json['isCareerHead'] ?? false,         // ✅ CORREGIDO
+      isDIDDECStaff: json['isDIDDECStaff'] ?? false,        // ✅ CORREGIDO
+      departmentIds: List<String>.from(json['departmentIds'] ?? []), // ✅ CORREGIDO
+      careerIds: List<String>.from(json['careerIds'] ?? []),       // ✅ CORREGIDO
+      id: json['_id'], // Puede ser null, está bien.
     );
   }
 
+  // toJson para la lectura
   Map<String, dynamic> toJson() => {
-    'isDepartmentHead': isDepartmentHead,
-    'isCareerHead': isCareerHead,
-    'isDIDDECStaff': isDIDDECStaff,
-    'departmentIds': departmentIds,
-    'careerIds': careerIds,
-    '_id': id,
-  };
+        'isDepartmentHead': isDepartmentHead,
+        'isCareerHead': isCareerHead,
+        'isDIDDECStaff': isDIDDECStaff,
+        'departmentIds': departmentIds,
+        'careerIds': careerIds,
+        if (id != null) '_id': id,
+      };
+
+  // Un toJson específico para enviar en una actualización, sin el _id del subdocumento.
+  Map<String, dynamic> toJsonForUpdate() => {
+        'isDepartmentHead': isDepartmentHead,
+        'isCareerHead': isCareerHead,
+        'isDIDDECStaff': isDIDDECStaff,
+        'departmentIds': departmentIds,
+        'careerIds': careerIds,
+        // No incluimos el _id porque no se debe actualizar directamente.
+      };
 }
 
 // Extensión copyWith para FullUser

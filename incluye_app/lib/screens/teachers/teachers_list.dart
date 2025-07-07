@@ -253,24 +253,45 @@ class _TeachersListScreenState extends State<TeachersListScreen> {
   }
 
   void _showEditTeacherDialog(Map<String, dynamic> teacher) {
+    // Es mejor obtener los datos completos del profesor, igual que en UsersListScreen
+    // para asegurar que tenemos la información más actualizada.
+    _fetchAndShowEditDialog(teacher['_id']);
+  }
+
+  // Nuevo método para ser más robusto y consistente
+  Future<void> _fetchAndShowEditDialog(String teacherId) async {
     showDialog(
       context: context,
-      builder:
-          (context) => EditUserDialog(
-            user: FullUser.fromJson(teacher),
-            onUpdated: (updatedUser) {
-              setState(() {
-                int index = _teachers.indexWhere(
-                  (t) => t['_id'] == updatedUser.id,
-                );
-                if (index != -1) {
-                  _teachers[index] = updatedUser.toJson();
-                  _filterTeachers(_searchController.text);
-                }
-              });
-            },
-          ),
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+
+    try {
+      final fullUser = await UserService.getUserById(teacherId);
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Cerrar el loading
+
+      // ✅ INICIO DE LA CORRECCIÓN
+      await showDialog(
+        context: context,
+        builder: (context) => EditUserDialog(
+          user: fullUser,
+          onUpdated: () { // <-- La función no tiene parámetros
+            // Simplemente recargamos la lista de profesores
+            _fetchTeachers();
+          },
+        ),
+      );
+      // ✅ FIN DE LA CORRECCIÓN
+
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Cerrar el loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error al obtener datos del docente: $e")),
+      );
+    }
   }
 
   void _confirmDeleteTeacher(Map<String, dynamic> teacher) {
