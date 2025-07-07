@@ -67,7 +67,7 @@ async function loginUser(email, password) {
       data = data.data;
     }
     
-    return data.access_token;
+    return data.accessToken;
   } catch (error) {
     throw new Error(`Login falló: ${error.response?.data?.message || error.message}`);
   }
