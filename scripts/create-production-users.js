@@ -3,7 +3,7 @@
 const bcrypt = require('bcrypt');
 const { MongoClient } = require('mongodb');
 
-const MONGODB_URI = 'mongodb://localhost:27017/ucn_inclui2_test';
+const MONGODB_URI = 'mongodb://localhost:27017/ucn_inclui2_prod';
 const SALT_ROUNDS = 10;
 
 const productionUsers = [
@@ -99,8 +99,9 @@ async function createProductionUsers() {
       
       const userDocument = {
         ...user,
-        password: hashedPassword
+        password_hash: hashedPassword
       };
+      delete userDocument.password;
       
       await usersCollection.insertOne(userDocument);
       console.log(`✅ Usuario creado: ${user.email} (${user.roles.join(', ')})`);
