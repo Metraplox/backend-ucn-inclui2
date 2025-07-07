@@ -4,9 +4,11 @@ import 'package:incluye_app/models/course_model.dart';
 import 'package:incluye_app/screens/students/student_subject_list.dart';
 import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/course_service.dart';
+import 'package:incluye_app/services/student_service.dart';
 
 class CoursesListScreen extends StatefulWidget {
-  const CoursesListScreen({super.key});
+  final String? idTeacher;
+  const CoursesListScreen({super.key, required this.idTeacher});
 
   @override
   State<CoursesListScreen> createState() => _CoursesListScreenState();
@@ -18,12 +20,17 @@ class _CoursesListScreenState extends State<CoursesListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCourses();
+    _initialize();
   }
 
-  void _loadCourses() async {
+  Future<void> _initialize() async {
+    await _loadCourses(); // Solo carga cursos después de tener idTeacher
+  }
+
+  Future<void> _loadCourses() async {
     final name = await AuthService.getUserName();
-    final courses = await CourseService.getTeacherCourses(name ?? '');
+    final id = await AuthService.getUserId();
+    final courses = await CourseService.getTeacherCourses(widget.idTeacher!);
     for (var c in courses) {
       print(c.students.length);
     }

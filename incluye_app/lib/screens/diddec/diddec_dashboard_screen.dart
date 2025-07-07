@@ -115,22 +115,22 @@ class _DiddecDashboardScreenState extends State<DiddecDashboardScreen> {
           children: [
             const Icon(Icons.calendar_today),
             const SizedBox(width: 8),
-            const Text('Semestre:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Semestre:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(width: 16),
             DropdownButton<String>(
               value: _currentSemester,
-              items: [
-                '2025-1',
-                '2024-2',
-                '2024-1',
-                '2023-2',
-                '2023-1',
-              ].map((semester) {
-                return DropdownMenuItem(
-                  value: semester,
-                  child: Text(semester),
-                );
-              }).toList(),
+              items:
+                  ['2025-1', '2024-2', '2024-1', '2023-2', '2023-1'].map((
+                    semester,
+                  ) {
+                    return DropdownMenuItem(
+                      value: semester,
+                      child: Text(semester),
+                    );
+                  }).toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
@@ -195,7 +195,12 @@ class _DiddecDashboardScreenState extends State<DiddecDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 4,
       child: Padding(
@@ -210,10 +215,7 @@ class _DiddecDashboardScreenState extends State<DiddecDashboardScreen> {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Text(
               title,
@@ -246,20 +248,25 @@ class _DiddecDashboardScreenState extends State<DiddecDashboardScreen> {
               itemCount: _compliance.length,
               itemBuilder: (context, index) {
                 final dept = _compliance[index];
-                final complianceRate = (dept['complianceRate'] ?? 0.0).toDouble();
-                final color = complianceRate >= 80 
-                    ? Colors.green 
-                    : complianceRate >= 60 
-                    ? Colors.orange 
-                    : Colors.red;
-                
+                final complianceRate =
+                    (dept['complianceRate'] ?? 0.0).toDouble();
+                final color =
+                    complianceRate >= 80
+                        ? Colors.green
+                        : complianceRate >= 60
+                        ? Colors.orange
+                        : Colors.red;
+
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     title: Text(dept['department'].toString()),
                     subtitle: Text('${dept['totalAdjustments']} ajustes total'),
                     trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: color,
                         borderRadius: BorderRadius.circular(16),
@@ -329,15 +336,18 @@ class _DiddecDashboardScreenState extends State<DiddecDashboardScreen> {
     );
   }
 
-  Widget _buildActionButton(String title, IconData icon, Color color, VoidCallback onPressed) {
+  Widget _buildActionButton(
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onPressed,
+  ) {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -362,7 +372,11 @@ class _DiddecDashboardScreenState extends State<DiddecDashboardScreen> {
   }
 
   void _viewStudentsNEE() {
-    Navigator.pushNamed(context, '/diddec/students', arguments: _currentSemester);
+    Navigator.pushNamed(
+      context,
+      '/diddec/students',
+      arguments: _currentSemester,
+    );
   }
 
   void _viewResources() {
@@ -399,10 +413,22 @@ class _ReportGeneratorDialogState extends State<_ReportGeneratorDialog> {
             value: _reportType,
             decoration: const InputDecoration(labelText: 'Tipo de Reporte'),
             items: const [
-              DropdownMenuItem(value: 'general_statistics', child: Text('Estadísticas Generales')),
-              DropdownMenuItem(value: 'students_with_nee', child: Text('Estudiantes con NEE')),
-              DropdownMenuItem(value: 'adjustments_by_type', child: Text('Ajustes por Tipo')),
-              DropdownMenuItem(value: 'adjustment_compliance', child: Text('Cumplimiento de Ajustes')),
+              DropdownMenuItem(
+                value: 'general_statistics',
+                child: Text('Estadísticas Generales'),
+              ),
+              DropdownMenuItem(
+                value: 'students_with_nee',
+                child: Text('Estudiantes con NEE'),
+              ),
+              DropdownMenuItem(
+                value: 'adjustments_by_type',
+                child: Text('Ajustes por Tipo'),
+              ),
+              DropdownMenuItem(
+                value: 'adjustment_compliance',
+                child: Text('Cumplimiento de Ajustes'),
+              ),
             ],
             onChanged: (value) => setState(() => _reportType = value!),
           ),
@@ -426,13 +452,14 @@ class _ReportGeneratorDialogState extends State<_ReportGeneratorDialog> {
         ),
         ElevatedButton(
           onPressed: _isGenerating ? null : _generateReport,
-          child: _isGenerating
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Generar'),
+          child:
+              _isGenerating
+                  ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Generar'),
         ),
       ],
     );
@@ -457,7 +484,9 @@ class _ReportGeneratorDialogState extends State<_ReportGeneratorDialog> {
               label: 'Descargar',
               onPressed: () async {
                 try {
-                  await DiddecService.downloadReport(result['data']['filename']);
+                  await DiddecService.downloadReport(
+                    result['data']['filename'],
+                  );
                   // Aquí podrías implementar la descarga del archivo
                   // Por ejemplo, usando file_saver package
                 } catch (e) {
@@ -473,9 +502,9 @@ class _ReportGeneratorDialogState extends State<_ReportGeneratorDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _isGenerating = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al generar reporte: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al generar reporte: $e')));
       }
     }
   }

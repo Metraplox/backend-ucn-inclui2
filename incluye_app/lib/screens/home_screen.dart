@@ -24,6 +24,7 @@ import 'package:incluye_app/models/user_model.dart'; // IMPORTANTE: Para el tipo
 import 'package:incluye_app/screens/students/student_list_screen.dart';
 import 'package:incluye_app/screens/diddec/simple_diddec_screen.dart';
 import 'package:incluye_app/screens/documents/document_consent_screen.dart';
+import 'package:incluye_app/screens/diddec/diddec_dashboard_screen.dart';
 
 import '../services/course_service.dart';
 
@@ -39,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isAdmin = false;
   bool _isTeacher = false;
   bool _isHead = false;
+  bool _isDiddec = false;
   String? _currentUserId; // Este será el ID del User logueado
   // String? _currentStudentDocId; // Podrías necesitar el ID del documento Student si eres estudiante
   String? _headCareerId;
@@ -58,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Course> _coursesStudent = [];
   String? _idStudent;
   String? _studentName;
+  String? _teacherId;
 
   @override
   void initState() {
@@ -102,12 +105,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAdminRole = await StudentService.isAdmin();
     final isTeacherRole = await StudentService.isTeacher();
     final isHeadRole = await StudentService.isHead();
+    final isDiddecRole = await StudentService.isDiddec();
 
     User? userInfo = await StudentService.getCurrentUserInfo();
-
     String? idStudent;
+    String? idTeacher;
     if (isStudentRole) {
-      idStudent = await StudentService.getStudentId();
+      idStudent = await AuthService.getUserId();
+      print(idStudent);
+    }
+    if (isTeacherRole) {
+      idTeacher = await AuthService.getUserId();
     }
 
     if (mounted) {
@@ -119,6 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _currentUserId = userInfo?.id;
         _idStudent = idStudent;
         _studentName = userInfo?.nombreCompleto;
+        _teacherId = idTeacher;
+        _isDiddec = isDiddecRole;
       });
     }
   }
@@ -313,6 +323,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ? _buildTeacherDashboard()
               : _isHead
               ? _buildJefeDashboard()
+              : _isDiddec
+              ? const SimpleDiddecScreen()
               : const Center(
                 child: Text(
                   'Bienvenido. Por favor, inicia sesión o contacta al administrador si no tienes un rol asignado.',
@@ -402,17 +414,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Icon(Icons.description, color: Colors.white),
               ),
               title: const Text('Gestionar Documentos'),
-              subtitle: const Text('Ver, subir y gestionar documentos y consentimientos'),
+              subtitle: const Text(
+                'Ver, subir y gestionar documentos y consentimientos',
+              ),
               trailing: const Icon(Icons.arrow_forward),
               onTap: () {
                 if (_currentUserId != null) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DocumentConsentScreen(
-                        studentId: _currentUserId!,
-                        studentName: _studentName ?? 'Estudiante',
-                      ),
+                      builder:
+                          (context) => DocumentConsentScreen(
+                            studentId: _currentUserId!,
+                            studentName: _studentName ?? 'Estudiante',
+                          ),
                     ),
                   );
                 }
@@ -513,7 +528,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const CoursesListScreen(),
+                  builder:
+                      (context) => CoursesListScreen(idTeacher: _teacherId),
                 ),
               );
             },

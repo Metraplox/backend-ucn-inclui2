@@ -99,6 +99,17 @@ class StudentService {
     );
   }
 
+  static Future<bool> isDiddec() async {
+    final roles = await getUserRoles();
+    // Usar el método hasRole del UserModel si estuviera disponible globalmente
+    // o comparar con las variantes de nombre de rol.
+    return roles.any(
+      (r) =>
+          r.toLowerCase() == 'DIDDEC_STAFF' ||
+          r.toLowerCase() == 'diddec_staff',
+    );
+  }
+
   static Future<bool> isAdmin() async {
     final roles = await getUserRoles();
     return roles.any(
@@ -329,6 +340,11 @@ class StudentService {
   }
 
   static Future<String> getStudentId() async {
+    final studentProfileData = await getStudentProfile();
+    return studentProfileData!.id;
+  }
+
+  static Future<String> getTeacherId() async {
     final studentProfileData = await getStudentProfile();
     return studentProfileData!.id;
   }

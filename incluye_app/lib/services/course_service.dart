@@ -9,14 +9,14 @@ class CourseService {
   static Future<List<Course>> getStudentCourses(String studentId) async {
     try {
       final response = await ApiService.dio.get('/courses/student/$studentId');
-      
+
       // Para depurar, siempre puedes imprimir la respuesta completa:
       // print(response.data);
 
       if (response.statusCode == 200) {
         // ✅ INICIO DE LA CORRECCIÓN
         // Accedemos a la estructura anidada correcta para llegar a la lista.
-        final List<dynamic> data = response.data['data']['data']; 
+        final List<dynamic> data = response.data['data']['data'];
         // ✅ FIN DE LA CORRECCIÓN
 
         return data.map((json) => Course.fromJson(json)).toList();
@@ -29,12 +29,13 @@ class CourseService {
   }
 
   static Future<List<CourseAdjustment>> getTeacherCourses(
-    String teacherName,
+    String teacherId,
   ) async {
     try {
       final token = await ApiService.getToken();
 
       if (token == null) throw Exception('Token nulo');
+
       final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
       final response = await dio.get(
         '/courses',
@@ -46,17 +47,19 @@ class CourseService {
           },
         ),
       );
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = response.data;
+
         if (!responseBody.containsKey('data') || responseBody['data'] == null) {
           throw Exception('La respuesta no contiene datos');
         }
+
         final List<dynamic> coursesJson = responseBody['data']['data'];
 
         return coursesJson
             .map((json) => CourseAdjustment.fromJson(json))
-            // Opcional: comentar mientras verificas que llega la lista
-            //.where((course) => course.profesor == teacherName)
+            .where((course) => course.idTeacher == teacherId)
             .toList();
       } else {
         throw Exception('Error al cargar los cursos');
@@ -92,7 +95,8 @@ class CourseService {
       throw Exception('Error: $e');
     }
   }
-   // ✅ NUEVO MÉTODO: Obtener todos los cursos disponibles en el sistema
+
+  // ✅ NUEVO MÉTODO: Obtener todos los cursos disponibles en el sistema
   static Future<List<Course>> getAllCourses() async {
     try {
       final response = await ApiService.dio.get('/courses');
@@ -109,6 +113,4 @@ class CourseService {
       return [];
     }
   }
-
-  
 }

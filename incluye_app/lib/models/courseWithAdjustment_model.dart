@@ -3,6 +3,7 @@ class CourseAdjustment {
   final String codigo;
   final String nombre;
   final String nrc;
+  final String idTeacher;
   final String? profesor;
   final String? semestre;
   final int studentsWithNeeCount;
@@ -16,6 +17,7 @@ class CourseAdjustment {
     required this.studentsWithNeeCount,
     required this.studentsWithNee,
     required this.nrc,
+    required this.idTeacher,
     this.profesor,
     this.semestre,
     required this.students,
@@ -27,6 +29,7 @@ class CourseAdjustment {
       codigo: json['code'] ?? '',
       nombre: json['nombre'] ?? '',
       nrc: json['nrc'] ?? '',
+      idTeacher: json['teacherId'],
       profesor: json['teacherName'],
       studentsWithNeeCount: json['studentsWithNeeCount'] ?? 0,
       studentsWithNee:
