@@ -412,34 +412,167 @@ class _IncluyeDashboardState extends State<IncluyeDashboard> {
   }
 
   void _navigateToStudentsList() {
-    Navigator.pushNamed(context, '/students');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StudentListScreen()),
+    );
   }
 
   void _navigateToAdjustmentsList() {
-    Navigator.pushNamed(context, '/adjustments');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando lista de ajustes curriculares'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToDocumentsList() {
-    Navigator.pushNamed(context, '/documents');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando documentos pendientes'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _navigateToAlerts() {
-    Navigator.pushNamed(context, '/alerts');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando alertas del sistema'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   void _navigateToNewStudent() {
-    Navigator.pushNamed(context, '/students/new');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Registrar Nuevo Estudiante'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Seleccione el método de registro:'),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.person_add),
+              title: const Text('Registro Manual'),
+              subtitle: const Text('Ingresar datos manualmente'),
+              onTap: () {
+                Navigator.pop(context);
+                _showManualRegistration();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.upload_file),
+              title: const Text('Importar desde Excel'),
+              subtitle: const Text('Subir archivo con múltiples estudiantes'),
+              onTap: () {
+                Navigator.pop(context);
+                _showFileImport();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showManualRegistration() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Abriendo formulario de registro manual'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _showFileImport() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Función de importación de archivos próximamente disponible'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _navigateToNewAdjustment() {
-    Navigator.pushNamed(context, '/adjustments/new');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Crear Nuevo Ajuste'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Tipo de ajuste a crear:'),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.access_time),
+              title: const Text('Tiempo Extra'),
+              onTap: () {
+                Navigator.pop(context);
+                _createAdjustment('Tiempo Extra');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('Ubicación Preferente'),
+              onTap: () {
+                Navigator.pop(context);
+                _createAdjustment('Ubicación Preferente');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.text_format),
+              title: const Text('Material Adaptado'),
+              onTap: () {
+                Navigator.pop(context);
+                _createAdjustment('Material Adaptado');
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _createAdjustment(String type) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Creando ajuste: $type'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToReports() {
-    Navigator.pushNamed(context, '/reports');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Generando reportes del sistema'),
+        backgroundColor: Colors.purple,
+      ),
+    );
   }
 
   void _navigateToStudentDetail(String studentId) {
-    Navigator.pushNamed(context, '/students/$studentId');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Abriendo perfil del estudiante: $studentId'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 }

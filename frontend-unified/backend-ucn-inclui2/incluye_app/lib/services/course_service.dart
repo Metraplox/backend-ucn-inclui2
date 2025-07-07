@@ -33,7 +33,7 @@ class CourseService {
       final token = await ApiService.getToken();
 
       if (token == null) throw Exception('Token nulo');
-      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3001'));
       final response = await dio.get(
         '/courses',
         options: Options(
@@ -68,7 +68,7 @@ class CourseService {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
-      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3001'));
       final response = await dio.get(
         '/courses/$subjectId/students-with-adjustments',
         options: Options(

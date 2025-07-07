@@ -11,6 +11,9 @@ import 'package:incluye_app/screens/docente/student_adjustments_screen.dart';
 import 'package:incluye_app/screens/students/student_subject_list.dart';
 import 'package:incluye_app/screens/courses/courses_list_screen.dart';
 import 'package:incluye_app/screens/notifications/notifications_screen.dart';
+import 'package:incluye_app/screens/docente/teacher_help_screen.dart';
+import 'package:incluye_app/screens/docente/teacher_reports_screen.dart';
+import 'package:incluye_app/screens/docente/students_nee_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
 /// Dashboard principal para el rol Docente
@@ -473,7 +476,10 @@ class _DocenteDashboardState extends State<DocenteDashboard> {
   }
 
   void _navigateToStudentsNEE() {
-    Navigator.pushNamed(context, '/students/nee');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StudentsNEEScreen()),
+    );
   }
 
   void _navigateToPendingAdjustments() {
@@ -484,14 +490,23 @@ class _DocenteDashboardState extends State<DocenteDashboard> {
   }
 
   void _navigateToHelpRequests() {
-    Navigator.pushNamed(context, '/help-requests');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TeacherHelpScreen()),
+    );
   }
 
   void _navigateToMarkAdjustments() {
-    Navigator.pushNamed(context, '/adjustments/mark-read');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StudentAdjustmentsScreen()),
+    );
   }
 
   void _navigateToMyReport() {
-    Navigator.pushNamed(context, '/reports/teacher');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TeacherReportsScreen()),
+    );
   }
 }

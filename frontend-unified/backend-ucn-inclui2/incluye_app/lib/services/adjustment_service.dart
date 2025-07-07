@@ -159,7 +159,7 @@ class AdjustmentService {
   }) async {
     final token = await ApiService.getToken();
     if (token == null) throw Exception('Token nulo');
-    final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+    final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3001'));
     final response = await dio.patch(
       '/adjustments/$adjustmentId/read',
       queryParameters: {'adjustmentIndex': index},
@@ -185,7 +185,7 @@ class AdjustmentService {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
-      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3001'));
       final response = await dio.get(
         '/adjustments/course/$courseNrc',
         options: Options(
@@ -209,7 +209,7 @@ class AdjustmentService {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
-      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3001'));
       final response = await dio.get(
         '/teachers/adjustments/my-courses/$subjectId',
         options: Options(

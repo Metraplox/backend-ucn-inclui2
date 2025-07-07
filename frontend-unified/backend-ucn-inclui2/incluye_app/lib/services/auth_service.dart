@@ -52,18 +52,24 @@ class AuthService {
   Future<User?> login(String email, String password, bool rememberMe) async {
     try {
       final responseData = await _repository.login(email, password);
+      
+      // Navegar por la estructura anidada del backend
+      var actualData = responseData;
+      while (actualData.containsKey('data')) {
+        actualData = actualData['data'];
+      }
 
-      _accessToken = responseData['accessToken'];
-      final refreshToken = responseData['refreshToken'];
+      _accessToken = actualData['access_token']; // Nota: backend usa 'access_token', no 'accessToken'
+      final refreshToken = actualData['refresh_token']; // Si existe
 
       if (rememberMe) {
         await _storageService.saveTokens(
           accessToken: _accessToken!,
-          refreshToken: refreshToken,
+          refreshToken: refreshToken ?? '',
         );
       }
 
-      final user = User.fromJson(responseData['user']);
+      final user = User.fromJson(actualData['user']);
       await _saveUserData(user); // Guardar datos del usuario por separado
 
       return user;
@@ -102,7 +108,7 @@ class AuthService {
       // Esta lógica de API también debería estar en el repositorio.
       final response = await Dio().post(
         // Usando una instancia temporal.
-        'http://localhost:3000/auth/google',
+        'http://localhost:3001/auth/google',
         data: {'idToken': idToken},
       );
 
@@ -211,7 +217,7 @@ class AuthService {
       dio.options.headers['Authorization'] = 'Bearer $token';
 
       final response = await dio.post(
-        'http://localhost:3000/auth/change-password', // URL hardcodeada temporalmente
+        'http://localhost:3001/auth/change-password', // URL hardcodeada temporalmente
         data: {'oldPassword': oldPassword, 'newPassword': newPassword},
       );
       return response.statusCode == 200;

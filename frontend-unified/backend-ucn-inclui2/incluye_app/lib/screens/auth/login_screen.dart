@@ -63,23 +63,49 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
   }
 
-  Widget _buildTestCredentialChip(
+  Widget _buildQuickLoginButton(
     BuildContext context,
     String label,
     String email,
     String password,
+    Color color,
   ) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    return ActionChip(
-      label: Text(label),
-      tooltip: '$email / $password',
-      onPressed: () {
-        if (authProvider.isLoading) return;
-        setState(() {
-          emailController.text = email;
-          passwordController.text = password;
-        });
-      },
+    return SizedBox(
+      height: 40,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color.withOpacity(0.1),
+          foregroundColor: color,
+          elevation: 0,
+          side: BorderSide(color: color.withOpacity(0.3)),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+        ),
+        onPressed: authProvider.isLoading ? null : () async {
+          // Llenar los campos
+          setState(() {
+            emailController.text = email;
+            passwordController.text = password;
+            _rememberMe = true;
+          });
+          
+          // Hacer login automáticamente después de un breve delay
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (context.mounted) {
+            await _handleLogin(context);
+          }
+        },
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -244,31 +270,115 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             child: const Text('Regístrate aquí como docente'),
                           ),
-                          if (AppConfig.isDevelopment)
-                            Wrap(
-                              spacing: 8.0,
-                              alignment: WrapAlignment.center,
+                          if (AppConfig.isDevelopment) ...[
+                            const SizedBox(height: 24),
+                            const Divider(),
+                            const SizedBox(height: 16),
+                            const Text(
+                              '🧪 Usuarios de Prueba',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Toca para llenar credenciales y hacer login automático',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            Column(
                               children: [
-                                _buildTestCredentialChip(
-                                  context,
-                                  'Estudiante',
-                                  TestCredentials.studentEmail,
-                                  TestCredentials.studentPassword,
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildQuickLoginButton(
+                                        context,
+                                        '👨‍🎓 Estudiante',
+                                        TestCredentials.studentEmail,
+                                        TestCredentials.studentPassword,
+                                        Colors.green,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildQuickLoginButton(
+                                        context,
+                                        '👨‍🏫 Docente',
+                                        TestCredentials.teacherEmail,
+                                        TestCredentials.teacherPassword,
+                                        Colors.blue,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                _buildTestCredentialChip(
-                                  context,
-                                  'Docente',
-                                  TestCredentials.teacherEmail,
-                                  TestCredentials.teacherPassword,
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildQuickLoginButton(
+                                        context,
+                                        '👨‍💼 Coordinador',
+                                        TestCredentials.coordinadorEmail,
+                                        TestCredentials.coordinadorPassword,
+                                        Colors.purple,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildQuickLoginButton(
+                                        context,
+                                        '👩‍💼 Educadora',
+                                        TestCredentials.educadoraEmail,
+                                        TestCredentials.educadoraPassword,
+                                        Colors.orange,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                _buildTestCredentialChip(
-                                  context,
-                                  'Coordinador',
-                                  TestCredentials.coordinadoraEmail,
-                                  TestCredentials.coordinadoraPassword,
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildQuickLoginButton(
+                                        context,
+                                        '🏢 DIDDEC',
+                                        TestCredentials.diddecEmail,
+                                        TestCredentials.diddecPassword,
+                                        Colors.red,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildQuickLoginButton(
+                                        context,
+                                        '👔 Jefe Carrera',
+                                        TestCredentials.jefeCarreraEmail,
+                                        TestCredentials.jefeCarreraPassword,
+                                        Colors.teal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: _buildQuickLoginButton(
+                                    context,
+                                    '🏛️ Jefe Departamento',
+                                    TestCredentials.jefeDepartamentoEmail,
+                                    TestCredentials.jefeDepartamentoPassword,
+                                    Colors.indigo,
+                                  ),
                                 ),
                               ],
                             ),
+                          ],
                         ],
                       ),
                     ),

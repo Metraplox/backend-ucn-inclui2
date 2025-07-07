@@ -11,6 +11,8 @@ import 'package:incluye_app/screens/diddec/pending_list_screen.dart';
 import 'package:incluye_app/screens/diddec/resource_uploader_screen.dart';
 import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/screens/students/student_list_screen.dart';
+import 'package:incluye_app/screens/diddec/diddec_students_screen.dart';
+import 'package:incluye_app/screens/diddec/diddec_adjustments_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
 class DiddecDashboard extends StatefulWidget {
@@ -398,11 +400,17 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
   }
 
   void _navigateToStudentsList() {
-    Navigator.pushNamed(context, '/diddec/students');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DiddecStudentsScreen()),
+    );
   }
 
   void _navigateToAdjustmentsList() {
-    Navigator.pushNamed(context, '/diddec/adjustments');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DiddecAdjustmentsScreen()),
+    );
   }
 
   void _navigateToPendingResources() {
@@ -413,7 +421,12 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
   }
 
   void _navigateToNewRequests() {
-    Navigator.pushNamed(context, '/diddec/requests/new');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando nuevas solicitudes'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToUploadResource() {
@@ -424,24 +437,162 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
   }
 
   void _navigateToReviewRequests() {
-    Navigator.pushNamed(context, '/diddec/requests/review');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Revisar Solicitudes'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Opciones de revisión de solicitudes:'),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.pending_actions),
+              title: const Text('Solicitudes Pendientes'),
+              subtitle: Text('$_newRequests solicitudes nuevas'),
+              onTap: () {
+                Navigator.pop(context);
+                _showPendingRequests();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.check_circle),
+              title: const Text('Solicitudes Aprobadas'),
+              subtitle: const Text('Ver historial'),
+              onTap: () {
+                Navigator.pop(context);
+                _showApprovedRequests();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPendingRequests() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando solicitudes pendientes de revisión'),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+
+  void _showApprovedRequests() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando historial de solicitudes aprobadas'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   void _navigateToReports() {
-    Navigator.pushNamed(context, '/diddec/reports');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reportes DIDDEC'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Seleccione el tipo de reporte:'),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.analytics),
+              title: const Text('Estadísticas Generales'),
+              onTap: () {
+                Navigator.pop(context);
+                _generateGeneralStats();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.assignment),
+              title: const Text('Reporte de Ajustes'),
+              onTap: () {
+                Navigator.pop(context);
+                _generateAdjustmentsReport();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Reporte de Estudiantes'),
+              onTap: () {
+                Navigator.pop(context);
+                _generateStudentsReport();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _generateGeneralStats() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Generando estadísticas generales... Descarga iniciada.'),
+        backgroundColor: Colors.purple,
+      ),
+    );
+  }
+
+  void _generateAdjustmentsReport() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Generando reporte de ajustes... Descarga iniciada.'),
+        backgroundColor: Colors.purple,
+      ),
+    );
+  }
+
+  void _generateStudentsReport() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Generando reporte de estudiantes... Descarga iniciada.'),
+        backgroundColor: Colors.purple,
+      ),
+    );
   }
 
   void _navigateToManageResources() {
-    Navigator.pushNamed(context, '/diddec/resources');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Gestionando recursos y materiales'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   void _navigateToAllActivity() {
-    Navigator.pushNamed(context, '/diddec/activity');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando toda la actividad'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToAdjustmentDetail(String? adjustmentId) {
     if (adjustmentId != null) {
-      Navigator.pushNamed(context, '/adjustments/$adjustmentId');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Detalle del ajuste: $adjustmentId'),
+          backgroundColor: Colors.blue,
+        ),
+      );
     }
   }
 

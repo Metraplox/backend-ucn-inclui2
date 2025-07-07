@@ -8,6 +8,7 @@ class AuthRepository {
         '/auth/login',
         data: {'email': email, 'password': password},
       );
+      
       return response.data;
     } on DioException catch (e) {
       final errorMessage = e.response?.data['message'] ?? 'Error de conexión';
