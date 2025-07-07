@@ -7,7 +7,6 @@ import 'package:incluye_app/screens/courses/courses_list_screen.dart';
 import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/screens/students/student_career_screen.dart';
 import 'package:incluye_app/screens/teachers/teachers_by_career.dart';
-import 'package:incluye_app/screens/teachers/teachers_list.dart';
 import 'package:incluye_app/screens/users/users_list.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
 
@@ -22,7 +21,6 @@ import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/course_model.dart';
 import 'package:incluye_app/models/user_model.dart'; // IMPORTANTE: Para el tipo de userInfo
 import 'package:incluye_app/screens/students/student_list_screen.dart';
-import 'package:incluye_app/screens/diddec/simple_diddec_screen.dart';
 import 'package:incluye_app/screens/documents/document_consent_screen.dart';
 import 'package:incluye_app/screens/diddec/diddec_dashboard_screen.dart';
 
@@ -260,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadCourses() async {
     String? nombreCompleto = await AuthService.getUserName();
 
-    if (mounted && nombreCompleto != null) {
+    if (mounted) {
       // Usamos nombreCompleto que ahora es el campo principal en User
       final coursesData = await CourseService.getTeacherCourses(nombreCompleto);
       if (mounted) {
@@ -324,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
               : _isHead
               ? _buildJefeDashboard()
               : _isDiddec
-              ? const SimpleDiddecScreen()
+              ? const DiddecDashboardScreen()
               : const Center(
                 child: Text(
                   'Bienvenido. Por favor, inicia sesión o contacta al administrador si no tienes un rol asignado.',
@@ -761,7 +759,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const TeachersListScreen(),
+                  builder: (context) => const DiddecDashboardScreen(),
                 ),
               );
             },
@@ -795,7 +793,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const SimpleDiddecScreen(),
+                  builder: (context) => const DiddecDashboardScreen(),
                 ),
               );
             },

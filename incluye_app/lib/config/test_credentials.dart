@@ -14,6 +14,12 @@ class TestCredentials {
   static const String teacherEmail = 'profe1@ucn.cl';
   static const String teacherPassword = 'inclui2025';
 
+  static const String headEmail = 'jefe1@ucn.cl';
+  static const String headPassword = 'inclui2025';
+
+  static const String diddecEmail = 'juan@ucn.cl';
+  static const String diddecPassword = 'adan0307';
+
   // Obtener todas las credenciales como lista para probar automáticamente
   static List<Map<String, String>> get allCredentials => [
     {
@@ -23,5 +29,7 @@ class TestCredentials {
     },
     {'label': 'Estudiante', 'email': studentEmail, 'password': studentPassword},
     {'label': 'Profesor', 'email': teacherEmail, 'password': teacherPassword},
+    {'label': 'JefeCarrera', 'email': headEmail, 'password': headPassword},
+    {'label': 'Diddec', 'email': diddecEmail, 'password': diddecPassword},
   ];
 }

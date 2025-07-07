@@ -5,7 +5,9 @@ import 'package:incluye_app/config/app_config.dart';
 import 'package:incluye_app/services/auth_service.dart';
 
 class DiddecService {
-  static Future<Map<String, dynamic>> getGeneralStatistics(String semester) async {
+  static Future<Map<String, dynamic>> getGeneralStatistics(
+    String semester,
+  ) async {
     try {
       final token = await AuthService.getToken();
       if (token == null) {
@@ -16,7 +18,9 @@ class DiddecService {
       print('Con token: ${token.substring(0, 20)}...');
       
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/statistics?semester=$semester'),
+        Uri.parse(
+          '${AppConfig.apiBaseUrl}/diddec/statistics?semester=$semester',
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -29,7 +33,9 @@ class DiddecService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener estadísticas: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Error al obtener estadísticas: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('Error en getGeneralStatistics: $e');
@@ -60,7 +66,9 @@ class DiddecService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener reporte del semestre: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Error al obtener reporte del semestre: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('Error en getSemesterReport: $e');
@@ -72,7 +80,9 @@ class DiddecService {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/students/all?semester=$semester'),
+        Uri.parse(
+          '${AppConfig.apiBaseUrl}/diddec/students/all?semester=$semester',
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -80,20 +90,27 @@ class DiddecService {
       );
 
       if (response.statusCode == 200) {
+        print(response.body);
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener estudiantes con NEE: ${response.statusCode}');
+        throw Exception(
+          'Error al obtener estudiantes con NEE: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error al obtener estudiantes con NEE: $e');
     }
   }
 
-  static Future<Map<String, dynamic>> getAdjustmentTrends({int years = 3}) async {
+  static Future<Map<String, dynamic>> getAdjustmentTrends({
+    int years = 3,
+  }) async {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/adjustments/trends?years=$years'),
+        Uri.parse(
+          '${AppConfig.apiBaseUrl}/diddec/adjustments/trends?years=$years',
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -110,7 +127,9 @@ class DiddecService {
     }
   }
 
-  static Future<List<dynamic>> getAdjustmentComplianceByDepartment(String semester) async {
+  static Future<List<dynamic>> getAdjustmentComplianceByDepartment(
+    String semester,
+  ) async {
     try {
       final token = await AuthService.getToken();
       if (token == null) {
@@ -120,7 +139,9 @@ class DiddecService {
       print('Haciendo petición a: ${AppConfig.apiBaseUrl}/diddec/adjustments/compliance?semester=$semester');
       
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/adjustments/compliance?semester=$semester'),
+        Uri.parse(
+          '${AppConfig.apiBaseUrl}/diddec/adjustments/compliance?semester=$semester',
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -133,7 +154,9 @@ class DiddecService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener cumplimiento por departamento: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Error al obtener cumplimiento por departamento: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('Error en getAdjustmentComplianceByDepartment: $e');
@@ -151,9 +174,9 @@ class DiddecService {
     try {
       final token = await AuthService.getToken();
       final body = {
+        'semester': semester,
         'reportType': reportType,
         'format': format,
-        'semester': semester,
         'includeSensitiveData': includeSensitiveData,
         if (filters != null) 'filters': filters,
       };
@@ -167,7 +190,7 @@ class DiddecService {
         body: jsonEncode(body),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
         throw Exception('Error al generar reporte: ${response.statusCode}');
@@ -177,14 +200,12 @@ class DiddecService {
     }
   }
 
-  static Future<Uint8List> downloadReport(String reportId) async {
+  static Future<Uint8List> downloadReport(String filename) async {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/reports/download/$reportId'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        Uri.parse('${AppConfig.apiBaseUrl}/diddec/reports/download/$filename'),
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
@@ -221,40 +242,30 @@ class DiddecService {
   static Future<Map<String, dynamic>> uploadResource({
     required String title,
     required String description,
-    required String resourceType,
-    required String semester,
+    required String category,
     required Uint8List fileBytes,
     required String fileName,
     List<String>? tags,
-    List<String>? adjustmentTypeIds,
   }) async {
     try {
       final token = await AuthService.getToken();
-      
+
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/resources'),
+        Uri.parse('${AppConfig.apiBaseUrl}/diddec/resources/upload'),
       );
-      
+
       request.headers['Authorization'] = 'Bearer $token';
-      
+
       request.fields['title'] = title;
       request.fields['description'] = description;
-      request.fields['resourceType'] = resourceType;
-      request.fields['semester'] = semester;
+      request.fields['category'] = category;
       if (tags != null) {
         request.fields['tags'] = jsonEncode(tags);
       }
-      if (adjustmentTypeIds != null) {
-        request.fields['adjustmentTypeIds'] = jsonEncode(adjustmentTypeIds);
-      }
-      
+
       request.files.add(
-        http.MultipartFile.fromBytes(
-          'file',
-          fileBytes,
-          filename: fileName,
-        ),
+        http.MultipartFile.fromBytes('file', fileBytes, filename: fileName),
       );
 
       final streamedResponse = await request.send();
@@ -274,10 +285,10 @@ class DiddecService {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/resources/$resourceId/download'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        Uri.parse(
+          '${AppConfig.apiBaseUrl}/diddec/resources/$resourceId/download',
+        ),
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
@@ -287,48 +298,6 @@ class DiddecService {
       }
     } catch (e) {
       throw Exception('Error al descargar recurso: $e');
-    }
-  }
-
-  static Future<Map<String, dynamic>> searchResources(String term) async {
-    try {
-      final token = await AuthService.getToken();
-      final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/resources/search?term=${Uri.encodeComponent(term)}'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error al buscar recursos: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error al buscar recursos: $e');
-    }
-  }
-
-  static Future<Map<String, dynamic>> deleteResource(String resourceId) async {
-    try {
-      final token = await AuthService.getToken();
-      final response = await http.delete(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/resources/$resourceId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error al eliminar recurso: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error al eliminar recurso: $e');
     }
   }
 }

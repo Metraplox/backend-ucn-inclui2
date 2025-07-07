@@ -16,7 +16,8 @@ class DocumentConsentScreen extends StatefulWidget {
   State<DocumentConsentScreen> createState() => _DocumentConsentScreenState();
 }
 
-class _DocumentConsentScreenState extends State<DocumentConsentScreen> with TickerProviderStateMixin {
+class _DocumentConsentScreenState extends State<DocumentConsentScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   List<dynamic> _documents = [];
   Map<String, dynamic>? _consentData;
@@ -36,7 +37,7 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
         DocumentService.getStudentDocuments(widget.studentId),
         ConsentService.getStudentConsent(widget.studentId),
       ]);
-      
+
       setState(() {
         _documents = results[0] as List<dynamic>;
         _consentData = results[1] as Map<String, dynamic>?;
@@ -45,9 +46,9 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al cargar datos: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al cargar datos: $e')));
       }
     }
   }
@@ -69,15 +70,13 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
           ],
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildDocumentsTab(),
-                _buildConsentTab(),
-              ],
-            ),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : TabBarView(
+                controller: _tabController,
+                children: [_buildDocumentsTab(), _buildConsentTab()],
+              ),
     );
   }
 
@@ -92,7 +91,10 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
               children: [
                 const Icon(Icons.upload_file, color: Colors.blue),
                 const SizedBox(width: 8),
-                const Text('Subir Documento', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Subir Documento',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const Spacer(),
                 ElevatedButton(
                   onPressed: _uploadDocument,
@@ -103,27 +105,28 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
           ),
         ),
         Expanded(
-          child: _documents.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.folder_open, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text('No hay documentos'),
-                    ],
+          child:
+              _documents.isEmpty
+                  ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.folder_open, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('No hay documentos'),
+                      ],
+                    ),
+                  )
+                  : RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: ListView.builder(
+                      itemCount: _documents.length,
+                      itemBuilder: (context, index) {
+                        final doc = _documents[index];
+                        return _buildDocumentCard(doc);
+                      },
+                    ),
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: ListView.builder(
-                    itemCount: _documents.length,
-                    itemBuilder: (context, index) {
-                      final doc = _documents[index];
-                      return _buildDocumentCard(doc);
-                    },
-                  ),
-                ),
         ),
       ],
     );
@@ -143,9 +146,15 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: Colors.blue,
-          child: Icon(_getDocumentIcon(doc['documentType']), color: Colors.white),
+          child: Icon(
+            _getDocumentIcon(doc['documentType']),
+            color: Colors.white,
+          ),
         ),
-        title: Text(typeName, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          typeName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -158,28 +167,29 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
         ),
         isThreeLine: true,
         trailing: PopupMenuButton(
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'download',
-              child: const Row(
-                children: [
-                  Icon(Icons.download, color: Colors.green),
-                  SizedBox(width: 8),
-                  Text('Descargar')
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: const Row(
-                children: [
-                  Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Eliminar')
-                ],
-              ),
-            ),
-          ],
+          itemBuilder:
+              (context) => [
+                PopupMenuItem(
+                  value: 'download',
+                  child: const Row(
+                    children: [
+                      Icon(Icons.download, color: Colors.green),
+                      SizedBox(width: 8),
+                      Text('Descargar'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: const Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Eliminar'),
+                    ],
+                  ),
+                ),
+              ],
           onSelected: (value) {
             if (value == 'download') {
               _downloadDocument(doc['_id'] ?? doc['id']);
@@ -194,7 +204,9 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
 
   Widget _buildConsentTab() {
     if (_consentData == null) {
-      return const Center(child: Text('No se pudo cargar la información de consentimiento'));
+      return const Center(
+        child: Text('No se pudo cargar la información de consentimiento'),
+      );
     }
 
     final allowsDataSharing = _consentData!['allowsDataSharing'] ?? false;
@@ -231,7 +243,7 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    allowsDataSharing 
+                    allowsDataSharing
                         ? 'Los coordinadores y educadores pueden acceder a la información del estudiante para brindar mejor apoyo académico.'
                         : 'Los datos del estudiante no serán compartidos con coordinadores y educadores.',
                     style: const TextStyle(fontSize: 14),
@@ -257,7 +269,9 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
                   onPressed: () => _uploadSignedConsent(),
                   icon: const Icon(Icons.upload),
                   label: const Text('Subir Firmado'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
                 ),
               ),
             ],
@@ -321,54 +335,72 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
 
       if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
-        
+
         // Validar tamaño del archivo
+        if (file.bytes == null) {
+          throw Exception(
+            'Error: El archivo seleccionado no tiene datos (bytes nulos).',
+          );
+        }
         if (!DocumentService.isValidFileSize(file.bytes!)) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('El archivo es demasiado grande. Máximo ${DocumentService.getMaxFileSize() ~/ (1024 * 1024)} MB'),
+                content: Text(
+                  'El archivo es demasiado grande. Máximo ${DocumentService.getMaxFileSize() ~/ (1024 * 1024)} MB',
+                ),
                 backgroundColor: Colors.red,
               ),
             );
           }
           return;
         }
-        
+
         // Validar extensión
         if (!DocumentService.isAllowedExtension(file.name)) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Tipo de archivo no permitido. Extensiones válidas: ${DocumentService.getAllowedExtensions().join(', ')}'),
+                content: Text(
+                  'Tipo de archivo no permitido. Extensiones válidas: ${DocumentService.getAllowedExtensions().join(', ')}',
+                ),
                 backgroundColor: Colors.red,
               ),
             );
           }
           return;
         }
-        
+
         final docDetails = await _selectDocumentDetails();
-        
         if (docDetails != null) {
-          // Usar el método para staff ya que estamos en la vista de gestión de documentos
-          await DocumentService.uploadDocumentByStaff(
+          final uploadResponse = await DocumentService.uploadDocument(
             studentId: widget.studentId,
-            documentType: docDetails['type']!,
+            documentType: docDetails['type'] ?? 'GENERAL',
             fileName: file.name,
             fileBytes: file.bytes!,
             description: docDetails['description'],
             category: docDetails['category'],
           );
-          
-          _loadData();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Documento subido exitosamente'),
-                backgroundColor: Colors.green,
-              ),
-            );
+
+          if (uploadResponse.isNotEmpty) {
+            _loadData();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Documento subido exitosamente'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Error al subir documento'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           }
         }
       }
@@ -391,81 +423,111 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
 
     return showDialog<Map<String, String>>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Detalles del Documento'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Tipo de Documento *', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: selectedType,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Seleccionar tipo',
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setState) => AlertDialog(
+                  title: const Text('Detalles del Documento'),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Tipo de Documento *',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          value: selectedType,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Seleccionar tipo',
+                          ),
+                          items:
+                              DocumentService.getDocumentTypes()
+                                  .map(
+                                    (type) => DropdownMenuItem(
+                                      value: type,
+                                      child: Text(
+                                        DocumentService.getDocumentTypeName(
+                                          type,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged:
+                              (value) => setState(() => selectedType = value),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Categoría',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          value: selectedCategory,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Seleccionar categoría',
+                          ),
+                          items:
+                              DocumentService.getDocumentCategories()
+                                  .map(
+                                    (category) => DropdownMenuItem(
+                                      value: category,
+                                      child: Text(
+                                        DocumentService.getCategoryName(
+                                          category,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged:
+                              (value) =>
+                                  setState(() => selectedCategory = value),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Descripción',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: descriptionController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Descripción del documento (opcional)',
+                          ),
+                          maxLines: 3,
+                        ),
+                      ],
+                    ),
                   ),
-                  items: DocumentService.getDocumentTypes()
-                      .map((type) => DropdownMenuItem(
-                            value: type,
-                            child: Text(DocumentService.getDocumentTypeName(type)),
-                          ))
-                      .toList(),
-                  onChanged: (value) => setState(() => selectedType = value),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancelar'),
+                    ),
+                    ElevatedButton(
+                      onPressed:
+                          selectedType != null
+                              ? () {
+                                Navigator.pop(context, {
+                                  'type': selectedType!,
+                                  'category': selectedCategory ?? 'OTRO',
+                                  'description':
+                                      descriptionController.text.trim(),
+                                });
+                              }
+                              : null,
+                      child: const Text('Subir'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                const Text('Categoría', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: selectedCategory,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Seleccionar categoría',
-                  ),
-                  items: DocumentService.getDocumentCategories()
-                      .map((category) => DropdownMenuItem(
-                            value: category,
-                            child: Text(DocumentService.getCategoryName(category)),
-                          ))
-                      .toList(),
-                  onChanged: (value) => setState(() => selectedCategory = value),
-                ),
-                const SizedBox(height: 16),
-                const Text('Descripción', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Descripción del documento (opcional)',
-                  ),
-                  maxLines: 3,
-                ),
-              ],
-            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: selectedType != null
-                  ? () {
-                      Navigator.pop(context, {
-                        'type': selectedType!,
-                        'category': selectedCategory ?? 'OTRO',
-                        'description': descriptionController.text.trim(),
-                      });
-                    }
-                  : null,
-              child: const Text('Subir'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -475,19 +537,20 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const AlertDialog(
-          content: Row(
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 16),
-              Text('Descargando documento...'),
-            ],
-          ),
-        ),
+        builder:
+            (context) => const AlertDialog(
+              content: Row(
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 16),
+                  Text('Descargando documento...'),
+                ],
+              ),
+            ),
       );
 
       final bytes = await DocumentService.downloadDocument(documentId);
-      
+
       // Cerrar el indicador de carga
       if (mounted) Navigator.pop(context);
 
@@ -497,7 +560,9 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
         // Por ahora, solo mostramos el mensaje de éxito
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Documento descargado exitosamente (${bytes.length} bytes)'),
+            content: Text(
+              'Documento descargado exitosamente (${bytes.length} bytes)',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -507,7 +572,7 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
       if (mounted && Navigator.canPop(context)) {
         Navigator.pop(context);
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -523,45 +588,51 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
     final fileName = doc['fileName'] ?? 'documento';
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar Eliminación'),
-        content: Text('¿Estás seguro de que deseas eliminar el documento "$fileName"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar Eliminación'),
+            content: Text(
+              '¿Estás seguro de que deseas eliminar el documento "$fileName"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  try {
+                    final docId = doc['_id'] ?? doc['id'];
+                    await DocumentService.deleteDocument(docId);
+                    _loadData();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Documento eliminado exitosamente'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al eliminar documento: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text(
+                  'Eliminar',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                final docId = doc['_id'] ?? doc['id'];
-                await DocumentService.deleteDocument(docId);
-                _loadData();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Documento eliminado exitosamente'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error al eliminar documento: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
     );
   }
 
@@ -570,7 +641,9 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
       await ConsentService.downloadConsentForm(widget.studentId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Formulario de consentimiento descargado')),
+          const SnackBar(
+            content: Text('Formulario de consentimiento descargado'),
+          ),
         );
       }
     } catch (e) {
@@ -596,11 +669,13 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
           fileBytes: file.bytes!,
           fileName: file.name,
         );
-        
+
         _loadData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Consentimiento firmado subido exitosamente')),
+            const SnackBar(
+              content: Text('Consentimiento firmado subido exitosamente'),
+            ),
           );
         }
       }
@@ -616,32 +691,40 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
   void _editConsent() {
     showDialog(
       context: context,
-      builder: (context) => _ConsentEditDialog(
-        initialAllowsDataSharing: _consentData?['allowsDataSharing'] ?? false,
-        onSave: (allowsDataSharing) async {
-          try {
-            await ConsentService.updateConsent(
-              studentId: widget.studentId,
-              allowsDataSharing: allowsDataSharing,
-            );
-            _loadData();
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Configuración de consentimiento actualizada')),
-              );
-            }
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error al actualizar configuración: $e')),
-              );
-            }
-          }
-        },
-      ),
+      builder:
+          (context) => _ConsentEditDialog(
+            initialAllowsDataSharing:
+                _consentData?['allowsDataSharing'] ?? false,
+            onSave: (allowsDataSharing) async {
+              try {
+                await ConsentService.updateConsent(
+                  studentId: widget.studentId,
+                  allowsDataSharing: allowsDataSharing,
+                );
+                _loadData();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Configuración de consentimiento actualizada',
+                      ),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al actualizar configuración: $e'),
+                    ),
+                  );
+                }
+              }
+            },
+          ),
     );
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -681,7 +764,9 @@ class _ConsentEditDialogState extends State<_ConsentEditDialog> {
           children: [
             SwitchListTile(
               title: const Text('Permitir compartir datos'),
-              subtitle: const Text('Autoriza el compartir información académica y documentos'),
+              subtitle: const Text(
+                'Autoriza el compartir información académica y documentos',
+              ),
               value: _allowsDataSharing,
               onChanged: (value) {
                 setState(() {
