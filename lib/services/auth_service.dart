@@ -55,7 +55,7 @@ class AuthService {
       
       // Navegar por la estructura anidada del backend
       var actualData = responseData;
-      while (actualData is Map<String, dynamic> && actualData.containsKey('data')) {
+      while (actualData.containsKey('data')) {
         actualData = actualData['data'];
       }
 

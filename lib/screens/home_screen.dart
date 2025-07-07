@@ -86,15 +86,32 @@ class _HomeScreenState extends State<HomeScreen> {
         return const DocenteDashboard();
       case 'JEFE_CARRERA':
         return const JefaturaDashboard();
-      case 'DIDDEC':
+      case 'JEFE_DEPARTAMENTO':
+        return const JefaturaDashboard(); // Usar el mismo dashboard que jefe de carrera
+      case 'DIDDEC_STAFF':
         return const DiddecDashboard();
-      case 'INCLUYE':
-        return const IncluyeDashboard();
+      case 'COORDINADOR':
+        return const IncluyeDashboard(); // Coordinador usa dashboard de Incluye
+      case 'EDUCADORA_SOCIAL':
+        return const IncluyeDashboard(); // Educadora Social usa dashboard de Incluye
       default:
-        return const Center(
-          child: Text(
-            'Dashboard no disponible para este rol.',
-            style: TextStyle(fontSize: 24),
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Dashboard no disponible para el rol: $activeRole',
+                style: const TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  // Opcional: agregar botón para reportar problema o contactar soporte
+                },
+                child: const Text('Reportar problema'),
+              ),
+            ],
           ),
         );
     }
