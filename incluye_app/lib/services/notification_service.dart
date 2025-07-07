@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:incluye_app/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:incluye_app/models/notification_model.dart';
+import 'package:incluye_app/models/course_model.dart';
 
 class NotificationService {
   static const String _lastNotificationKey = 'last_notification_check';
@@ -315,5 +316,41 @@ class NotificationService {
 
   static Future<void> sendCreateStudentNotification()async{
 
+  }
+
+  // ✅ NUEVO MÉTODO: Notificar al docente sobre un cambio en un ajuste
+  static Future<void> notifyTeacherOfAdjustmentChange({
+    required String studentName,
+    required Course course,
+    required String adjustmentType,
+    required String adjustmentDescription,
+    required String studentId,
+    required String adjustmentId,
+  }) async {
+    if (course.profesor == null) {
+      print("El curso ${course.nombre} no tiene un profesor asignado. No se puede notificar.");
+      return;
+    }
+
+    try {
+      final createDto = {
+        "userId": course.profesor, // ID del docente
+        "title": "Actualización de Ajuste para ${studentName}",
+        "message": "Se ha ${adjustmentId.isEmpty ? 'creado un nuevo' : 'modificado el'} ajuste de tipo '$adjustmentType' para el estudiante $studentName en tu curso ${course.nombre} (${course.nrc}).\nDescripción: $adjustmentDescription",
+        "type": "ADJUSTMENT_UPDATED", // Usamos un tipo genérico de notificación
+        "semester": course.semestre ?? "2025-1", // O el semestre actual
+        "priority": "HIGH",
+        "studentId": studentId,
+        "adjustmentId": adjustmentId, // Puede ser el ID del documento de ajuste
+        "courseId": course.id,
+      };
+
+      await ApiService.dio.post('/notifications', data: createDto);
+      print("Notificación enviada al docente ${course.profesor}");
+
+    } catch (e) {
+      ApiService.handleApiError('Notificar al docente', e);
+      // No lanzamos excepción para no detener el flujo principal del usuario
+    }
   }
 }

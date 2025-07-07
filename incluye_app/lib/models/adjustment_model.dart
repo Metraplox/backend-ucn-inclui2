@@ -125,27 +125,18 @@ class Adjustment {
     );
   }
 
-  Map<String, dynamic> toJson() {
+   Map<String, dynamic> toJson() {
+    // Este método debe coincidir con el CurrentAdjustmentDto del backend
     final Map<String, dynamic> data = {
-      'type': tipo,
-      'description': descripcion,
+      'type': tipo, // 'type' es el nombre del campo en el DTO
+      'courseNrc': courseNrc,
+      'approvedBy': approvedBy ?? "ID_DEL_ADMIN_LOGUEADO", // ✅ IMPORTANTE: El backend lo requiere.
+      'approvedAt': approvedAt ?? DateTime.now().toIso8601String(),
+      'requiresSemesterConfirmation': requiresSemesterConfirmation ?? true,
+      'fechaInicio': fechaInicio ?? DateTime.now().toIso8601String(),
+      'expirationDate': expirationDate,
+      'semester': "2025-1" // ✅ IMPORTANTE: El backend lo requiere.
     };
-
-    if (id != null) data['id'] = id;
-    if (courseNrc != null) data['courseNrc'] = courseNrc;
-    if (studentId != null) data['studentId'] = studentId;
-    if (studentRut != null) data['studentRut'] = studentRut;
-    if (approvedAt != null) data['approvedAt'] = approvedAt;
-    if (expirationDate != null) data['expirationDate'] = expirationDate;
-    if (status != null) data['status'] = status;
-    if (approvedBy != null) data['approvedBy'] = approvedBy;
-    if (documentosAsociados != null)
-      data['documentosAsociados'] = documentosAsociados;
-    if (comentarios != null) data['comments'] = comentarios;
-    if (requiresSemesterConfirmation != null)
-      data['requiresSemesterConfirmation'] = requiresSemesterConfirmation;
-    if (fechaInicio != null) data['fechaInicio'] = fechaInicio;
-
     return data;
   }
 

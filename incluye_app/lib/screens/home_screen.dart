@@ -17,7 +17,7 @@ import 'package:incluye_app/widgets/app_scaffold.dart';
 import 'package:incluye_app/widgets/course_widget.dart'; // Asumiendo que este widget está definido
 import 'package:incluye_app/services/notification_service.dart';
 import 'package:incluye_app/screens/students/student_own_profile_screen.dart'; // Perfil propio del estudiante
-import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
+import 'package:incluye_app/screens/adjustments/adjustment_history_screen.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/course_model.dart';
 import 'package:incluye_app/models/user_model.dart'; // IMPORTANTE: Para el tipo de userInfo

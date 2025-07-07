@@ -235,7 +235,7 @@ class _StudentCareerListScreenState extends State<StudentCareerListScreen> {
                                       builder:
                                           (_) => StudentProfileScreen(
                                             studentId: student.id,
-                                            careerId: widget.careerId,
+                                            
                                           ),
                                     ),
                                   ).then((_) {

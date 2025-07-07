@@ -9,55 +9,67 @@ import 'package:incluye_app/models/adjustment_model.dart'; // Ajusta según tu e
 import 'package:incluye_app/models/document_model.dart'; // Ajusta según tu estructura
 
 class AdjustmentService {
-  static Future<List<Adjustment>> getAdjustmentHistory(
-    String studentId, {
-    bool? active,
-    String? courseNrc,
-    String? semester,
-  }) async {
+
+    // ✅ MODIFICADO: Ahora acepta el Map del DTO directamente
+  static Future<bool> saveAdjustment(Map<String, dynamic> adjustmentDto) async {
     try {
-      final token = await ApiService.getToken();
-      if (token == null) throw Exception('Token nulo');
-
-      final queryParams = <String, dynamic>{};
-      if (active != null) queryParams['active'] = active.toString();
-      if (courseNrc != null) queryParams['courseNrc'] = courseNrc;
-      if (semester != null) queryParams['semester'] = semester;
-
-      final response = await ApiService.dio.get(
-        '/adjustments/student/$studentId',
-        queryParameters: queryParams,
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => Adjustment.fromJson(json)).toList();
-      }
-      return [];
+      final endpoint = '/adjustments';
+      final response = await ApiService.dio.post(endpoint, data: adjustmentDto);
+      return response.statusCode == 201;
     } catch (e) {
-      ApiService.handleApiError('Obtener historial ajustes', e);
-      return [];
+      ApiService.handleApiError('Guardar ajuste', e);
+      if (e is DioException && e.response?.data?['message'] != null) {
+        // Propaga el mensaje de error del backend
+        throw Exception(e.response!.data['message']);
+      }
+      throw Exception('No se pudo guardar el ajuste.');
     }
   }
 
-  static Future<bool> saveAdjustment(Adjustment adjustment) async {
+  
+   /// Edita un ajuste específico dentro de un documento de ajuste.
+  static Future<bool> editSpecificAdjustment({
+    required String docId,
+    required int adjustmentIndex,
+    required Map<String, dynamic> data,
+  }) async {
     try {
-      final token = await ApiService.getToken();
-      if (token == null) throw Exception('Token nulo');
-
-      final isUpdate = adjustment.id != null;
-      final endpoint =
-          isUpdate ? '/adjustments/${adjustment.id}' : '/adjustments';
-
-      final Response response =
-          isUpdate
-              ? await ApiService.dio.put(endpoint, data: adjustment.toJson())
-              : await ApiService.dio.post(endpoint, data: adjustment.toJson());
-
-      return response.statusCode == 200 || response.statusCode == 201;
+      // ✅ IMPORTANTE: Este endpoint debe existir en tu backend.
+      // Ej: PATCH /adjustments/{docId}/current/{adjustmentIndex}
+      final response = await ApiService.dio.patch(
+        '/adjustments/$docId/current/$adjustmentIndex',
+        data: data,
+      );
+      return response.statusCode == 200;
     } catch (e) {
-      ApiService.handleApiError('Guardar ajuste', e);
-      return false;
+      ApiService.handleApiError('editSpecificAdjustment', e);
+      rethrow;
+    }
+  }
+
+   // ✅ NUEVO: Este método coincide con tu endpoint PATCH /adjustments/:id
+  static Future<bool> updateAdjustmentDocument(String docId, Map<String, dynamic> data) async {
+    try {
+      final response = await ApiService.dio.patch('/adjustments/$docId', data: data);
+      return response.statusCode == 200;
+    } catch (e) {
+      ApiService.handleApiError('updateAdjustmentDocument', e);
+      rethrow;
+    }
+  }
+
+  // ✅ NUEVO: Para obtener las categorías
+  static Future<List<Map<String, dynamic>>> getAdjustmentCategories() async {
+    try {
+      final response = await ApiService.dio.get('/categories');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data']['data'];
+        return List<Map<String, dynamic>>.from(data);
+      }
+      return [];
+    } catch (e) {
+      ApiService.handleApiError('Obtener categorías de ajustes', e);
+      return [];
     }
   }
 
@@ -103,26 +115,71 @@ class AdjustmentService {
     }
   }
 
-  static Future<bool> updateAdjustmentStatus(
-    String adjustmentId,
-    String status,
-  ) async {
+  
+
+  
+
+  static Future<List<Map<String, dynamic>>> getAdjustmentDocumentsRaw(String studentId) async {
     try {
-      final token = await ApiService.getToken();
-      if (token == null) throw Exception('Token nulo');
-
-      final response = await ApiService.dio.patch(
-        '/adjustments/$adjustmentId/status',
-        data: {'status': status.toUpperCase()},
-      );
-
-      return response.statusCode == 200;
+      final response = await ApiService.dio.get('/adjustments/student/$studentId');
+      if (response.statusCode == 200) {
+        final List<dynamic> docsJson = response.data['data']['data'];
+        return List<Map<String, dynamic>>.from(docsJson);
+      }
+      return [];
     } catch (e) {
-      ApiService.handleApiError('Actualizar estado ajuste', e);
-      return false;
+      ApiService.handleApiError('getAdjustmentDocumentsRaw', e);
+      return [];
     }
   }
 
+  /// Obtiene una lista aplanada de todos los ajustes para un estudiante.
+  /// Usa tu modelo 'Adjustment' antiguo.
+  static Future<List<Adjustment>> getAdjustmentHistory(String studentId, {bool? active}) async {
+    try {
+      final List<Map<String, dynamic>> adjustmentsDocs = await getAdjustmentDocumentsRaw(studentId);
+        
+      List<Adjustment> allCurrentAdjustments = [];
+      for (var doc in adjustmentsDocs) {
+        if (doc['currentAdjustments'] != null && doc['currentAdjustments'] is List) {
+          final List<dynamic> currentList = doc['currentAdjustments'];
+          // Mapeamos cada sub-ajuste al modelo 'Adjustment'
+          allCurrentAdjustments.addAll(
+            currentList.map((adj) => Adjustment.fromJson(adj as Map<String, dynamic>))
+          );
+        }
+      }
+
+      if (active == true) {
+        return allCurrentAdjustments.where((adj) => adj.isActive).toList();
+      }
+      return allCurrentAdjustments;
+    } catch (e) {
+      ApiService.handleApiError('getAdjustmentHistory', e);
+      return [];
+    }
+  }
+
+  /// Cambia el estado de un ajuste específico (ej: a 'cancelado').
+  static Future<bool> updateAdjustmentStatus({
+    required String adjustmentDocId,
+    required int adjustmentIndex,
+    required String newStatus,
+    String? comments,
+  }) async {
+    try {
+      final response = await ApiService.dio.patch(
+        '/adjustments/$adjustmentDocId/status/$newStatus',
+        queryParameters: {'adjustmentIndex': adjustmentIndex},
+        data: {if (comments != null) 'comments': comments},
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      ApiService.handleApiError('updateAdjustmentStatus', e);
+      rethrow;
+    }
+  }
+  
   static Future<bool> deleteAdjustment(String id) async {
     try {
       final token = await ApiService.getToken();
@@ -137,22 +194,7 @@ class AdjustmentService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getAdjustmentCategories() async {
-    try {
-      final token = await ApiService.getToken();
-      if (token == null) throw Exception('Token nulo');
 
-      final response = await ApiService.dio.get('/adjustments/categories');
-
-      if (response.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(response.data);
-      }
-      return [];
-    } catch (e) {
-      ApiService.handleApiError('Obtener categorías ajustes', e);
-      return [];
-    }
-  }
 
   static Future<void> setReadAdjustment(
     String adjustmentId,

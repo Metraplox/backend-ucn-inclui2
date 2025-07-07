@@ -6,15 +6,16 @@ import 'package:incluye_app/models/studentAdjustment.dart';
 import 'package:incluye_app/models/student_model.dart';
 // Asegúrate de que estos modelos y servicios existan y estén correctamente importados
 // import 'package:incluye_app/models/adjustment_model.dart'; // Si usas un modelo tipado para 'ajustes'
-// import 'package:incluye_app/services/course_service.dart'; // Para cargar cursos
+import 'package:incluye_app/services/course_service.dart'; // Para cargar cursos
 // import 'package:incluye_app/services/adjustment_service.dart'; // Para cargar ajustes
-import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
+import 'package:incluye_app/screens/adjustments/adjustment_history_screen.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
 import 'package:incluye_app/screens/documents/document_consent_screen.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/edit_student_dialog.dart';
 import 'package:incluye_app/widgets/edit_adjustment_dialog.dart'; // Asegúrate que este widget exista
 import 'package:intl/intl.dart';
+import 'package:incluye_app/screens/adjustments/adjustment_edit_screen.dart';
 
 class StudentProfileScreen extends StatefulWidget {
   final String studentId;
@@ -49,6 +50,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
   List<Course> _studentCourses = [];
   List<StudentAdjustment> _studentAdjustments = [];
   List<Adjustment> _studentCurrentAdjustments = [];
+  Map<String, String> _categoryNamesMap = {};
 
   Map<String, List<Course>> get cursosPorPeriodo {
     final Map<String, List<Course>> map = {};
@@ -68,63 +70,137 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
     _getPeriods(periodos);
   }
 
-  Future<void> _loadStudentData() async {
-    bool isAdmin = await StudentService.isAdmin();
+   Future<void> _loadStudentData() async {
     if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
     try {
-      dynamic data;
-      dynamic cursos;
-      List<StudentAdjustment> ajustes = [];
-
-      data = await StudentService.getStudentById(widget.studentId);
-      cursos = await StudentService.getStudentCourses(widget.studentId);
-      ajustes = await AdjustmentService.getStudentAdjustments(widget.studentId);
+      final results = await Future.wait([
+        StudentService.getStudentById(widget.studentId),
+        CourseService.getStudentCourses(widget.studentId),
+        AdjustmentService.getAdjustmentHistory(widget.studentId, active: true),
+        StudentService.isAdmin(),
+        AdjustmentService.getAdjustmentCategories(),
+      ]);
 
       if (!mounted) return;
+      final student = results[0] as Student?;
+      if (student != null) {
+        final categories = results[4] as List<Map<String, dynamic>>;
+        
+        // ✅ INICIO DE LA CORRECCIÓN
+        // Casteamos explícitamente la clave cat['_id'] a String.
+        final categoryMap = {for (var cat in categories) cat['_id'] as String: cat['name'] as String};
+        // ✅ FIN DE LA CORRECCIÓN
 
-      if (data != null) {
-        final currentAdjustments =
-            ajustes.expand((ajuste) => ajuste.currentAdjustments).toList();
         setState(() {
-          _studentData = data;
-          _studentCourses = cursos;
-          _studentAdjustments = ajustes; // si la necesitas luego
-          _studentCurrentAdjustments = currentAdjustments;
-          _isAdmin = isAdmin;
+          _studentData = student;
+          _studentCourses = results[1] as List<Course>;
+          _studentCurrentAdjustments = results[2] as List<Adjustment>;
+          _isAdmin = results[3] as bool;
+          _categoryNamesMap = categoryMap;
         });
       } else {
-        print(
-          "StudentProfileScreen (Admin): No se pudo cargar perfil para ID ${widget.studentId}.",
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'No se pudo cargar el perfil del estudiante con ID ${widget.studentId}.',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        throw Exception('No se pudo cargar el perfil.');
       }
     } catch (e, s) {
-      print(
-        "StudentProfileScreen (Admin): Error cargando perfil: $e\nStacktrace: $s",
-      );
+      print("Error cargando perfil: $e\n$s");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al cargar perfil: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al cargar perfil: ${e.toString()}'), backgroundColor: Colors.red));
       }
     } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _editAdjustment(BuildContext context, Adjustment adjustmentToEdit) async {
+  if (_studentData == null) return;
+  
+  final result = await Navigator.push<bool>(
+    context,
+    MaterialPageRoute(
+      builder: (context) => AdjustmentEditScreen(
+        studentId: widget.studentId,
+        studentRut: _studentData!.rut,
+        adjustmentToEdit: adjustmentToEdit, // Le pasas el objeto 'Adjustment'
+      ),
+    ),
+  );
+
+  if (result == true) {
+    _loadStudentData(); // Recarga los datos si la edición fue exitosa
+  }
+}
+
+  /// Cancela un ajuste específico, cambiando su estado a 'cancelado'.
+  Future<void> _cancelAdjustment(BuildContext context, Adjustment adjustmentToCancel) async {
+    // 1. Pedir confirmación al usuario
+    final bool? confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar Cancelación'),
+        content: const Text('¿Estás seguro de que quieres cancelar este ajuste? Esta acción es irreversible.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Sí, Cancelar', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 2. Encontrar el documento y el índice del ajuste a cancelar
+      // ✅ Se usa el nuevo método que devuelve el JSON crudo.
+      final List<Map<String, dynamic>> adjustmentDocs = await AdjustmentService.getAdjustmentDocumentsRaw(widget.studentId);
+      String? targetDocId;
+      int? targetIndex;
+
+      for (var doc in adjustmentDocs) {
+        // Obtenemos la lista de 'currentAdjustments' del mapa.
+        final List<dynamic>? currentAdjustments = doc['currentAdjustments'];
+        if (currentAdjustments == null) continue;
+
+        // Buscamos el subdocumento que coincida con el ID del ajuste a cancelar.
+        final index = currentAdjustments.indexWhere(
+          (adj) => adj is Map && adj['_id'] == adjustmentToCancel.id
+        );
+
+        if (index != -1) {
+          targetDocId = doc['_id']; // ID del documento padre
+          targetIndex = index;    // Índice del subdocumento
+          break;
+        }
+      }
+
+      if (targetDocId == null || targetIndex == null) {
+        throw Exception('No se pudo encontrar el ajuste para cancelar. Puede que ya no exista.');
+      }
+      
+      // 3. Llamar al servicio para actualizar el estado
+      final success = await AdjustmentService.updateAdjustmentStatus(
+        adjustmentDocId: targetDocId,
+        adjustmentIndex: targetIndex,
+        newStatus: 'cancelado',
+        comments: 'Cancelado por administrador desde el perfil del estudiante.',
+      );
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ajuste cancelado correctamente'), backgroundColor: Colors.green),
+        );
+        _loadStudentData();
+      } else {
+        throw Exception('El servidor denegó la solicitud de cancelación.');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cancelar: ${e.toString()}'), backgroundColor: Colors.red),
+      );
+    } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -765,22 +841,14 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
 
   Widget _buildAjustesTable(bool isMobile) {
     if (_studentCurrentAdjustments.isEmpty) {
-      // 'ajustes' es tu lista de ejemplo
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              Icon(
-                Icons.settings_accessibility_outlined,
-                size: 48,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.settings_accessibility_outlined, size: 48, color: Colors.grey[400]),
               const SizedBox(height: 8),
-              Text(
-                'No hay ajustes realizados',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
+              Text('No hay ajustes activos', style: TextStyle(color: Colors.grey[600])),
             ],
           ),
         ),
@@ -788,118 +856,57 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
     }
     return DataTable(
       headingRowColor: WidgetStateProperty.all(Colors.indigo.shade50),
-      dataRowColor: WidgetStateProperty.resolveWith<Color?>((
-        Set<WidgetState> states,
-      ) {
-        if (states.contains(WidgetState.selected))
-          return Colors.indigo.shade100.withAlpha(77);
-        if (states.contains(WidgetState.hovered))
-          return Colors.indigo.shade50.withAlpha(77);
-        return null;
-      }),
       columnSpacing: isMobile ? 16 : 24,
       horizontalMargin: isMobile ? 8 : 12,
       dataTextStyle: TextStyle(fontSize: isMobile ? 13 : 14),
       columns: const [
-        DataColumn(
-          label: Text('Curso', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
-        DataColumn(
-          label: Text('Tipo', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
-        DataColumn(
-          label: Text(
-            'Aprobado Por',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Fecha Aprobación',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Vencimiento',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Acciones',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
+        DataColumn(label: Text('Curso', style: TextStyle(fontWeight: FontWeight.bold))),
+        DataColumn(label: Text('Tipo', style: TextStyle(fontWeight: FontWeight.bold))),
+        DataColumn(label: Text('Vencimiento', style: TextStyle(fontWeight: FontWeight.bold))),
+        DataColumn(label: Text('Acciones', style: TextStyle(fontWeight: FontWeight.bold))),
       ],
-      rows:
-          _studentCurrentAdjustments
-              .map(
-                (a) => DataRow(
-                  cells: [
-                    // 'ajustes' es tu lista de ejemplo
-                    DataCell(
-                      Text(
-                        a['curso'] ?? '',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                    DataCell(
-                      Chip(
-                        label: Text(a['tipo'] ?? ''),
-                        backgroundColor: Colors.blue[100],
-                        labelStyle: TextStyle(
-                          color: Colors.blue[800],
-                          fontSize: 12,
-                        ),
-                        padding: EdgeInsets.zero,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                    ),
-                    DataCell(Text(a['aprobadoPor'] ?? '')),
-                    DataCell(
-                      Text(_formatDateString(a['fechaAprobacion'] as String?)),
-                    ), // Usa _formatDateString
-                    DataCell(
-                      _isAjusteActivo(a['vencimiento'] as String?)
-                          ? Chip(
-                            label: Text(
-                              _formatDateString(a['vencimiento'] as String?),
-                            ),
-                            backgroundColor: Colors.green[100],
-                            labelStyle: TextStyle(
-                              color: Colors.green[800],
-                              fontSize: 12,
-                            ),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          )
-                          : Chip(
-                            label: Text(
-                              _formatDateString(a['vencimiento'] as String?),
-                            ),
-                            backgroundColor: Colors.red[100],
-                            labelStyle: TextStyle(
-                              color: Colors.red[800],
-                              fontSize: 12,
-                            ),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          ),
-                    ),
-                    DataCell(
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.indigo),
-                        tooltip: 'Editar ajuste',
-                        onPressed: () {},
-                      ),
-                    ),
-                  ],
-                ),
-              )
-              .toList(),
+      rows: _studentCurrentAdjustments.map((adjustment) {
+        // ✅ INICIO DE LA CORRECCIÓN
+        // Usamos el mapa para traducir el ID del tipo a su nombre.
+        // Si no lo encuentra, muestra el ID como fallback.
+        final String tipoNombre = _categoryNamesMap[adjustment.tipo] ?? adjustment.tipo;
+        // ✅ FIN DE LA CORRECCIÓN
+
+        return DataRow(
+          cells: [
+            DataCell(Text(adjustment.courseNrc ?? 'General', style: const TextStyle(fontWeight: FontWeight.w500))),
+            // Usamos la variable 'tipoNombre' que ahora contiene el nombre legible.
+            DataCell(Chip(label: Text(tipoNombre), backgroundColor: Colors.blue[100])),
+            DataCell(
+              _isAjusteActivo(adjustment.expirationDate)
+                ? Chip(label: Text(_formatDateString(adjustment.expirationDate)), backgroundColor: Colors.green[100])
+                : Chip(label: Text(_formatDateString(adjustment.expirationDate)), backgroundColor: Colors.red[100]),
+            ),
+            DataCell(
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _editAdjustment(context, adjustment);
+                  } else if (value == 'cancel') {
+                    _cancelAdjustment(context, adjustment);
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'edit',
+                    child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Editar')),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'cancel',
+                    child: ListTile(leading: Icon(Icons.cancel_outlined, color: Colors.red), title: Text('Cancelar', style: TextStyle(color: Colors.red))),
+                  ),
+                ],
+                icon: const Icon(Icons.more_vert),
+              ),
+            ),
+          ],
+        );
+      }).toList(),
     );
   }
 

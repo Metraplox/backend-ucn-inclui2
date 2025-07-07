@@ -8,14 +8,17 @@ import 'package:incluye_app/models/student_model.dart';
 class CourseService {
   static Future<List<Course>> getStudentCourses(String studentId) async {
     try {
-      final token = await ApiService.getToken();
-      print(token);
-      if (token == null) throw Exception('Token nulo');
-
       final response = await ApiService.dio.get('/courses/student/$studentId');
+      
+      // Para depurar, siempre puedes imprimir la respuesta completa:
+      // print(response.data);
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data']['data'];
+        // ✅ INICIO DE LA CORRECCIÓN
+        // Accedemos a la estructura anidada correcta para llegar a la lista.
+        final List<dynamic> data = response.data['data']['data']; 
+        // ✅ FIN DE LA CORRECCIÓN
+
         return data.map((json) => Course.fromJson(json)).toList();
       }
       return [];
@@ -89,4 +92,23 @@ class CourseService {
       throw Exception('Error: $e');
     }
   }
+   // ✅ NUEVO MÉTODO: Obtener todos los cursos disponibles en el sistema
+  static Future<List<Course>> getAllCourses() async {
+    try {
+      final response = await ApiService.dio.get('/courses');
+
+      if (response.statusCode == 200) {
+        // Asumiendo que la respuesta de /courses también está anidada
+        final Map<String, dynamic> responseBody = response.data;
+        final List<dynamic> data = responseBody['data']['data'];
+        return data.map((json) => Course.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      ApiService.handleApiError('Obtener todos los cursos', e);
+      return [];
+    }
+  }
+
+  
 }
