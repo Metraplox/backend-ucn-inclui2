@@ -52,18 +52,24 @@ class AuthService {
   Future<User?> login(String email, String password, bool rememberMe) async {
     try {
       final responseData = await _repository.login(email, password);
+      
+      // Navegar por la estructura anidada del backend
+      var actualData = responseData;
+      while (actualData is Map<String, dynamic> && actualData.containsKey('data')) {
+        actualData = actualData['data'];
+      }
 
-      _accessToken = responseData['accessToken'];
-      final refreshToken = responseData['refreshToken'];
+      _accessToken = actualData['access_token']; // Nota: backend usa 'access_token', no 'accessToken'
+      final refreshToken = actualData['refresh_token']; // Si existe
 
       if (rememberMe) {
         await _storageService.saveTokens(
           accessToken: _accessToken!,
-          refreshToken: refreshToken,
+          refreshToken: refreshToken ?? '',
         );
       }
 
-      final user = User.fromJson(responseData['user']);
+      final user = User.fromJson(actualData['user']);
       await _saveUserData(user); // Guardar datos del usuario por separado
 
       return user;
