@@ -249,4 +249,7 @@ if ('careerIds' in additionalResponsibilities && additionalResponsibilities.care
     }
     return { deleted: true };
   }
+  async findAllByRole(role: UserRole): Promise<User[]> {
+  return this.userModel.find({ role }).exec();
+}
 }

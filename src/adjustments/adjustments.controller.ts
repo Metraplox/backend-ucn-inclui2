@@ -306,7 +306,7 @@ export class AdjustmentsController {
   }
 
   @Get('student/:studentId')
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.ESTUDIANTE)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.ESTUDIANTE,UserRole.JEFE_CARRERA)
   @ApiOperation({
     summary: 'Obtener todos los ajustes de un estudiante',
     description: 'Lista todos los ajustes asociados a un estudiante específico. Los estudiantes solo pueden ver sus propios ajustes. Permite filtrar por estado del ajuste.',

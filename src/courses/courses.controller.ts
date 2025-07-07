@@ -31,6 +31,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { CourseResponseDto } from './dto/course-response.dto';
 import { StudentWithAdjustmentsDto } from './dto/student-with-adjustments.dto';
+import { User } from 'src/auth/decorators/user.decorator';
 
 @ApiTags('courses')
 @ApiBearerAuth('JWT-auth')
@@ -151,7 +152,7 @@ export class CoursesController {
   }
 
   @Get('student/:studentId')
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.ESTUDIANTE)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.ESTUDIANTE,UserRole.JEFE_CARRERA)
   @ApiOperation({
     summary: 'Obtener cursos inscritos de un estudiante',
     description: 'Lista todos los cursos en los que está inscrito un estudiante específico. Los estudiantes solo pueden ver sus propios cursos. Incluye información del docente y horarios.'

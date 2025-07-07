@@ -34,6 +34,7 @@ import { UpdateStudentDto } from './dto/update-student.dto';
 import { Student } from './schemas/student.schema';
 import { UserPublicData } from '../users/interfaces/user-public-data.interface';
 import { StudentResponseDto } from './dto/student-response.dto';
+import { User } from 'src/auth/decorators/user.decorator';
 
 @ApiTags('students')
 @ApiBearerAuth('JWT-auth')
@@ -194,7 +195,7 @@ export class StudentsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
+  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL,UserRole.JEFE_CARRERA)
   @ApiOperation({ 
     summary: 'Obtener un estudiante específico por ID',
     description: 'Busca y retorna la información completa de un estudiante utilizando su ID único de MongoDB.'

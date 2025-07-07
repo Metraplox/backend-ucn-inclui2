@@ -168,8 +168,76 @@ export class HeadsController {
     const user = await this.usersService.findById(req.user._id);
     const responsibilities = user.additionalResponsibilities || {};
     const teachers: any[] = [];
+    const isAdmin = user.roles.includes(UserRole.COORDINADOR);
 
-    // Si es jefe de carrera
+
+    
+   if (isAdmin) {
+  const allTeachers = await this.usersService.findByRole(UserRole.DOCENTE);
+
+  for (const teacher of allTeachers) {
+    // Obtener cursos del docente
+    const courses = await this.coursesService.findByTeacher(
+      teacher.id.toString(),
+      semester,
+    );
+
+    // Contar estudiantes con NEE en sus cursos
+    let studentsWithNEE = 0;
+    let totalAdjustments = 0;
+    let readAdjustments = 0;
+
+    for (const course of courses) {
+      const adjustments = await this.adjustmentsService.findByCourseNrc(
+        course.nrc,
+        semester,
+      );
+      studentsWithNEE += adjustments.length;
+
+      for (const adj of adjustments) {
+        for (const currAdj of adj.currentAdjustments) {
+          if (currAdj.courseNrc === course.nrc) {
+            totalAdjustments++;
+            if (currAdj.readBy) {
+              const leido = currAdj.readBy.some(
+                (r) =>
+                  r?.userId != null &&
+                  r.userId.toString() === teacher.id.toString(),
+              );
+              if (leido) readAdjustments++;
+            }
+          }
+        }
+      }
+    }
+
+    // Obtener nombre del departamento si lo tiene
+    let departmentName = 'N/A';
+    const deptIds = teacher.additionalResponsibilities?.departmentIds ?? [];
+    if (deptIds.length > 0) {
+      const dept = await this.departmentsService.findOne(deptIds[0].toString());
+      if (dept) departmentName = dept.name;
+    }
+
+    teachers.push({
+      teacherId: teacher._id,
+      teacherName: teacher.nombreCompleto ?? 'Sin nombre',
+      teacherEmail: teacher.email ?? 'Sin correo',
+      department: departmentName,
+      coursesCount: courses.length,
+      studentsWithNEE,
+      totalAdjustments,
+      readAdjustments,
+      readPercentage:
+        totalAdjustments > 0
+          ? (readAdjustments / totalAdjustments) * 100
+          : 0,
+    });
+  }
+
+  return teachers;
+}
+      // Si es jefe de carrera
     if (responsibilities.isCareerHead && responsibilities.departmentIds) {
       for (const deptId of responsibilities.departmentIds) {
         const deptTeachers =
