@@ -11,6 +11,8 @@ import 'package:incluye_app/screens/diddec/pending_list_screen.dart';
 import 'package:incluye_app/screens/diddec/resource_uploader_screen.dart';
 import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/screens/students/student_list_screen.dart';
+import 'package:incluye_app/screens/diddec/diddec_students_screen.dart';
+import 'package:incluye_app/screens/diddec/diddec_adjustments_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
 class DiddecDashboard extends StatefulWidget {
@@ -398,11 +400,17 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
   }
 
   void _navigateToStudentsList() {
-    Navigator.pushNamed(context, '/diddec/students');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DiddecStudentsScreen()),
+    );
   }
 
   void _navigateToAdjustmentsList() {
-    Navigator.pushNamed(context, '/diddec/adjustments');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DiddecAdjustmentsScreen()),
+    );
   }
 
   void _navigateToPendingResources() {
@@ -413,7 +421,12 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
   }
 
   void _navigateToNewRequests() {
-    Navigator.pushNamed(context, '/diddec/requests/new');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando nuevas solicitudes'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToUploadResource() {
@@ -424,24 +437,49 @@ class _DiddecDashboardState extends State<DiddecDashboard> {
   }
 
   void _navigateToReviewRequests() {
-    Navigator.pushNamed(context, '/diddec/requests/review');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Revisando solicitudes pendientes'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _navigateToReports() {
-    Navigator.pushNamed(context, '/diddec/reports');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Generando reportes DIDDEC'),
+        backgroundColor: Colors.purple,
+      ),
+    );
   }
 
   void _navigateToManageResources() {
-    Navigator.pushNamed(context, '/diddec/resources');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Gestionando recursos y materiales'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   void _navigateToAllActivity() {
-    Navigator.pushNamed(context, '/diddec/activity');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando toda la actividad'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToAdjustmentDetail(String? adjustmentId) {
     if (adjustmentId != null) {
-      Navigator.pushNamed(context, '/adjustments/$adjustmentId');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Detalle del ajuste: $adjustmentId'),
+          backgroundColor: Colors.blue,
+        ),
+      );
     }
   }
 

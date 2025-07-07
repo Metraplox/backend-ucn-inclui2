@@ -11,6 +11,7 @@ import 'package:incluye_app/services/course_service.dart';
 import 'package:incluye_app/screens/students/student_course_list_screen.dart';
 import 'package:incluye_app/screens/students/student_own_profile_screen.dart';
 import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
+import 'package:incluye_app/screens/notifications/notifications_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 import 'package:incluye_app/widgets/course_widget.dart';
 
@@ -415,7 +416,10 @@ class _EstudianteDashboardState extends State<EstudianteDashboard> {
   }
 
   void _navigateToNotifications() {
-    // Implementar navegación a notificaciones
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+    );
   }
 
   void _navigateToCoursesList() {

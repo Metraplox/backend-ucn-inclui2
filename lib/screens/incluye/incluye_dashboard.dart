@@ -412,34 +412,72 @@ class _IncluyeDashboardState extends State<IncluyeDashboard> {
   }
 
   void _navigateToStudentsList() {
-    Navigator.pushNamed(context, '/students');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StudentListScreen()),
+    );
   }
 
   void _navigateToAdjustmentsList() {
-    Navigator.pushNamed(context, '/adjustments');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando lista de ajustes curriculares'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToDocumentsList() {
-    Navigator.pushNamed(context, '/documents');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando documentos pendientes'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _navigateToAlerts() {
-    Navigator.pushNamed(context, '/alerts');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mostrando alertas del sistema'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   void _navigateToNewStudent() {
-    Navigator.pushNamed(context, '/students/new');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Abriendo formulario de nuevo estudiante'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   void _navigateToNewAdjustment() {
-    Navigator.pushNamed(context, '/adjustments/new');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Creando nuevo ajuste curricular'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToReports() {
-    Navigator.pushNamed(context, '/reports');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Generando reportes del sistema'),
+        backgroundColor: Colors.purple,
+      ),
+    );
   }
 
   void _navigateToStudentDetail(String studentId) {
-    Navigator.pushNamed(context, '/students/$studentId');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Abriendo perfil del estudiante: $studentId'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 }

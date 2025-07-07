@@ -11,6 +11,10 @@ import 'package:incluye_app/models/teacher_stats_model.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/screens/students/student_list_screen.dart';
 import 'package:incluye_app/screens/user_management_screen.dart';
+import 'package:incluye_app/screens/notifications/notifications_screen.dart';
+import 'package:incluye_app/screens/jefatura/teacher_stats_screen.dart';
+import 'package:incluye_app/screens/jefatura/teachers_list_screen.dart';
+import 'package:incluye_app/screens/jefatura/alerts_screen.dart';
 import 'package:incluye_app/widgets/shared/dashboard_scaffold.dart';
 
 /// Dashboard principal para el rol Jefatura de Carrera
@@ -452,35 +456,65 @@ class _JefaturaDashboardState extends State<JefaturaDashboard> {
 
   // Métodos de navegación
   void _navigateToNotifications() {
-    Navigator.pushNamed(context, '/notifications');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+    );
   }
 
   void _navigateToTeachersList() {
-    Navigator.pushNamed(context, '/teachers');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TeachersListScreen()),
+    );
   }
 
   void _navigateToStudentsList() {
-    Navigator.pushNamed(context, '/students/career/$_headCareerId');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StudentListScreen()),
+    );
   }
 
   void _navigateToPendingReviews() {
-    Navigator.pushNamed(context, '/reviews/pending');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Redirigiendo a revisiones pendientes'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _navigateToAlerts() {
-    Navigator.pushNamed(context, '/alerts');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AlertsScreen()),
+    );
   }
 
   void _navigateToTeacherStats() {
-    Navigator.pushNamed(context, '/teachers/stats');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TeacherStatsScreen()),
+    );
   }
 
   void _navigateToExportReport() {
-    Navigator.pushNamed(context, '/reports/export');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Generando reporte de exportación'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   void _navigateToTeacherDetail(String teacherId) {
-    Navigator.pushNamed(context, '/teachers/$teacherId');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Mostrando detalle del profesor: $teacherId'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
   void _navigateToStudentList() {
