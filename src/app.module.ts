@@ -23,12 +23,12 @@ import { DiddecModule } from './diddec/diddec.module';
 import { ConsentModule } from './consent/consent.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { SemesterSchedulerModule } from './scheduler/semester-scheduler.module';
+import { ConfiguracionController } from './configuration/configuration.controller';
+import { RealDataLoaderService } from './configuration/real-data-loader.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(
       process.env.MONGODB_URI || 'mongodb://localhost:27017/ucn_inclui2',
     ),
@@ -50,9 +50,10 @@ import { SemesterSchedulerModule } from './scheduler/semester-scheduler.module';
     EnrollmentsModule,
     SemesterSchedulerModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, ConfiguracionController],
   providers: [
     AppService,
+    RealDataLoaderService,
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

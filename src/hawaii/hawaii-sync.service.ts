@@ -41,9 +41,9 @@ export class HawaiiSyncService {
    */
   private loadNeeStudentsList(): void {
     try {
-      const neeFilePath = join(process.cwd(), 'mongodb-init', 'ESTUDIANTES_NEE.txt');
+      // Cambiado para leer el archivo correcto solicitado por el usuario
+      const neeFilePath = join(process.cwd(), 'docs', 'assets', 'ESTUDIANTES_NEE_CSV.txt');
       const content = readFileSync(neeFilePath, 'utf-8');
-      
       this.neeRuts = content
         .split('\n')
         .map(line => line.trim())
@@ -53,7 +53,6 @@ export class HawaiiSyncService {
           return parts[0] ? parts[0].trim() : '';
         })
         .filter(rut => rut.length > 0);
-      
       this.logger.log(`📋 Lista NEE cargada: ${this.neeRuts.length} estudiantes`);
     } catch (error) {
       this.logger.error('❌ Error cargando lista de estudiantes NEE:', error);
