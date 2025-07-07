@@ -126,11 +126,18 @@ export class StudentsController {
   }
 
   @Get()
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF)
+  @Roles(
+    UserRole.COORDINADOR,
+    UserRole.EDUCADORA_SOCIAL,
+    UserRole.DIDDEC_STAFF,
+    UserRole.JEFE_CARRERA,
+    UserRole.JEFE_DEPARTAMENTO,
+    UserRole.DOCENTE,
+  )
   @ApiOperation({
-    summary: 'Listar todos los estudiantes con NEE',
+    summary: 'Listar estudiantes con NEE según rol y contexto',
     description:
-      'Retorna la lista completa de estudiantes registrados en el sistema con sus datos académicos y de NEE. Permite filtrar por semestre académico.',
+      'Retorna la lista de estudiantes con filtrado por rol: COORDINADOR y EDUCADORA_SOCIAL ven todos, DIDDEC_STAFF accede a reportes, JEFE_CARRERA ve su carrera, JEFE_DEPARTAMENTO ve su departamento, DOCENTE ve sus estudiantes asignados. Permite filtrar por semestre académico.',
   })
   @ApiQuery({
     name: 'semester',

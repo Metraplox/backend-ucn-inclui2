@@ -24,6 +24,7 @@ import { ConsentModule } from './consent/consent.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { SemesterSchedulerModule } from './scheduler/semester-scheduler.module';
 import { SemesterConfigModule } from './semester-config/semester-config.module';
+import { DashboardsModule } from './dashboards/dashboards.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { SemesterConfigModule } from './semester-config/semester-config.module';
     EnrollmentsModule,
     SemesterSchedulerModule,
     SemesterConfigModule,
+    DashboardsModule,
   ],
   controllers: [AppController],
   providers: [
