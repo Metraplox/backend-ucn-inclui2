@@ -1,4 +1,8 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:incluye_app/models/document_model.dart';
+import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/document_consent_service.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -266,7 +270,7 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen>
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _uploadSignedConsent(),
+                  onPressed: () => _uploadDocument(),
                   icon: const Icon(Icons.upload),
                   label: const Text('Subir Firmado'),
                   style: ElevatedButton.styleFrom(
@@ -655,37 +659,67 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen>
     }
   }
 
-  Future<void> _uploadSignedConsent() async {
+  static Future<Document?> uploadDocument(
+    PlatformFile
+    pickedFile, // <-- Usamos PlatformFile, compatible con todas las plataformas
+    String studentId, {
+    String documentType = 'general',
+    String description = '',
+    String category = 'GENERAL',
+  }) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf'],
-      );
+      final token = await ApiService.getToken();
+      if (token == null) throw Exception('Token nulo');
 
-      if (result != null && result.files.isNotEmpty) {
-        final file = result.files.first;
-        await ConsentService.uploadSignedConsent(
-          studentId: widget.studentId,
-          fileBytes: file.bytes!,
-          fileName: file.name,
+      final isStudent = await _isStudent();
+
+      MultipartFile multipartFile;
+
+      if (kIsWeb) {
+        // Web o escritorio
+        if (pickedFile.bytes == null)
+          throw Exception('Bytes nulos en plataforma Web/PC');
+        multipartFile = MultipartFile.fromBytes(
+          pickedFile.bytes!,
+          filename: pickedFile.name,
         );
-
-        _loadData();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Consentimiento firmado subido exitosamente'),
-            ),
-          );
-        }
+      } else {
+        // Android / iOS
+        if (pickedFile.path == null)
+          throw Exception('Ruta nula en Android/iOS');
+        multipartFile = await MultipartFile.fromFile(
+          pickedFile.path!,
+          filename: pickedFile.name,
+        );
       }
+
+      final formData = FormData.fromMap({
+        'file': multipartFile,
+        'studentId': studentId,
+        'documentType': documentType,
+        'description': description,
+        'category': category,
+      });
+
+      final endpoint =
+          isStudent ? '/documents/student/upload' : '/documents/upload';
+
+      final response = await ApiService.dio.post(endpoint, data: formData);
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return Document.fromJson(response.data);
+      }
+      return null;
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al subir consentimiento: $e')),
-        );
-      }
+      ApiService.handleApiError('Subir documento', e);
+      return null;
     }
+  }
+
+  static Future<bool> _isStudent() async {
+    // Aquí tu lógica para verificar el rol del usuario
+    // Ejemplo: obtener rol desde SharedPreferences o API
+    return true; // placeholder
   }
 
   void _editConsent() {

@@ -1,4 +1,7 @@
 // screens/students/student_own_profile_screen.dart
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:incluye_app/models/studentAdjustment.dart';
@@ -12,6 +15,16 @@ import 'package:incluye_app/services/student_service.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'dart:io' show Platform;
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path_provider/path_provider.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'dart:html' as html;
 
 class StudentOwnProfileScreen extends StatefulWidget {
   const StudentOwnProfileScreen({super.key});
@@ -119,7 +132,55 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
     }
   }
 
-  Future<void> _downloadTemplate() async {}
+  Future<void> downloadFile(
+    String url,
+    String fileName,
+    BuildContext context,
+  ) async {
+    try {
+      if (kIsWeb) {
+        // Descarga en Flutter Web: fuerza la descarga con un anchor invisible
+        final anchor =
+            html.AnchorElement(href: url)
+              ..setAttribute('download', fileName)
+              ..click();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Descarga iniciada en navegador')),
+        );
+      } else if (Platform.isAndroid || Platform.isIOS) {
+        // Para Android/iOS: descarga bytes y guarda en directorio de documentos
+        final dio = Dio();
+        final response = await dio.get<Uint8List>(
+          url,
+          options: Options(responseType: ResponseType.bytes),
+        );
+
+        final bytes = response.data;
+        if (bytes == null)
+          throw Exception('No se pudieron descargar los datos');
+
+        final dir = await getApplicationDocumentsDirectory();
+        final filePath = '${dir.path}/$fileName';
+        final file = File(filePath);
+        await file.writeAsBytes(bytes);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Archivo guardado en $filePath')),
+        );
+      } else {
+        // Otras plataformas: opcional manejar o lanzar error
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Plataforma no soportada para descarga'),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al descargar archivo: $e')));
+    }
+  }
 
   Future<void> _uploadSignedConsent() async {
     final String? targetUserId = _studentData?.userId?.id;
@@ -338,7 +399,12 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
                         OutlinedButton.icon(
                           icon: const Icon(Icons.download),
                           label: const Text('Descargar plantilla'),
-                          onPressed: _downloadTemplate,
+                          onPressed:
+                              () => downloadFile(
+                                'https://drive.google.com/uc?export=download&id=1jBoN6RAwAFcmSj9Ega2FPFalUhSCIIt5',
+                                'mi_archivo.pdf',
+                                context,
+                              ),
                         ),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.upload_file),
