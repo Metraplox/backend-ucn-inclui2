@@ -120,9 +120,7 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
   Future<void> _downloadTemplate() async {
     /* ... */
   }
-
   Future<void> _uploadSignedConsent() async {
-    // Para el perfil propio, el ID que se usa para el documento es el del User asociado.
     final String? targetUserId = _studentData?.userId?.id;
     if (targetUserId == null || targetUserId.isEmpty) {
       print(
@@ -136,6 +134,7 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
       );
       return;
     }
+
     print(
       "StudentOwnProfileScreen: Subiendo consentimiento para User ID: $targetUserId",
     );
@@ -144,13 +143,15 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        withData: true, // necesario para Web y PC
       );
-      if (!mounted || result == null || result.files.single.path == null)
-        return;
 
-      final file = File(result.files.single.path!);
+      if (!mounted || result == null || result.files.isEmpty) return;
+
+      final PlatformFile pickedFile = result.files.first;
+
       final document = await DocumentService.uploadDocument(
-        file,
+        pickedFile,
         targetUserId,
         documentType: 'CONSENTIMIENTO',
         description: 'Consentimiento firmado',
@@ -158,8 +159,9 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
       );
 
       if (!mounted) return;
+
       if (document != null) {
-        _loadStudentData();
+        _loadStudentData(); // Recarga datos tras subir documento
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Documento subido.')));

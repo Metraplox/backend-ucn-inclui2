@@ -1,13 +1,15 @@
 // services/document_service.dart
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'api_service.dart';
 import 'package:incluye_app/models/document_model.dart';
 
-
 class DocumentService {
   static Future<Document?> uploadDocument(
-    File file,
+    PlatformFile
+    pickedFile, // <-- Usamos PlatformFile, compatible con todas las plataformas
     String studentId, {
     String documentType = 'general',
     String description = '',
@@ -17,23 +19,40 @@ class DocumentService {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
 
-      // Asumiendo que tienes un método para verificar si es estudiante
       final isStudent = await _isStudent();
 
+      MultipartFile multipartFile;
+
+      if (kIsWeb) {
+        // Web o escritorio
+        if (pickedFile.bytes == null)
+          throw Exception('Bytes nulos en plataforma Web/PC');
+        multipartFile = MultipartFile.fromBytes(
+          pickedFile.bytes!,
+          filename: pickedFile.name,
+        );
+      } else {
+        // Android / iOS
+        if (pickedFile.path == null)
+          throw Exception('Ruta nula en Android/iOS');
+        multipartFile = await MultipartFile.fromFile(
+          pickedFile.path!,
+          filename: pickedFile.name,
+        );
+      }
+
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(file.path),
+        'file': multipartFile,
         'studentId': studentId,
         'documentType': documentType,
         'description': description,
         'category': category,
       });
 
-      final endpoint = isStudent ? '/documents/student/upload' : '/documents/upload';
+      final endpoint =
+          isStudent ? '/documents/student/upload' : '/documents/upload';
 
-      final response = await ApiService.dio.post(
-        endpoint,
-        data: formData,
-      );
+      final response = await ApiService.dio.post(endpoint, data: formData);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return Document.fromJson(response.data);
@@ -52,7 +71,11 @@ class DocumentService {
     return true; // placeholder
   }
 
-  static Future<List<Document>> getStudentDocuments(String studentId, {String? category, String? status}) async {
+  static Future<List<Document>> getStudentDocuments(
+    String studentId, {
+    String? category,
+    String? status,
+  }) async {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
@@ -96,7 +119,10 @@ class DocumentService {
     }
   }
 
-  static Future<Document?> verifyDocument(String documentId, {String comments = ''}) async {
+  static Future<Document?> verifyDocument(
+    String documentId, {
+    String comments = '',
+  }) async {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
@@ -116,7 +142,10 @@ class DocumentService {
     }
   }
 
-  static Future<Document?> rejectDocument(String documentId, {String comments = ''}) async {
+  static Future<Document?> rejectDocument(
+    String documentId, {
+    String comments = '',
+  }) async {
     try {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
@@ -141,9 +170,7 @@ class DocumentService {
       final token = await ApiService.getToken();
       if (token == null) throw Exception('Token nulo');
 
-      final response = await ApiService.dio.delete(
-        '/documents/$documentId',
-      );
+      final response = await ApiService.dio.delete('/documents/$documentId');
 
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {

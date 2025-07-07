@@ -9,14 +9,14 @@ import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/document_model.dart';
 import 'package:incluye_app/services/document_service.dart';
-import 'package:incluye_app/services/document_consent_service.dart' as ConsentServices;
-
+import 'package:incluye_app/services/document_consent_service.dart'
+    as ConsentServices;
 
 // Widget principal para la pantalla de documentos
 class StudentDocumentsScreen extends StatefulWidget {
   // Identificador del estudiante cuyos documentos se mostrarán
   final String studentId;
-  
+
   // Constructor que requiere el id del estudiante
   const StudentDocumentsScreen({super.key, required this.studentId});
 
@@ -28,13 +28,13 @@ class StudentDocumentsScreen extends StatefulWidget {
 class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
   // Datos del estudiante
   Student? _studentData;
-  
+
   // Lista de documentos del estudiante
   List<Document> _documents = [];
-  
+
   // Indicador de carga
   bool _isLoading = true;
-  
+
   // Estado de consentimiento
   bool _hasConsent = false;
 
@@ -50,14 +50,14 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       // Obtener datos del estudiante
       final studentData = await StudentService.getStudentById(widget.studentId);
-      
+
       // Verificar si el widget sigue montado antes de continuar
       if (!mounted) return;
-      
+
       // Simular obtención de documentos (en una implementación real vendrían de la API)
       final List<Document> documents = [
         Document.fromSpanish(
@@ -82,7 +82,7 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
           estado: 'En revisión',
         ),
       ];
-      
+
       setState(() {
         _studentData = studentData;
         _documents = documents;
@@ -92,20 +92,22 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
     } catch (e) {
       // Verificar si el widget sigue montado antes de manejar errores
       if (!mounted) return;
-      
+
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar datos: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al cargar datos: $e')));
     }
   }
 
   // Método para descargar plantilla de consentimiento
   Future<void> _downloadTemplate() async {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Descargando plantilla de consentimiento...')),
+      const SnackBar(
+        content: Text('Descargando plantilla de consentimiento...'),
+      ),
     );
     // Aquí iría la lógica real para descargar plantilla
   }
@@ -113,50 +115,43 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
   // Método para subir documento firmado
   Future<void> _uploadDocument() async {
     try {
-      // Seleccionar archivo mediante FilePicker
+      // Abrir el picker de archivo
       final result = await FilePicker.platform.pickFiles(
+        withData: true, // Necesario para Web y Escritorio
         type: FileType.custom,
         allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
       );
 
-      // Verificar si el widget sigue montado antes de continuar
+      if (!mounted || result == null || result.files.isEmpty) return;
+
+      final PlatformFile pickedFile = result.files.first;
+
+      // Subir documento usando el servicio actualizado
+      final document = await DocumentService.uploadDocument(
+        pickedFile,
+        widget.studentId,
+        documentType: 'GENERAL',
+        description: 'Documento subido por el estudiante',
+      );
+
       if (!mounted) return;
 
-      if (result != null && result.files.single.path != null) {
-        // Obtener ruta del archivo seleccionado
-        final path = result.files.single.path!;
-        final file = File(path);
-        
-        // Subir documento usando ApiService
-        final document = await DocumentService.uploadDocument(
-          file, 
-          widget.studentId,
-          documentType: 'GENERAL',
-          description: 'Documento subido por el estudiante'
+      if (document != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Documento subido correctamente')),
         );
-        
-        // Verificar nuevamente si el widget sigue montado
-        if (!mounted) return;
-        
-        if (document != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Documento subido correctamente')),
-          );
-          // Recargar datos
-          _loadData();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error al subir documento')),
-          );
-        }
+        // Recargar datos después de subir
+        _loadData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al subir documento')),
+        );
       }
     } catch (e) {
-      // Verificar si el widget sigue montado antes de mostrar error
       if (!mounted) return;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -168,10 +163,10 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
         allowsDataSharing: true,
       );
       final success = result != null;
-      
+
       // Verificar si el widget sigue montado después de la operación asíncrona
       if (!mounted) return;
-      
+
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Consentimiento aprobado')),
@@ -188,10 +183,10 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
     } catch (e) {
       // Verificar si el widget sigue montado antes de mostrar error
       if (!mounted) return;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -208,13 +203,16 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
     // Pantalla basada en el estado de carga
     return Scaffold(
       appBar: AppBar(
-        title: Text(_studentData != null 
-          ? 'Documentos: ${_studentData!.nombres} ${_studentData!.apellidos}' 
-          : 'Documentos del estudiante'),
+        title: Text(
+          _studentData != null
+              ? 'Documentos: ${_studentData!.nombres} ${_studentData!.apellidos}'
+              : 'Documentos del estudiante',
+        ),
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator()) 
-        : _buildBody(),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _buildBody(),
       floatingActionButton: FloatingActionButton(
         onPressed: _uploadDocument,
         tooltip: 'Subir documento',
@@ -232,53 +230,55 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
         children: [
           // Tarjeta de información de consentimiento
           _buildConsentCard(),
-          
+
           const SizedBox(height: 20),
-          
+
           // Título de sección de documentos
           const Text(
             'Documentos disponibles',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          
+
           const SizedBox(height: 10),
-          
+
           // Lista de documentos
           Expanded(
-            child: _documents.isEmpty
-              ? const Center(child: Text('No hay documentos disponibles'))
-              : ListView.builder(
-                  itemCount: _documents.length,
-                  itemBuilder: (context, index) {
-                    final doc = _documents[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ListTile(
-                        leading: const Icon(Icons.description),
-                        title: Text(doc.nombre),
-                        subtitle: Text('Subido: ${doc.fechaSubida}'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Chip de estado
-                            Chip(
-                              label: Text(doc.estado),
-                              backgroundColor: doc.estado == 'Aprobado' 
-                                ? Colors.green[100] 
-                                : Colors.orange[100],
+            child:
+                _documents.isEmpty
+                    ? const Center(child: Text('No hay documentos disponibles'))
+                    : ListView.builder(
+                      itemCount: _documents.length,
+                      itemBuilder: (context, index) {
+                        final doc = _documents[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: ListTile(
+                            leading: const Icon(Icons.description),
+                            title: Text(doc.nombre),
+                            subtitle: Text('Subido: ${doc.fechaSubida}'),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Chip de estado
+                                Chip(
+                                  label: Text(doc.estado),
+                                  backgroundColor:
+                                      doc.estado == 'Aprobado'
+                                          ? Colors.green[100]
+                                          : Colors.orange[100],
+                                ),
+                                // Botón para ver documento
+                                IconButton(
+                                  icon: const Icon(Icons.visibility),
+                                  onPressed: () => _viewDocument(doc),
+                                ),
+                              ],
                             ),
-                            // Botón para ver documento
-                            IconButton(
-                              icon: const Icon(Icons.visibility),
-                              onPressed: () => _viewDocument(doc),
-                            ),
-                          ],
-                        ),
-                        onTap: () => _viewDocument(doc),
-                      ),
-                    );
-                  },
-                ),
+                            onTap: () => _viewDocument(doc),
+                          ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),
@@ -308,7 +308,10 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
                 const Spacer(),
                 // Indicador de estado de consentimiento
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: _hasConsent ? Colors.green : Colors.orange,
                     borderRadius: BorderRadius.circular(12),
@@ -335,19 +338,19 @@ class _StudentDocumentsScreenState extends State<StudentDocumentsScreen> {
                   label: const Text('Descargar plantilla'),
                   onPressed: _downloadTemplate,
                 ),
-                
+
                 // Botón para administradores (aprobar consentimiento)
                 FutureBuilder<bool>(
                   future: StudentService.isAdmin(),
                   builder: (context, snapshot) {
                     final isAdmin = snapshot.data ?? false;
                     return isAdmin && !_hasConsent
-                      ? ElevatedButton.icon(
+                        ? ElevatedButton.icon(
                           icon: const Icon(Icons.check_circle),
                           label: const Text('Aprobar consentimiento'),
                           onPressed: _giveConsent,
                         )
-                      : const SizedBox.shrink();
+                        : const SizedBox.shrink();
                   },
                 ),
               ],
