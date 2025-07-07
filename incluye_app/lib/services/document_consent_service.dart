@@ -5,57 +5,52 @@ import 'package:incluye_app/config/app_config.dart';
 import 'package:incluye_app/services/auth_service.dart';
 
 class ConsentService {
-  static Future<Map<String, dynamic>> getStudentConsent(String studentId) async {
+  static Future<Map<String, dynamic>?> getStudentConsent(String studentId) async {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/consent/student/$studentId'),
+        Uri.parse('${AppConfig.apiBaseUrl}/consents/student/$studentId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
       );
-
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al obtener consentimiento: ${response.statusCode}');
+        return null;
       }
     } catch (e) {
-      throw Exception('Error al obtener consentimiento: $e');
+      return null;
     }
   }
 
-  static Future<Map<String, dynamic>> updateConsent({
+  static Future<Map<String, dynamic>?> updateConsent({
     required String studentId,
-    required bool allowTeachers,
-    required List<String> allowedCourses,
-    String? restrictions,
+    required bool allowsDataSharing,
+    String? comments,
   }) async {
     try {
       final token = await AuthService.getToken();
       final body = {
-        'allowTeachers': allowTeachers,
-        'allowedCourses': allowedCourses,
-        if (restrictions != null) 'restrictions': restrictions,
+        'allowsDataSharing': allowsDataSharing,
+        if (comments != null) 'comments': comments,
       };
-
       final response = await http.patch(
-        Uri.parse('${AppConfig.apiBaseUrl}/consent/student/$studentId'),
+        Uri.parse('${AppConfig.apiBaseUrl}/consents/student/$studentId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode(body),
       );
-
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al actualizar consentimiento: ${response.statusCode}');
+        return null;
       }
     } catch (e) {
-      throw Exception('Error al actualizar consentimiento: $e');
+      return null;
     }
   }
 

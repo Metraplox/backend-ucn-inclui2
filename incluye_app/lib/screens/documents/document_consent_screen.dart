@@ -39,7 +39,7 @@ class _DocumentConsentScreenState extends State<DocumentConsentScreen> with Tick
       
       setState(() {
         _documents = results[0] as List<dynamic>;
-        _consentData = results[1] as Map<String, dynamic>;
+        _consentData = results[1] as Map<String, dynamic>?;
         _isLoading = false;
       });
     } catch (e) {
