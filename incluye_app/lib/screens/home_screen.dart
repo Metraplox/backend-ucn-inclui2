@@ -324,6 +324,20 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildFeatureCard(
+            'Notificaciones',
+            'Ver mis notificaciones',
+            Icons.warning,
+            const Color.fromARGB(255, 184, 45, 45),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              );
+            },
+          ),
           Card(
             child: ListTile(
               leading: const CircleAvatar(child: Icon(Icons.person)),
@@ -335,6 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           if (_pendingAdjustmentsCount > 0) ...[
             const SizedBox(height: 16),
+
             Card(
               color: Colors.blue.shade50,
               child: ListTile(

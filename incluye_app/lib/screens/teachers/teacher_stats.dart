@@ -11,6 +11,16 @@ class TeacherStatsScreen extends StatefulWidget {
 }
 
 class _TeacherStatsScreenState extends State<TeacherStatsScreen> {
+  void _print() {
+    print(widget.teacher.teacherName);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _print();
+  }
+
   @override
   Widget build(BuildContext context) {
     final double percentage = widget.teacher.readPercentage / 100;

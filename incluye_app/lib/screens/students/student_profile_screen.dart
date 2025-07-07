@@ -17,8 +17,13 @@ import 'package:incluye_app/widgets/edit_adjustment_dialog.dart'; // Asegúrate 
 import 'package:intl/intl.dart';
 
 class StudentProfileScreen extends StatefulWidget {
-  final String studentId; // ID del documento Student
-  const StudentProfileScreen({required this.studentId, super.key});
+  final String studentId;
+  final String? careerId; // ID del documento Student
+  const StudentProfileScreen({
+    required this.studentId,
+    this.careerId,
+    super.key,
+  });
 
   @override
   StudentProfileScreenState createState() => StudentProfileScreenState();
@@ -28,12 +33,18 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
   Student? _studentData;
   bool _isLoading = true;
 
-  List<String> periodos = [
-    '2025-1',
-    '2025-2',
-    '2026-1',
-  ]; // Debería ser dinámico
+  bool _isAdmin = false;
+
+  List<String> periodos = []; // Debería ser dinámico
   String? selectedPeriodo;
+  String _getActualSemester() {
+    if (DateTime.now().month < 7) {
+      return '1';
+    } else {
+      return '2';
+    }
+  }
+
   // Usar Map<String, dynamic> para los datos de ejemplo hasta que tengas modelos tipados
   List<Course> _studentCourses = [];
   List<StudentAdjustment> _studentAdjustments = [];
@@ -51,29 +62,30 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
   @override
   void initState() {
     super.initState();
-    selectedPeriodo = periodos.isNotEmpty ? periodos.first : null;
+    selectedPeriodo =
+        '${DateTime.now().year.toString()}-${_getActualSemester()}';
     _loadStudentData();
+    _getPeriods(periodos);
   }
 
   Future<void> _loadStudentData() async {
-    print(
-      "StudentProfileScreen (Admin): Cargando perfil para studentId: ${widget.studentId}",
-    );
+    bool isAdmin = await StudentService.isAdmin();
     if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
     try {
-      final data = await StudentService.getStudentById(widget.studentId);
-      final cursos = await StudentService.getStudentCourses(widget.studentId);
-      final ajustes = await AdjustmentService.getStudentAdjustments(
-        widget.studentId,
-      );
+      dynamic data;
+      dynamic cursos;
+      List<StudentAdjustment> ajustes = [];
+
+      data = await StudentService.getStudentById(widget.studentId);
+      cursos = await StudentService.getStudentCourses(widget.studentId);
+      ajustes = await AdjustmentService.getStudentAdjustments(widget.studentId);
 
       if (!mounted) return;
-      print(widget.studentId);
+
       if (data != null) {
-        print("StudentProfileScreen (Admin): Perfil cargado: ${data.nombres}");
         final currentAdjustments =
             ajustes.expand((ajuste) => ajuste.currentAdjustments).toList();
         setState(() {
@@ -81,6 +93,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
           _studentCourses = cursos;
           _studentAdjustments = ajustes; // si la necesitas luego
           _studentCurrentAdjustments = currentAdjustments;
+          _isAdmin = isAdmin;
         });
       } else {
         print(
@@ -114,6 +127,18 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
         });
       }
     }
+  }
+
+  void _getPeriods(List<String> periods) {
+    final now = DateTime.now();
+    final actualYear = now.year;
+    for (int year = actualYear - 1; year <= actualYear + 1; year++) {
+      periods.add('${year}-1');
+      periods.add('${year}-2');
+    }
+    setState(() {
+      periodos = periods;
+    });
   }
 
   String _formatDateTime(DateTime? date) {
@@ -345,94 +370,95 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                 ),
 
                 // --- FIN CARD INFO BÁSICA ---
-                SizedBox(height: padding),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Solicitar Ajuste Especial'),
-                    onPressed: () => _showAddEditAdjustment(ajuste: null),
-                    style: OutlinedButton.styleFrom(
-                      shape: const StadiumBorder(),
-                      padding: EdgeInsets.symmetric(
-                        vertical: isMobile ? 10 : 12,
+                if (_isAdmin)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Solicitar Ajuste Especial'),
+                      onPressed: () => _showAddEditAdjustment(ajuste: null),
+                      style: OutlinedButton.styleFrom(
+                        shape: const StadiumBorder(),
+                        padding: EdgeInsets.symmetric(
+                          vertical: isMobile ? 10 : 12,
+                        ),
                       ),
                     ),
                   ),
-                ),
                 SizedBox(height: padding * 1.5),
 
                 // --- INICIO CARD CONSENTIMIENTO ---
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(padding),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.blue.shade50, Colors.blue.shade100],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                if (_isAdmin)
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.verified, color: Colors.blue),
-                            SizedBox(width: 8),
-                            Text(
-                              'Consentimiento Informado',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(padding),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blue.shade50, Colors.blue.shade100],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.verified, color: Colors.blue),
+                              SizedBox(width: 8),
+                              Text(
+                                'Consentimiento Informado',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Para cumplir requisitos legales, el estudiante debe firmar y subir su consentimiento informado para compartir su diagnóstico.',
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            ElevatedButton.icon(
-                              onPressed: _downloadTemplate,
-                              icon: const Icon(Icons.download),
-                              label: const Text('Descargar plantilla'),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed:
-                                  consentGiven ? null : _pickSignedConsent,
-                              icon: const Icon(Icons.upload_file),
-                              label: const Text('Subir (Admin)'),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed:
-                                  consentGiven ? _viewSignedConsent : null,
-                              icon: const Icon(Icons.picture_as_pdf),
-                              label: const Text('Ver firmado'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        if (consentGiven)
-                          const Text(
-                            'Consentimiento del estudiante ya fue subido.',
-                            style: TextStyle(color: Colors.green),
+                            ],
                           ),
-                      ],
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Para cumplir requisitos legales, el estudiante debe firmar y subir su consentimiento informado para compartir su diagnóstico.',
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: _downloadTemplate,
+                                icon: const Icon(Icons.download),
+                                label: const Text('Descargar plantilla'),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed:
+                                    consentGiven ? null : _pickSignedConsent,
+                                icon: const Icon(Icons.upload_file),
+                                label: const Text('Subir (Admin)'),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed:
+                                    consentGiven ? _viewSignedConsent : null,
+                                icon: const Icon(Icons.picture_as_pdf),
+                                label: const Text('Ver firmado'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          if (consentGiven)
+                            const Text(
+                              'Consentimiento del estudiante ya fue subido.',
+                              style: TextStyle(color: Colors.green),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
                 // --- FIN CARD CONSENTIMIENTO ---
                 SizedBox(height: padding * 1.5),
@@ -567,25 +593,27 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            icon: const Icon(Icons.add),
-                            label: const Text('Agregar Ajuste'),
-                            onPressed:
-                                () => _showAddEditAdjustment(ajuste: null),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.indigo,
-                              side: const BorderSide(color: Colors.indigo),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                vertical: isMobile ? 10 : 12,
+
+                        if (_isAdmin)
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              icon: const Icon(Icons.add),
+                              label: const Text('Agregar Ajuste'),
+                              onPressed:
+                                  () => _showAddEditAdjustment(ajuste: null),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.indigo,
+                                side: const BorderSide(color: Colors.indigo),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: isMobile ? 10 : 12,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -593,24 +621,26 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
 
                 // --- FIN CARD AJUSTES ACTIVOS ---
                 SizedBox(height: padding * 1.5),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Editar Información del Estudiante'),
-                    onPressed: _showEditDialog,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.indigo,
-                      side: const BorderSide(color: Colors.indigo),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: isMobile ? 10 : 12,
+
+                if (_isAdmin)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Editar Información del Estudiante'),
+                      onPressed: _showEditDialog,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.indigo,
+                        side: const BorderSide(color: Colors.indigo),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: isMobile ? 10 : 12,
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           );

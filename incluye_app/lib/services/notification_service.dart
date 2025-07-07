@@ -274,7 +274,7 @@ class NotificationService {
     final token = ApiService.getToken();
     try {
       final body = jsonEncode({
-        "userId": "684a18607351fc59d85c09c9", //ID COORDINADOR ADMIN
+        "userId": "684a18607351fc59d85c09c9", //ID COORDINADORES, 
         "title": "Ajuste razonable leído",
         "message":
             "Ajuste del alumno: $studentName en curso: $courseName leído.",
