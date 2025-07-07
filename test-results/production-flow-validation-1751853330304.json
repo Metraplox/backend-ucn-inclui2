@@ -1,0 +1,91 @@
+{
+  "startTime": "2025-07-07T01:55:29.023Z",
+  "flows": [
+    {
+      "flow": "SERVER_HEALTH",
+      "success": true,
+      "message": "Servidor respondiendo correctamente",
+      "timestamp": "2025-07-07T01:55:29.154Z"
+    },
+    {
+      "flow": "AUTHENTICATION",
+      "success": true,
+      "message": "Login exitoso con token válido",
+      "timestamp": "2025-07-07T01:55:29.666Z"
+    },
+    {
+      "flow": "AUTHENTICATION_TOKEN_VALIDATION",
+      "success": true,
+      "message": "Token validado correctamente",
+      "timestamp": "2025-07-07T01:55:29.679Z"
+    },
+    {
+      "flow": "STUDENT_FLOW_LIST",
+      "success": true,
+      "message": "2 estudiantes obtenidos",
+      "timestamp": "2025-07-07T01:55:29.713Z"
+    },
+    {
+      "flow": "STUDENT_FLOW_DETAIL",
+      "success": true,
+      "message": "Detalle de estudiante obtenido",
+      "timestamp": "2025-07-07T01:55:29.758Z"
+    },
+    {
+      "flow": "STUDENT_FLOW_ADJUSTMENTS",
+      "success": true,
+      "message": "Ajustes de estudiante consultados",
+      "timestamp": "2025-07-07T01:55:29.800Z"
+    },
+    {
+      "flow": "TEACHER_FLOW_COURSES",
+      "success": true,
+      "message": "0 cursos obtenidos",
+      "timestamp": "2025-07-07T01:55:29.819Z"
+    },
+    {
+      "flow": "TEACHER_FLOW_ADJUSTMENTS",
+      "success": true,
+      "message": "Ajustes pendientes consultados",
+      "timestamp": "2025-07-07T01:55:29.854Z"
+    },
+    {
+      "flow": "DEPARTMENT_HEAD_FLOW_DEPARTMENTS",
+      "success": true,
+      "message": "2 departamentos obtenidos",
+      "timestamp": "2025-07-07T01:55:29.974Z"
+    },
+    {
+      "flow": "DIDDEC_FLOW_STATS",
+      "success": true,
+      "message": "Estadísticas DIDDEC obtenidas",
+      "timestamp": "2025-07-07T01:55:30.081Z"
+    },
+    {
+      "flow": "DIDDEC_FLOW_REPORTS",
+      "success": true,
+      "message": "Reportes DIDDEC consultados",
+      "timestamp": "2025-07-07T01:55:30.277Z"
+    },
+    {
+      "flow": "COORDINATOR_FLOW_NOTIFICATIONS",
+      "success": true,
+      "message": "Notificaciones obtenidas",
+      "timestamp": "2025-07-07T01:55:30.293Z"
+    },
+    {
+      "flow": "COORDINATOR_FLOW_SEMESTER_INFO",
+      "success": true,
+      "message": "Información de semestre accesible",
+      "timestamp": "2025-07-07T01:55:30.303Z"
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "errors": []
+  },
+  "endTime": "2025-07-07T01:55:30.304Z",
+  "duration": 1281
+}

@@ -1,0 +1,98 @@
+{
+  "startTime": "2025-07-07T01:41:04.948Z",
+  "flows": [
+    {
+      "flow": "SERVER_HEALTH",
+      "success": true,
+      "message": "Servidor respondiendo correctamente",
+      "timestamp": "2025-07-07T01:41:05.010Z"
+    },
+    {
+      "flow": "AUTHENTICATION",
+      "success": true,
+      "message": "Login exitoso con token válido",
+      "timestamp": "2025-07-07T01:41:05.203Z"
+    },
+    {
+      "flow": "AUTHENTICATION_TOKEN_VALIDATION",
+      "success": true,
+      "message": "Token validado correctamente",
+      "timestamp": "2025-07-07T01:41:05.210Z"
+    },
+    {
+      "flow": "STUDENT_FLOW",
+      "success": false,
+      "message": "Error en flujo de estudiante: Respuesta de estudiantes inválida",
+      "timestamp": "2025-07-07T01:41:05.222Z"
+    },
+    {
+      "flow": "TEACHER_FLOW",
+      "success": false,
+      "message": "Error en flujo de docente: Respuesta de cursos inválida",
+      "timestamp": "2025-07-07T01:41:05.231Z"
+    },
+    {
+      "flow": "DEPARTMENT_HEAD_FLOW",
+      "success": false,
+      "message": "Error en flujo de jefe de departamento: Respuesta de departamentos inválida",
+      "timestamp": "2025-07-07T01:41:05.248Z"
+    },
+    {
+      "flow": "DIDDEC_FLOW_STATS",
+      "success": true,
+      "message": "Estadísticas DIDDEC obtenidas",
+      "timestamp": "2025-07-07T01:41:05.296Z"
+    },
+    {
+      "flow": "DIDDEC_FLOW",
+      "success": false,
+      "message": "Error en flujo de DIDDEC: Cannot GET /reports",
+      "timestamp": "2025-07-07T01:41:05.300Z"
+    },
+    {
+      "flow": "COORDINATOR_FLOW_NOTIFICATIONS",
+      "success": true,
+      "message": "Notificaciones obtenidas",
+      "timestamp": "2025-07-07T01:41:05.312Z"
+    },
+    {
+      "flow": "COORDINATOR_FLOW_SEMESTER_INFO",
+      "success": true,
+      "message": "Información de semestre accesible",
+      "timestamp": "2025-07-07T01:41:05.323Z"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 6,
+    "failed": 4,
+    "errors": [
+      {
+        "flow": "STUDENT_FLOW",
+        "success": false,
+        "message": "Error en flujo de estudiante: Respuesta de estudiantes inválida",
+        "timestamp": "2025-07-07T01:41:05.222Z"
+      },
+      {
+        "flow": "TEACHER_FLOW",
+        "success": false,
+        "message": "Error en flujo de docente: Respuesta de cursos inválida",
+        "timestamp": "2025-07-07T01:41:05.231Z"
+      },
+      {
+        "flow": "DEPARTMENT_HEAD_FLOW",
+        "success": false,
+        "message": "Error en flujo de jefe de departamento: Respuesta de departamentos inválida",
+        "timestamp": "2025-07-07T01:41:05.248Z"
+      },
+      {
+        "flow": "DIDDEC_FLOW",
+        "success": false,
+        "message": "Error en flujo de DIDDEC: Cannot GET /reports",
+        "timestamp": "2025-07-07T01:41:05.300Z"
+      }
+    ]
+  },
+  "endTime": "2025-07-07T01:41:05.325Z",
+  "duration": 377
+}

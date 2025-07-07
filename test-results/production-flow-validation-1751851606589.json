@@ -1,0 +1,98 @@
+{
+  "startTime": "2025-07-07T01:26:46.158Z",
+  "flows": [
+    {
+      "flow": "SERVER_HEALTH",
+      "success": true,
+      "message": "Servidor respondiendo correctamente",
+      "timestamp": "2025-07-07T01:26:46.226Z"
+    },
+    {
+      "flow": "AUTHENTICATION",
+      "success": true,
+      "message": "Login exitoso con token válido",
+      "timestamp": "2025-07-07T01:26:46.424Z"
+    },
+    {
+      "flow": "AUTHENTICATION_TOKEN_VALIDATION",
+      "success": true,
+      "message": "Token validado correctamente",
+      "timestamp": "2025-07-07T01:26:46.437Z"
+    },
+    {
+      "flow": "STUDENT_FLOW",
+      "success": false,
+      "message": "Error en flujo de estudiante: Respuesta de estudiantes inválida",
+      "timestamp": "2025-07-07T01:26:46.456Z"
+    },
+    {
+      "flow": "TEACHER_FLOW",
+      "success": false,
+      "message": "Error en flujo de docente: Respuesta de cursos inválida",
+      "timestamp": "2025-07-07T01:26:46.508Z"
+    },
+    {
+      "flow": "DEPARTMENT_HEAD_FLOW",
+      "success": false,
+      "message": "Error en flujo de jefe de departamento: Cannot GET /departments/heads/stats",
+      "timestamp": "2025-07-07T01:26:46.517Z"
+    },
+    {
+      "flow": "DIDDEC_FLOW",
+      "success": false,
+      "message": "Error en flujo de DIDDEC: Cannot GET /diddec/stats",
+      "timestamp": "2025-07-07T01:26:46.526Z"
+    },
+    {
+      "flow": "COORDINATOR_FLOW_NOTIFICATIONS",
+      "success": true,
+      "message": "Notificaciones obtenidas",
+      "timestamp": "2025-07-07T01:26:46.580Z"
+    },
+    {
+      "flow": "COORDINATOR_FLOW",
+      "success": false,
+      "message": "Error en flujo de coordinador: Cannot GET /semester-config",
+      "timestamp": "2025-07-07T01:26:46.589Z"
+    }
+  ],
+  "summary": {
+    "total": 9,
+    "passed": 4,
+    "failed": 5,
+    "errors": [
+      {
+        "flow": "STUDENT_FLOW",
+        "success": false,
+        "message": "Error en flujo de estudiante: Respuesta de estudiantes inválida",
+        "timestamp": "2025-07-07T01:26:46.456Z"
+      },
+      {
+        "flow": "TEACHER_FLOW",
+        "success": false,
+        "message": "Error en flujo de docente: Respuesta de cursos inválida",
+        "timestamp": "2025-07-07T01:26:46.508Z"
+      },
+      {
+        "flow": "DEPARTMENT_HEAD_FLOW",
+        "success": false,
+        "message": "Error en flujo de jefe de departamento: Cannot GET /departments/heads/stats",
+        "timestamp": "2025-07-07T01:26:46.517Z"
+      },
+      {
+        "flow": "DIDDEC_FLOW",
+        "success": false,
+        "message": "Error en flujo de DIDDEC: Cannot GET /diddec/stats",
+        "timestamp": "2025-07-07T01:26:46.526Z"
+      },
+      {
+        "flow": "COORDINATOR_FLOW",
+        "success": false,
+        "message": "Error en flujo de coordinador: Cannot GET /semester-config",
+        "timestamp": "2025-07-07T01:26:46.589Z"
+      }
+    ]
+  },
+  "endTime": "2025-07-07T01:26:46.589Z",
+  "duration": 431
+}

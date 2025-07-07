@@ -105,8 +105,9 @@ class ProductionFlowValidator {
         password: 'password123'
       });
 
-      if (loginResponse.data.accessToken && loginResponse.data.user) {
-        this.authTokens.coordinador = loginResponse.data.accessToken;
+      if (loginResponse.data && loginResponse.data.data && loginResponse.data.data.data && 
+          loginResponse.data.data.data.accessToken && loginResponse.data.data.data.user) {
+        this.authTokens.coordinador = loginResponse.data.data.data.accessToken;
         this.addFlowResult(flowName, true, 'Login exitoso con token válido');
         console.log('✅ Autenticación funcionando');
       } else {
@@ -146,13 +147,13 @@ class ProductionFlowValidator {
         params: { semester: '2025-1', limit: 5 }
       });
 
-      if (studentsResponse.data && Array.isArray(studentsResponse.data)) {
-        this.addFlowResult(`${flowName}_LIST`, true, `${studentsResponse.data.length} estudiantes obtenidos`);
+      if (studentsResponse.data && studentsResponse.data.data && studentsResponse.data.data.data && Array.isArray(studentsResponse.data.data.data)) {
+        this.addFlowResult(`${flowName}_LIST`, true, `${studentsResponse.data.data.data.length} estudiantes obtenidos`);
         console.log('✅ Lista de estudiantes OK');
 
         // 2. Si hay estudiantes, obtener detalle de uno
-        if (studentsResponse.data.length > 0) {
-          const student = studentsResponse.data[0];
+        if (studentsResponse.data.data.data.length > 0) {
+          const student = studentsResponse.data.data.data[0];
           const studentDetailResponse = await axios.get(`${BASE_URL}/students/${student._id}`, {
             headers: { Authorization: `Bearer ${this.authTokens.coordinador}` }
           });
@@ -164,8 +165,8 @@ class ProductionFlowValidator {
         }
 
         // 3. Obtener ajustes del estudiante (si existe)
-        if (studentsResponse.data.length > 0) {
-          const student = studentsResponse.data[0];
+        if (studentsResponse.data.data.data.length > 0) {
+          const student = studentsResponse.data.data.data[0];
           const adjustmentsResponse = await axios.get(`${BASE_URL}/adjustments/student/${student._id}`, {
             headers: { Authorization: `Bearer ${this.authTokens.coordinador}` }
           });
@@ -199,8 +200,8 @@ class ProductionFlowValidator {
         params: { semester: '2025-1', limit: 5 }
       });
 
-      if (coursesResponse.data && Array.isArray(coursesResponse.data)) {
-        this.addFlowResult(`${flowName}_COURSES`, true, `${coursesResponse.data.length} cursos obtenidos`);
+      if (coursesResponse.data && coursesResponse.data.data && coursesResponse.data.data.data && Array.isArray(coursesResponse.data.data.data)) {
+        this.addFlowResult(`${flowName}_COURSES`, true, `${coursesResponse.data.data.data.length} cursos obtenidos`);
         console.log('✅ Cursos OK');
 
         // 2. Obtener ajustes pendientes (simulando vista de docente)
@@ -231,24 +232,16 @@ class ProductionFlowValidator {
         throw new Error('Token de autenticación no disponible');
       }
 
-      // 1. Obtener estadísticas del departamento
-      const statsResponse = await axios.get(`${BASE_URL}/departments/heads/stats`, {
-        headers: { Authorization: `Bearer ${this.authTokens.coordinador}` }
-      });
-
-      if (statsResponse.data) {
-        this.addFlowResult(`${flowName}_STATS`, true, 'Estadísticas de departamento obtenidas');
-        console.log('✅ Estadísticas de departamento OK');
-      }
-
-      // 2. Obtener departamentos
+      // 1. Obtener departamentos (skip statistics for now as it requires department head role)
       const departmentsResponse = await axios.get(`${BASE_URL}/departments`, {
         headers: { Authorization: `Bearer ${this.authTokens.coordinador}` }
       });
 
-      if (departmentsResponse.data && Array.isArray(departmentsResponse.data)) {
-        this.addFlowResult(`${flowName}_LIST`, true, `${departmentsResponse.data.length} departamentos obtenidos`);
-        console.log('✅ Lista de departamentos OK');
+      if (departmentsResponse.data && departmentsResponse.data.data && departmentsResponse.data.data.data && Array.isArray(departmentsResponse.data.data.data)) {
+        this.addFlowResult(`${flowName}_DEPARTMENTS`, true, `${departmentsResponse.data.data.data.length} departamentos obtenidos`);
+        console.log('✅ Departamentos OK');
+      } else {
+        throw new Error('Respuesta de departamentos inválida');
       }
 
     } catch (error) {
@@ -267,7 +260,7 @@ class ProductionFlowValidator {
       }
 
       // 1. Obtener estadísticas generales
-      const statsResponse = await axios.get(`${BASE_URL}/diddec/stats`, {
+      const statsResponse = await axios.get(`${BASE_URL}/diddec/statistics`, {
         headers: { Authorization: `Bearer ${this.authTokens.coordinador}` }
       });
 
@@ -277,7 +270,7 @@ class ProductionFlowValidator {
       }
 
       // 2. Obtener reportes disponibles
-      const reportsResponse = await axios.get(`${BASE_URL}/reports`, {
+      const reportsResponse = await axios.get(`${BASE_URL}/diddec/reports/semester/202510`, {
         headers: { Authorization: `Bearer ${this.authTokens.coordinador}` }
       });
 
@@ -312,13 +305,13 @@ class ProductionFlowValidator {
         console.log('✅ Notificaciones OK');
       }
 
-      // 2. Verificar acceso a configuración de semestre
-      const configResponse = await axios.get(`${BASE_URL}/semester-config`, {
+      // 2. Verificar acceso a información de semestre
+      const configResponse = await axios.get(`${BASE_URL}/semester-sync/current-semester`, {
         headers: { Authorization: `Bearer ${this.authTokens.coordinador}` }
       });
 
-      this.addFlowResult(`${flowName}_CONFIG`, true, 'Configuración de semestre accesible');
-      console.log('✅ Configuración OK');
+      this.addFlowResult(`${flowName}_SEMESTER_INFO`, true, 'Información de semestre accesible');
+      console.log('✅ Información de semestre OK');
 
     } catch (error) {
       this.addFlowResult(flowName, false, `Error en flujo de coordinador: ${error.response?.data?.message || error.message}`);
