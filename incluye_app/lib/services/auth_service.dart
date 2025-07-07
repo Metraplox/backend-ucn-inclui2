@@ -85,7 +85,7 @@ class AuthService {
         //print('FRONTEND (AuthService): Error login normal - Código: ${response.statusCode}, Respuesta: ${response.data}');
         return null;
       }
-    } catch (e, s) {
+    } catch (e) {
       //print('FRONTEND (AuthService): Excepción durante login normal: $e');
       //print('FRONTEND (AuthService): Stacktrace login normal: $s');
       if (e is DioException) {
@@ -107,7 +107,7 @@ class AuthService {
       final detail = customEvent.detail;
 
       if (detail != null && detail is JSString) {
-        final token = (detail as JSString).toDart;
+        final token = (detail).toDart;
         completer.complete(token);
       } else {
         completer.complete(null);
@@ -169,7 +169,7 @@ class AuthService {
       } else {
         return null;
       }
-    } catch (e, s) {
+    } catch (e) {
       return null;
     }
   }
@@ -182,6 +182,11 @@ class AuthService {
   static Future<String?> getUserName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('nombreCompleto');
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
   }
 
   static Future<void> logout() async {

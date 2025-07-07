@@ -1,12 +1,13 @@
-// screens/students/student_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/services/career_service.dart'; // IMPORTADO
+import 'package:incluye_app/services/document_consent_service.dart';
 import 'package:incluye_app/widgets/edit_student_dialog.dart';
+import 'package:incluye_app/widgets/quick_document_upload_dialog.dart';
 import 'package:incluye_app/screens/students/student_profile_screen.dart';
 import 'package:incluye_app/screens/students/student_create_screen.dart';
-import 'package:incluye_app/screens/documents/student_documents_screen.dart';
+import 'package:incluye_app/screens/documents/document_consent_screen.dart';
 
 class StudentListScreen extends StatefulWidget {
   const StudentListScreen({super.key});
@@ -165,6 +166,21 @@ class _StudentListScreenState extends State<StudentListScreen> {
     setState(() {
       _filteredStudents = tempList;
     });
+  }
+
+  Future<void> _quickUploadDocument(Student student) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => QuickDocumentUploadDialog(
+        studentId: student.id,
+        studentName: student.nombreCompleto,
+      ),
+    );
+
+    if (result == true) {
+      // Refresh the student list to update document indicators
+      setState(() {});
+    }
   }
 
   Future<void> _deleteStudent(String studentDocId) async {
@@ -430,18 +446,34 @@ class _StudentListScreenState extends State<StudentListScreen> {
                                       ),
                                       IconButton(
                                         icon: const Icon(
-                                          Icons.folder_open_outlined,
+                                          Icons.upload_file,
+                                          color: Colors.green,
                                         ),
-                                        tooltip: 'Documentos',
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (_) => StudentDocumentsScreen(
-                                                    studentId: student.id,
-                                                  ),
+                                        tooltip: 'Subir documento',
+                                        onPressed: () => _quickUploadDocument(student),
+                                      ),
+                                      FutureBuilder<List<dynamic>>(
+                                        future: DocumentService.getStudentDocuments(student.id),
+                                        builder: (context, snapshot) {
+                                          final hasDocuments = snapshot.hasData && snapshot.data!.isNotEmpty;
+                                          return IconButton(
+                                            icon: Icon(
+                                              hasDocuments ? Icons.folder : Icons.folder_open_outlined,
+                                              color: hasDocuments ? Colors.blue : Colors.grey,
                                             ),
+                                            tooltip: hasDocuments ? 'Ver documentos (${snapshot.data?.length ?? 0})' : 'Sin documentos',
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder:
+                                                      (_) => DocumentConsentScreen(
+                                                        studentId: student.id,
+                                                        studentName: student.nombreCompleto,
+                                                      ),
+                                                ),
+                                              );
+                                            },
                                           );
                                         },
                                       ),

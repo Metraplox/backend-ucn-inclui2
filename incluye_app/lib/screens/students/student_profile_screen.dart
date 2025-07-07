@@ -10,7 +10,7 @@ import 'package:incluye_app/models/student_model.dart';
 // import 'package:incluye_app/services/adjustment_service.dart'; // Para cargar ajustes
 import 'package:incluye_app/screens/adjustment/adjustment_history_screen.dart';
 import 'package:incluye_app/services/adjustment_service.dart';
-import 'package:incluye_app/services/document_service.dart';
+import 'package:incluye_app/screens/documents/document_consent_screen.dart';
 import 'package:incluye_app/services/student_service.dart';
 import 'package:incluye_app/widgets/edit_student_dialog.dart';
 import 'package:incluye_app/widgets/edit_adjustment_dialog.dart'; // Asegúrate que este widget exista
@@ -257,6 +257,23 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
         title: const Text('Detalle de Estudiante (Admin)'),
         leading: BackButton(onPressed: () => Navigator.of(context).pop()),
         elevation: 0, // Estilo de la versión "antigua"
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.folder_open),
+            tooltip: 'Documentos y Consentimientos',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DocumentConsentScreen(
+                    studentId: widget.studentId,
+                    studentName: _studentData?.nombreCompleto ?? 'Estudiante',
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {

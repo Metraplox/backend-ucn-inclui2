@@ -22,6 +22,8 @@ import 'package:incluye_app/models/student_model.dart';
 import 'package:incluye_app/models/course_model.dart';
 import 'package:incluye_app/models/user_model.dart'; // IMPORTANTE: Para el tipo de userInfo
 import 'package:incluye_app/screens/students/student_list_screen.dart';
+import 'package:incluye_app/screens/diddec/simple_diddec_screen.dart';
+import 'package:incluye_app/screens/documents/document_consent_screen.dart';
 
 import '../services/course_service.dart';
 
@@ -248,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadCourses() async {
     String? nombreCompleto = await AuthService.getUserName();
 
-    if (nombreCompleto != null && mounted) {
+    if (mounted && nombreCompleto != null) {
       // Usamos nombreCompleto que ahora es el campo principal en User
       final coursesData = await CourseService.getTeacherCourses(nombreCompleto);
       if (mounted) {
@@ -388,6 +390,37 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
           const SizedBox(height: 20),
           const Text(
+            'Documentos y Consentimientos',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            color: Colors.green.shade50,
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.green,
+                child: Icon(Icons.description, color: Colors.white),
+              ),
+              title: const Text('Gestionar Documentos'),
+              subtitle: const Text('Ver, subir y gestionar documentos y consentimientos'),
+              trailing: const Icon(Icons.arrow_forward),
+              onTap: () {
+                if (_currentUserId != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DocumentConsentScreen(
+                        studentId: _currentUserId!,
+                        studentName: _studentName ?? 'Estudiante',
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
             'Mis asignaturas con ajustes',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
@@ -443,6 +476,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const NotificationsScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Estudiantes con Necesidades Especiales',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          _buildAlertCard(
+            'Documentos de Estudiantes',
+            'Ver documentos y ajustes de estudiantes con NEE',
+            Icons.accessibility,
+            Colors.purple,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentListScreen(),
                 ),
               );
             },
@@ -660,18 +712,15 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-          // ... (Otras _buildAlertCard y _buildFeatureCard usando los datos de _students donde sea apropiado)
-          // ... Asegúrate de usar student.nombreCompleto y student.carreraNombre
           const SizedBox(height: 24),
           const Text(
-            'Gestión de Estudiantes',
+            'Gestión de Documentos',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 12),
           _buildFeatureCard(
-            'Listado de Estudiantes',
-            'Ver todos los estudiantes',
-            Icons.list_alt,
+            'Documentos por Estudiante',
+            'Gestionar documentos y consentimientos de estudiantes',
+            Icons.folder_shared,
             Colors.indigo,
             onTap: () {
               Navigator.push(
@@ -684,14 +733,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 24),
           const Text(
-            'Gestión de Profesores',
+            'Panel DIDDEC',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           _buildFeatureCard(
-            'Listado de Profesores',
-            'Ver todos Docentes',
-            Icons.list_alt,
-            Colors.indigo,
+            'Dashboard DIDDEC',
+            'Estadísticas y reportes de ajustes razonables',
+            Icons.analytics,
+            Colors.teal,
             onTap: () {
               Navigator.push(
                 context,
@@ -717,6 +766,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const UsersListScreen(),
+                ),
+              );
+            },
+          ),
+          _buildFeatureCard(
+            'Panel DIDDEC',
+            'Estadísticas y gestión DIDDEC',
+            Icons.analytics,
+            Colors.purple,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SimpleDiddecScreen(),
                 ),
               );
             },
