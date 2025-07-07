@@ -1,32 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:incluye_app/services/api_service.dart';
-import 'package:incluye_app/utils/logger.dart';
 
 class AuthRepository {
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      log.i('AuthRepository.login: Iniciando login para $email');
-      log.i('AuthRepository.login: URL base: ${ApiService.dio.options.baseUrl}');
-      
       final response = await ApiService.dio.post(
         '/auth/login',
         data: {'email': email, 'password': password},
       );
       
-      log.i('AuthRepository.login: Status Code: ${response.statusCode}');
-      log.i('AuthRepository.login: Headers: ${response.headers}');
-      log.i('AuthRepository.login: Response Data: ${response.data}');
-      
       return response.data;
     } on DioException catch (e) {
-      log.e('AuthRepository.login: DioException - Status: ${e.response?.statusCode}');
-      log.e('AuthRepository.login: DioException - Data: ${e.response?.data}');
-      log.e('AuthRepository.login: DioException - Message: ${e.message}');
-      
       final errorMessage = e.response?.data['message'] ?? 'Error de conexión';
       throw Exception(errorMessage);
     } catch (e) {
-      log.e('AuthRepository.login: Exception general: $e');
       throw Exception('Ocurrió un error inesperado durante el login.');
     }
   }
