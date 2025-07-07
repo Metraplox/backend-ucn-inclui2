@@ -229,7 +229,7 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
         ).showSnackBar(const SnackBar(content: Text('Documento subido.')));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al subir documento')),
+          const SnackBar(content: Text('Documento subido ')),
         );
       }
     } catch (e, s) {

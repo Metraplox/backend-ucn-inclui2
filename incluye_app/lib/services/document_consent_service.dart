@@ -228,13 +228,13 @@ class DocumentService {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 201 || response.statusCode == 200 ) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Error al subir documento: ${response.statusCode} - ${response.body}');
+        throw Exception('Error  ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      throw Exception('Error al subir documento: $e');
+      throw Exception('Error al $e');
     }
   }
 
