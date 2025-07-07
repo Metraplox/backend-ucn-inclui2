@@ -28,6 +28,10 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f backend",
     "setup:dev": "npm install && npm run docker:up && sleep 10 && npm run start:dev",
+    "setup:quick": "node scripts/setup-development.js",
+    "validate:prod": "node scripts/production-validation-comprehensive.js",
+    "test:frontend": "node scripts/test-frontend-backend-connection.js",
+    "type-check": "tsc --noEmit",
     "docs:serve": "swagger-codegen-cli generate -i http://localhost:3000/api-json -l html2 -o docs/api",
     "seed:db": "node scripts/seed-database.js",
     "backup:db": "node scripts/backup-mongodb.js"

@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-07-07T02:33:50.888Z",
+  "summary": {
+    "errors": 1,
+    "warnings": 0,
+    "productionReady": false
+  },
+  "phases": {
+    "infrastructure": {
+      "serverHealth": {
+        "status": "OK",
+        "responseTime": "75ms",
+        "uptime": "N/A"
+      },
+      "database": {
+        "connection": "OK",
+        "collections": 19,
+        "criticalCollections": 5,
+        "indexes": "OK"
+      },
+      "environment": {
+        "requiredVars": 5,
+        "configured": 5,
+        "status": "OK"
+      }
+    },
+    "authentication": {
+      "successfulLogins": 6,
+      "totalUsers": 6,
+      "tokenValidation": "OK",
+      "roleValidation": "OK"
+    },
+    "dataIntegrity": {
+      "totalStudents": 2,
+      "studentsWithNEE": 0,
+      "orphanedReferences": 0,
+      "dataConsistency": "OK"
+    },
+    "businessLogic": {
+      "studentCreation": "FAILED",
+      "adjustmentCreation": "FAILED",
+      "approvalFlow": "TESTED"
+    },
+    "performance": {
+      "concurrentRequests": 10,
+      "successRate": "10/10",
+      "averageResponseTime": "11.9ms",
+      "status": "OK"
+    },
+    "security": {
+      "tokenValidation": "OK",
+      "injectionProtection": "OK",
+      "corsConfiguration": "OK"
+    },
+    "errorHandling": {
+      "notFoundHandling": "OK",
+      "validationErrors": "OK",
+      "generalErrorHandling": "OK"
+    },
+    "realWorldScenarios": {
+      "studentLifecycle": "TESTED",
+      "semesterLoad": "SIMULATED",
+      "reportGeneration": "OK"
+    }
+  },
+  "errors": [
+    "Student creation failed: Error al crear el estudiante: Transaction numbers are only allowed on a replica set member or mongos"
+  ],
+  "warnings": []
+}

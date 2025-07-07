@@ -90,10 +90,6 @@ export class StudentsService {
       );
     }
 
-    // Iniciar una sesión de transacción
-    const session = await this.studentModel.db.startSession();
-    session.startTransaction();
-
     try {
       // --- Lógica de Contraseña ---
       // Formatear la fecha de nacimiento a 'ddmmyyyy'
@@ -120,7 +116,7 @@ export class StudentsService {
         password_hash: hashedPassword, // Usar la contraseña hasheada
       });
 
-      const savedUser = await user.save({ session });
+      const savedUser = await user.save();
 
       // 2. Crear el estudiante con referencia al usuario
       const createdStudent = new this.studentModel({
@@ -129,32 +125,23 @@ export class StudentsService {
         carreraId: new Types.ObjectId(createStudentDto.carreraId),
       });
 
-      const savedStudent = await createdStudent.save({ session });
+      const savedStudent = await createdStudent.save();
 
       // 3. Actualizar el usuario con la referencia al estudiante
       await this.userModel.findByIdAndUpdate(
         savedUser._id,
         { $set: { studentId: savedStudent._id, isProfileComplete: true } },
-        { session },
       );
 
       // 4. Actualizar la carrera con el nuevo estudiante
       await this.updateCareerWithStudent(
         createStudentDto.carreraId,
         savedStudent._id.toString(),
-        session,
       );
-
-      // Confirmar la transacción
-      await session.commitTransaction();
 
       return savedStudent;
     } catch (error) {
-      // Si hay un error, deshacer la transacción
-      await session.abortTransaction();
-
       // Manejar errores de duplicado
-
       if (error.code === 11000) {
         throw new ConflictException('El correo electrónico ya está en uso');
       }
@@ -162,9 +149,6 @@ export class StudentsService {
       throw new InternalServerErrorException(
         'Error al crear el estudiante: ' + error.message,
       );
-    } finally {
-      // Finalizar la sesión
-      await session.endSession();
     }
   }
 
@@ -175,7 +159,6 @@ export class StudentsService {
   private async updateCareerWithStudent(
     careerId: string,
     studentId: string,
-    session?: any,
   ): Promise<void> {
     try {
       const studentObjectId = new Types.ObjectId(studentId);
@@ -185,14 +168,11 @@ export class StudentsService {
         $addToSet: { studentIds: studentObjectId },
       };
 
-      const options = session ? { session } : {};
-
       await this.studentModel.db
         .collection('careers')
-        .updateOne({ _id: careerObjectId }, updateOperation, options);
+        .updateOne({ _id: careerObjectId }, updateOperation);
     } catch (error) {
       console.error('Error al actualizar la carrera con el estudiante:', error);
-      // En este caso, como estamos en una transacción, es mejor lanzar el error
       throw error;
     }
   }
