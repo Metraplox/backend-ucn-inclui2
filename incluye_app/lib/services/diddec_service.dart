@@ -51,7 +51,7 @@ class DiddecService {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/students-nee/$semester'),
+        Uri.parse('${AppConfig.apiBaseUrl}/diddec/students/all?semester=$semester'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -72,7 +72,7 @@ class DiddecService {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/trends?years=$years'),
+        Uri.parse('${AppConfig.apiBaseUrl}/diddec/adjustments/trends?years=$years'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -93,7 +93,7 @@ class DiddecService {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/compliance/$semester'),
+        Uri.parse('${AppConfig.apiBaseUrl}/diddec/adjustments/compliance?semester=$semester'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
