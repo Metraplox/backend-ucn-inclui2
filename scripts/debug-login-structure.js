@@ -2,7 +2,7 @@
 
 const axios = require('axios');
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'http://localhost:3001';
 
 async function testLoginStructure() {
   try {

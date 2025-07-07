@@ -4,7 +4,7 @@ const axios = require('axios');
 const bcrypt = require('bcrypt');
 const { MongoClient } = require('mongodb');
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'http://localhost:3001';
 const MONGODB_URI = 'mongodb://localhost:27017/ucn_inclui2_prod';
 
 const testUsers = [
