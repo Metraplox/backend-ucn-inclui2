@@ -31,15 +31,14 @@ import { Response as ExpressResponse } from 'express';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('reports')
 export class ReportsController {
-  constructor(
-    private readonly reportsService: ReportsService,
-  ) {}
+  constructor(private readonly reportsService: ReportsService) {}
 
   @Get('students/with-nee')
   @Roles(UserRole.COORDINADOR, UserRole.JEFE_CARRERA, UserRole.DIDDEC_STAFF)
   @ApiOperation({
     summary: 'Obtener lista de estudiantes con NEE',
-    description: 'Obtiene lista de estudiantes con Necesidades Educativas Especiales, filtrable por carrera.',
+    description:
+      'Obtiene lista de estudiantes con Necesidades Educativas Especiales, filtrable por carrera.',
   })
   @ApiQuery({
     name: 'semester',
@@ -84,10 +83,16 @@ export class ReportsController {
   }
 
   @Get('student/:id/history')
-  @Roles(UserRole.COORDINADOR, UserRole.ESTUDIANTE, UserRole.JEFE_CARRERA, UserRole.DIDDEC_STAFF)
+  @Roles(
+    UserRole.COORDINADOR,
+    UserRole.ESTUDIANTE,
+    UserRole.JEFE_CARRERA,
+    UserRole.DIDDEC_STAFF,
+  )
   @ApiOperation({
     summary: 'Obtener historial académico de estudiante',
-    description: 'Obtiene el historial académico de un estudiante incluyendo cursos y ajustes por semestre.',
+    description:
+      'Obtiene el historial académico de un estudiante incluyendo cursos y ajustes por semestre.',
   })
   @ApiParam({
     name: 'id',

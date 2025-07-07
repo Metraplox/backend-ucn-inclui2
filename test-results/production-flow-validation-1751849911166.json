@@ -1,0 +1,92 @@
+{
+  "startTime": "2025-07-07T00:58:31.086Z",
+  "flows": [
+    {
+      "flow": "SERVER_HEALTH",
+      "success": true,
+      "message": "Servidor respondiendo correctamente",
+      "timestamp": "2025-07-07T00:58:31.149Z"
+    },
+    {
+      "flow": "AUTHENTICATION",
+      "success": false,
+      "message": "Error de autenticación: Credenciales incorrectas.",
+      "timestamp": "2025-07-07T00:58:31.160Z"
+    },
+    {
+      "flow": "STUDENT_FLOW",
+      "success": false,
+      "message": "Error en flujo de estudiante: Token de autenticación no disponible",
+      "timestamp": "2025-07-07T00:58:31.161Z"
+    },
+    {
+      "flow": "TEACHER_FLOW",
+      "success": false,
+      "message": "Error en flujo de docente: Token de autenticación no disponible",
+      "timestamp": "2025-07-07T00:58:31.163Z"
+    },
+    {
+      "flow": "DEPARTMENT_HEAD_FLOW",
+      "success": false,
+      "message": "Error en flujo de jefe de departamento: Token de autenticación no disponible",
+      "timestamp": "2025-07-07T00:58:31.164Z"
+    },
+    {
+      "flow": "DIDDEC_FLOW",
+      "success": false,
+      "message": "Error en flujo de DIDDEC: Token de autenticación no disponible",
+      "timestamp": "2025-07-07T00:58:31.165Z"
+    },
+    {
+      "flow": "COORDINATOR_FLOW",
+      "success": false,
+      "message": "Error en flujo de coordinador: Token de autenticación no disponible",
+      "timestamp": "2025-07-07T00:58:31.165Z"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "passed": 1,
+    "failed": 6,
+    "errors": [
+      {
+        "flow": "AUTHENTICATION",
+        "success": false,
+        "message": "Error de autenticación: Credenciales incorrectas.",
+        "timestamp": "2025-07-07T00:58:31.160Z"
+      },
+      {
+        "flow": "STUDENT_FLOW",
+        "success": false,
+        "message": "Error en flujo de estudiante: Token de autenticación no disponible",
+        "timestamp": "2025-07-07T00:58:31.161Z"
+      },
+      {
+        "flow": "TEACHER_FLOW",
+        "success": false,
+        "message": "Error en flujo de docente: Token de autenticación no disponible",
+        "timestamp": "2025-07-07T00:58:31.163Z"
+      },
+      {
+        "flow": "DEPARTMENT_HEAD_FLOW",
+        "success": false,
+        "message": "Error en flujo de jefe de departamento: Token de autenticación no disponible",
+        "timestamp": "2025-07-07T00:58:31.164Z"
+      },
+      {
+        "flow": "DIDDEC_FLOW",
+        "success": false,
+        "message": "Error en flujo de DIDDEC: Token de autenticación no disponible",
+        "timestamp": "2025-07-07T00:58:31.165Z"
+      },
+      {
+        "flow": "COORDINATOR_FLOW",
+        "success": false,
+        "message": "Error en flujo de coordinador: Token de autenticación no disponible",
+        "timestamp": "2025-07-07T00:58:31.165Z"
+      }
+    ]
+  },
+  "endTime": "2025-07-07T00:58:31.166Z",
+  "duration": 80
+}

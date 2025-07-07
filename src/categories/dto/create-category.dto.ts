@@ -19,11 +19,12 @@ export class CreateCategoryDto {
   description: string;
 
   @ApiProperty({
-    description: 'Indica si la categoría está activa y disponible para ser usada.',
+    description:
+      'Indica si la categoría está activa y disponible para ser usada.',
     example: true,
     required: false,
   })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
-} 
+}

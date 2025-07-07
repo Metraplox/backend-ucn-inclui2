@@ -13,11 +13,11 @@ export enum AdjustmentNotificationType {
   ADJUSTMENT_IMPLEMENTED = 'adjustment_implemented',
   ADJUSTMENT_CANCELLED = 'adjustment_cancelled',
   ADJUSTMENT_EXPIRED = 'adjustment_expired',
-  
+
   // Notificaciones de ayuda
   ADJUSTMENT_HELP_REQUESTED = 'adjustment_help_requested',
   ADJUSTMENT_HELP_RESOLVED = 'adjustment_help_resolved',
-  
+
   // Notificación genérica de actualización
   ADJUSTMENT_UPDATED = 'adjustment_updated',
 }
@@ -56,14 +56,14 @@ export class AdjustmentNotificationDto {
   @IsEnum(AdjustmentNotificationType)
   @IsNotEmpty()
   notificationType: AdjustmentNotificationType;
-  
+
   @ApiProperty({
     description: 'Estado actual del ajuste',
     example: 'pending',
     required: false,
   })
   status?: string;
-  
+
   @ApiProperty({
     description: 'Razón del cambio de estado',
     example: 'Documentación incompleta',

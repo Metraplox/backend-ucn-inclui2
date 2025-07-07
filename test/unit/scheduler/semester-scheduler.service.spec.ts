@@ -8,7 +8,8 @@ describe('SemesterSchedulerService', () => {
 
   const mockConfigService = {
     get: jest.fn().mockImplementation((key: string, defaultValue?: any) => {
-      if (key === 'HAWAII_CREDENTIALS_PATH') return './config/hawaii-credentials.json';
+      if (key === 'HAWAII_CREDENTIALS_PATH')
+        return './config/hawaii-credentials.json';
       if (key === 'HAWAII_PASSWORD') return 'test-password';
       if (key === 'HAWAII_USERNAME') return 'test-username';
       if (key === 'HAWAII_BASE_URL') return 'https://test.hawaii.com';
@@ -52,6 +53,8 @@ describe('SemesterSchedulerService', () => {
   it('debería llamar cleanupOldNotifications con 90 días', async () => {
     await service.handleNotificationsCleanup();
 
-    expect(mockNotificationsService.cleanupOldNotifications).toHaveBeenCalledWith(90);
+    expect(
+      mockNotificationsService.cleanupOldNotifications,
+    ).toHaveBeenCalledWith(90);
   });
-}); 
+});

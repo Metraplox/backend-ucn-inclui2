@@ -92,14 +92,24 @@ describe('DepartmentHeadsController', () => {
       ],
     }).compile();
 
-    controller = module.get<DepartmentHeadsController>(DepartmentHeadsController);
+    controller = module.get<DepartmentHeadsController>(
+      DepartmentHeadsController,
+    );
     departmentStatsService = module.get(DepartmentStatsService);
 
     // Configurar mocks por defecto
-    departmentStatsService.getDepartmentByHead.mockResolvedValue(mockDepartment as Department);
-    departmentStatsService.getDepartmentStats.mockResolvedValue(mockStatsResponse);
-    departmentStatsService.getDepartmentStudentsWithNEE.mockResolvedValue(mockStudentsNeeResponse);
-    departmentStatsService.getTeachersByDepartment.mockResolvedValue(mockTeachersResponse);
+    departmentStatsService.getDepartmentByHead.mockResolvedValue(
+      mockDepartment as Department,
+    );
+    departmentStatsService.getDepartmentStats.mockResolvedValue(
+      mockStatsResponse,
+    );
+    departmentStatsService.getDepartmentStudentsWithNEE.mockResolvedValue(
+      mockStudentsNeeResponse,
+    );
+    departmentStatsService.getTeachersByDepartment.mockResolvedValue(
+      mockTeachersResponse,
+    );
   });
 
   it('debería estar definido', () => {
@@ -111,13 +121,15 @@ describe('DepartmentHeadsController', () => {
       const req = { user: { userId: 'user1' } };
       const result = await controller.getMyDepartment(req as any);
       expect(result).toEqual(mockDepartment);
-      expect(departmentStatsService.getDepartmentByHead).toHaveBeenCalledWith('user1');
+      expect(departmentStatsService.getDepartmentByHead).toHaveBeenCalledWith(
+        'user1',
+      );
     });
 
     it('debería lanzar NotFoundException si no se encuentra el departamento', async () => {
       departmentStatsService.getDepartmentByHead.mockResolvedValueOnce(null);
       const req = { user: { userId: 'user1' } };
-      
+
       await expect(controller.getMyDepartment(req as any)).rejects.toThrow(
         'No se encontró el departamento para el jefe especificado',
       );
@@ -127,8 +139,11 @@ describe('DepartmentHeadsController', () => {
   describe('getDepartmentStatistics', () => {
     it('debería retornar estadísticas del departamento', async () => {
       const req = { user: { userId: 'user1' } };
-      const result = await controller.getDepartmentStatistics(req as any, '2023-1');
-      
+      const result = await controller.getDepartmentStatistics(
+        req as any,
+        '2023-1',
+      );
+
       expect(result).toEqual(mockStatsResponse);
       expect(departmentStatsService.getDepartmentStats).toHaveBeenCalledWith(
         'dept1',
@@ -139,7 +154,7 @@ describe('DepartmentHeadsController', () => {
     it('debería usar el semestre actual si no se especifica', async () => {
       const req = { user: { userId: 'user1' } };
       await controller.getDepartmentStatistics(req as any, undefined);
-      
+
       expect(departmentStatsService.getDepartmentStats).toHaveBeenCalledWith(
         'dept1',
         '2023-1',
@@ -150,33 +165,37 @@ describe('DepartmentHeadsController', () => {
   describe('getDepartmentStudentsWithNEE', () => {
     it('debería retornar estudiantes con NEE del departamento', async () => {
       const req = { user: { userId: 'user1' } };
-      const result = await controller.getDepartmentStudentsWithNEE(req as any, '2023-1');
-      
-      expect(result).toEqual(mockStudentsNeeResponse);
-      expect(departmentStatsService.getDepartmentStudentsWithNEE).toHaveBeenCalledWith(
-        'dept1',
+      const result = await controller.getDepartmentStudentsWithNEE(
+        req as any,
         '2023-1',
       );
+
+      expect(result).toEqual(mockStudentsNeeResponse);
+      expect(
+        departmentStatsService.getDepartmentStudentsWithNEE,
+      ).toHaveBeenCalledWith('dept1', '2023-1');
     });
   });
 
   describe('getDepartmentTeachers', () => {
     it('debería retornar docentes del departamento', async () => {
       const req = { user: { userId: 'user1' } };
-      const result = await controller.getDepartmentTeachers(req as any, '2023-1');
-      
-      expect(result).toEqual(mockTeachersResponse);
-      expect(departmentStatsService.getTeachersByDepartment).toHaveBeenCalledWith(
-        'dept1',
+      const result = await controller.getDepartmentTeachers(
+        req as any,
         '2023-1',
       );
+
+      expect(result).toEqual(mockTeachersResponse);
+      expect(
+        departmentStatsService.getTeachersByDepartment,
+      ).toHaveBeenCalledWith('dept1', '2023-1');
     });
   });
 
   describe('getDepartmentStatsById', () => {
     it('debería retornar estadísticas de un departamento específico', async () => {
       const result = await controller.getDepartmentStatsById('dept1', '2023-1');
-      
+
       expect(result).toEqual(mockStatsResponse);
       expect(departmentStatsService.getDepartmentStats).toHaveBeenCalledWith(
         'dept1',

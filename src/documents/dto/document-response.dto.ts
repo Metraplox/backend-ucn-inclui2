@@ -23,7 +23,10 @@ export class DocumentResponseDto {
   @ApiProperty({ description: 'ID único del documento' })
   _id: string;
 
-  @ApiProperty({ type: DocumentStudentDto, description: 'Estudiante asociado al documento' })
+  @ApiProperty({
+    type: DocumentStudentDto,
+    description: 'Estudiante asociado al documento',
+  })
   studentId: DocumentStudentDto;
 
   @ApiProperty({ description: 'Nombre original del archivo' })
@@ -35,28 +38,44 @@ export class DocumentResponseDto {
   @ApiProperty({ description: 'Tamaño del archivo en bytes' })
   sizeBytes: number;
 
-  @ApiProperty({ enum: DocumentCategory, description: 'Categoría del documento' })
+  @ApiProperty({
+    enum: DocumentCategory,
+    description: 'Categoría del documento',
+  })
   category: DocumentCategory;
 
   @ApiProperty({ required: false, description: 'Descripción adicional' })
   description?: string;
 
-  @ApiProperty({ type: UserPublicDataDto, description: 'Usuario que subió el documento' })
+  @ApiProperty({
+    type: UserPublicDataDto,
+    description: 'Usuario que subió el documento',
+  })
   uploadedBy: UserPublicDataDto;
 
   @ApiProperty({ description: 'Fecha de subida' })
   uploadDate: Date;
 
-  @ApiProperty({ enum: DocumentStatus, description: 'Estado actual del documento' })
+  @ApiProperty({
+    enum: DocumentStatus,
+    description: 'Estado actual del documento',
+  })
   status: DocumentStatus;
 
-  @ApiProperty({ type: UserPublicDataDto, required: false, description: 'Usuario que verificó el documento' })
+  @ApiProperty({
+    type: UserPublicDataDto,
+    required: false,
+    description: 'Usuario que verificó el documento',
+  })
   verifiedBy?: UserPublicDataDto;
 
   @ApiProperty({ required: false, description: 'Fecha de verificación' })
   verificationDate?: Date;
 
-  @ApiProperty({ required: false, description: 'Comentarios de la verificación' })
+  @ApiProperty({
+    required: false,
+    description: 'Comentarios de la verificación',
+  })
   comments?: string;
 
   @ApiProperty({ required: false, description: 'URL de descarga del archivo' })
@@ -67,4 +86,4 @@ export class DocumentResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
-} 
+}

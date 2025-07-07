@@ -10,7 +10,14 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -44,15 +51,24 @@ export class CareerStudentsController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({ summary: 'Eliminar un estudiante de una carrera' })
   @ApiParam({ name: 'id', description: 'ID de la carrera' })
-  @ApiParam({ name: 'studentId', description: 'ID del estudiante a eliminar de la carrera' })
+  @ApiParam({
+    name: 'studentId',
+    description: 'ID del estudiante a eliminar de la carrera',
+  })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
     description: 'Estudiante eliminado de la carrera exitosamente',
   })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
-  @ApiResponse({ status: 403, description: 'Prohibido - No tiene permisos suficientes' })
-  @ApiResponse({ status: 404, description: 'Carrera o estudiante no encontrado' })
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - No tiene permisos suficientes',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Carrera o estudiante no encontrado',
+  })
   async removeStudent(
     @Param('id') careerId: string,
     @Param('studentId') studentId: string,
@@ -64,17 +80,20 @@ export class CareerStudentsController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({ summary: 'Obtener todos los estudiantes de una carrera' })
   @ApiParam({ name: 'id', description: 'ID de la carrera' })
-  @ApiQuery({ 
-    name: 'semester', 
-    required: false, 
-    description: 'Filtrar por semestre académico (ej: 2025-1)' 
+  @ApiQuery({
+    name: 'semester',
+    required: false,
+    description: 'Filtrar por semestre académico (ej: 2025-1)',
   })
   @ApiResponse({
     status: 200,
     description: 'Lista de estudiantes de la carrera obtenida exitosamente',
   })
   @ApiResponse({ status: 401, description: 'No autorizado' })
-  @ApiResponse({ status: 403, description: 'Prohibido - No tiene permisos suficientes' })
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - No tiene permisos suficientes',
+  })
   @ApiResponse({ status: 404, description: 'Carrera no encontrada' })
   async getStudents(
     @Param('id') careerId: string,

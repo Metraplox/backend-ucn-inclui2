@@ -40,10 +40,13 @@ export class ComplianceSchedulerService {
         return;
       }
 
-      this.logger.log(`Encontrados ${overdueAdjustments.length} ajustes fuera de plazo`);
+      this.logger.log(
+        `Encontrados ${overdueAdjustments.length} ajustes fuera de plazo`,
+      );
 
       // Agrupar por docente
-      const adjustmentsByTeacher = this.groupAdjustmentsByTeacher(overdueAdjustments);
+      const adjustmentsByTeacher =
+        this.groupAdjustmentsByTeacher(overdueAdjustments);
 
       // Procesar cada docente con ajustes pendientes
       for (const [teacherId, adjustments] of adjustmentsByTeacher.entries()) {
@@ -52,7 +55,10 @@ export class ComplianceSchedulerService {
 
       this.logger.log('Verificación de cumplimiento completada exitosamente');
     } catch (error) {
-      this.logger.error('Error durante la verificación de cumplimiento:', error);
+      this.logger.error(
+        'Error durante la verificación de cumplimiento:',
+        error,
+      );
     }
   }
 
@@ -65,10 +71,12 @@ export class ComplianceSchedulerService {
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
       const weeklyStats = await this.generateWeeklyStats(oneWeekAgo);
-      
+
       // Enviar reporte a coordinadores
-      const coordinators = await this.usersService.findByRole(UserRole.COORDINADOR);
-      
+      const coordinators = await this.usersService.findByRole(
+        UserRole.COORDINADOR,
+      );
+
       for (const coordinator of coordinators) {
         await this.notificationsService.createSystemNotification(
           coordinator._id.toString(),
@@ -87,7 +95,9 @@ export class ComplianceSchedulerService {
 
   @Cron('0 */6 * * *') // Cada 6 horas
   async sendUrgentReminders(): Promise<void> {
-    this.logger.log('Verificando ajustes críticos que requieren atención urgente');
+    this.logger.log(
+      'Verificando ajustes críticos que requieren atención urgente',
+    );
 
     try {
       const urgentCutoff = new Date();
@@ -107,7 +117,9 @@ export class ComplianceSchedulerService {
         return;
       }
 
-      this.logger.warn(`Encontrados ${criticalAdjustments.length} ajustes críticos sin revisar`);
+      this.logger.warn(
+        `Encontrados ${criticalAdjustments.length} ajustes críticos sin revisar`,
+      );
 
       // Notificar a DIDDEC y coordinadores
       const criticalStaff = await this.usersService.findByRoles([
@@ -131,7 +143,7 @@ export class ComplianceSchedulerService {
 
   private groupAdjustmentsByTeacher(adjustments: any[]): Map<string, any[]> {
     const grouped = new Map();
-    
+
     for (const adjustment of adjustments) {
       const teacherId = adjustment.courseId?.teacherId?.toString();
       if (!teacherId) continue;
@@ -145,7 +157,10 @@ export class ComplianceSchedulerService {
     return grouped;
   }
 
-  private async processTeacherOverdueAdjustments(teacherId: string, adjustments: any[]): Promise<void> {
+  private async processTeacherOverdueAdjustments(
+    teacherId: string,
+    adjustments: any[],
+  ): Promise<void> {
     try {
       const teacher = await this.usersService.findById(teacherId);
       if (!teacher) return;
@@ -159,9 +174,14 @@ export class ComplianceSchedulerService {
         '2025-1', // Semestre actual
       );
 
-      this.logger.log(`Notificaciones enviadas para docente ${teacher.email} (${adjustments.length} ajustes)`);
+      this.logger.log(
+        `Notificaciones enviadas para docente ${teacher.email} (${adjustments.length} ajustes)`,
+      );
     } catch (error) {
-      this.logger.error(`Error procesando ajustes del docente ${teacherId}:`, error);
+      this.logger.error(
+        `Error procesando ajustes del docente ${teacherId}:`,
+        error,
+      );
     }
   }
 
@@ -198,14 +218,17 @@ export class ComplianceSchedulerService {
         reviewed: reviewedAdjustments,
         pending: pendingAdjustments,
         overdue: overdueAdjustments,
-        complianceRate: totalAdjustments > 0 ? (reviewedAdjustments / totalAdjustments) * 100 : 0,
+        complianceRate:
+          totalAdjustments > 0
+            ? (reviewedAdjustments / totalAdjustments) * 100
+            : 0,
       },
     };
   }
 
   private formatWeeklyReport(stats: any): string {
     const { period, stats: data } = stats;
-    
+
     return `📊 Reporte Semanal de Cumplimiento (${period.start.toLocaleDateString()} - ${period.end.toLocaleDateString()})
 
 📈 Estadísticas:

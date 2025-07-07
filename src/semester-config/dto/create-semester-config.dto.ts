@@ -35,4 +35,4 @@ export class CreateSemesterConfigDto {
   @IsNotEmpty()
   @IsDateString()
   implementacionAjustesFin: string;
-} 
+}

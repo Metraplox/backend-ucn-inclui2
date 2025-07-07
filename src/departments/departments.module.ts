@@ -23,7 +23,11 @@ import { DepartmentStatsService } from './services/department-stats.service';
     forwardRef(() => AdjustmentsModule),
     NotificationsModule,
   ],
-  controllers: [HeadsController, DepartmentsController, DepartmentHeadsController],
+  controllers: [
+    HeadsController,
+    DepartmentsController,
+    DepartmentHeadsController,
+  ],
   providers: [DepartmentsService, DepartmentStatsService],
   exports: [DepartmentsService, DepartmentStatsService],
 })

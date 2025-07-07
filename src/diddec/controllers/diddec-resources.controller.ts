@@ -21,7 +21,15 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UserRole } from '../../users/schemas/user.schema';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiConsumes,
+  ApiBody,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { User } from '../../auth/decorators/user.decorator';
 import { Response } from 'express';
 
@@ -49,19 +57,19 @@ export class DiddecResourcesController {
         description: { type: 'string' },
         resourceType: { type: 'string' },
         semester: { type: 'string' },
-        tags: { 
+        tags: {
           type: 'array',
-          items: { type: 'string' }
+          items: { type: 'string' },
         },
         adjustmentTypeIds: {
           type: 'array',
-          items: { type: 'string' }
-        }
+          items: { type: 'string' },
+        },
       },
     },
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'The resource has been successfully created.',
   })
   async create(
@@ -78,9 +86,21 @@ export class DiddecResourcesController {
   @Get()
   @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'List all support resources with optional filters' })
-  @ApiQuery({ name: 'semester', required: false, description: 'Filter by semester (YYYY-P)' })
-  @ApiQuery({ name: 'resourceType', required: false, description: 'Filter by resource type' })
-  @ApiQuery({ name: 'tags', required: false, description: 'Filter by tags (comma separated)' })
+  @ApiQuery({
+    name: 'semester',
+    required: false,
+    description: 'Filter by semester (YYYY-P)',
+  })
+  @ApiQuery({
+    name: 'resourceType',
+    required: false,
+    description: 'Filter by resource type',
+  })
+  @ApiQuery({
+    name: 'tags',
+    required: false,
+    description: 'Filter by tags (comma separated)',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of resources',
@@ -90,7 +110,9 @@ export class DiddecResourcesController {
     @Query('resourceType') resourceType?: string,
     @Query('tags') tags?: string,
   ) {
-    const tagsArray = tags ? tags.split(',').map(tag => tag.trim()) : undefined;
+    const tagsArray = tags
+      ? tags.split(',').map((tag) => tag.trim())
+      : undefined;
     return this.resourcesService.findAll(semester, resourceType, tagsArray);
   }
 
@@ -98,7 +120,11 @@ export class DiddecResourcesController {
   @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF, UserRole.DOCENTE)
   @ApiOperation({ summary: 'Search resources by term' })
   @ApiQuery({ name: 'term', required: true, description: 'Search term' })
-  @ApiQuery({ name: 'semester', required: false, description: 'Filter by semester (YYYY-P)' })
+  @ApiQuery({
+    name: 'semester',
+    required: false,
+    description: 'Filter by semester (YYYY-P)',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of resources matching search term',
@@ -164,7 +190,10 @@ export class DiddecResourcesController {
   @Delete(':id')
   @Roles(UserRole.COORDINADOR, UserRole.DIDDEC_STAFF)
   @ApiOperation({ summary: 'Delete a resource' })
-  @ApiResponse({ status: 200, description: 'The resource has been successfully deleted' })
+  @ApiResponse({
+    status: 200,
+    description: 'The resource has been successfully deleted',
+  })
   @ApiResponse({ status: 404, description: 'Resource not found' })
   async remove(@Param('id') id: string) {
     await this.resourcesService.remove(id);

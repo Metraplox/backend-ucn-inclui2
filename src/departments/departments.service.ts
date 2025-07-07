@@ -97,33 +97,50 @@ export class DepartmentsService {
     return department.save();
   }
 
-  async getDepartmentStats(departmentId: string, semester: string): Promise<any> {
+  async getDepartmentStats(
+    departmentId: string,
+    semester: string,
+  ): Promise<any> {
     const department = await this.departmentModel
       .findById(departmentId)
       .populate('teacherIds', 'nombreCompleto email')
       .exec();
 
     if (!department) {
-      throw new NotFoundException(`Departamento con ID ${departmentId} no encontrado`);
+      throw new NotFoundException(
+        `Departamento con ID ${departmentId} no encontrado`,
+      );
     }
 
     // Obtener cursos del departamento
-    const courses = await this.coursesService.findByDepartment(departmentId, semester);
-    
+    const courses = await this.coursesService.findByDepartment(
+      departmentId,
+      semester,
+    );
+
     // Obtener estudiantes con NEE
-    const studentsWithNEE = await this.studentsService.findByDepartmentWithNEE(departmentId, semester);
-    
+    const studentsWithNEE = await this.studentsService.findByDepartmentWithNEE(
+      departmentId,
+      semester,
+    );
+
     // Obtener ajustes del departamento
-    const adjustments = await this.adjustmentsService.findByDepartment(departmentId ?? '', semester);
+    const adjustments = await this.adjustmentsService.findByDepartment(
+      departmentId ?? '',
+      semester,
+    );
 
     // Contar ajustes por estado desde currentAdjustments
-    const adjustmentsByStatus = adjustments.reduce((acc, adjustment) => {
-      adjustment.currentAdjustments?.forEach(currentAdj => {
-        const status = currentAdj.estado;
-        acc[status] = (acc[status] || 0) + 1;
-      });
-      return acc;
-    }, {} as Record<string, number>);
+    const adjustmentsByStatus = adjustments.reduce(
+      (acc, adjustment) => {
+        adjustment.currentAdjustments?.forEach((currentAdj) => {
+          const status = currentAdj.estado;
+          acc[status] = (acc[status] || 0) + 1;
+        });
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return {
       department: {
@@ -142,14 +159,22 @@ export class DepartmentsService {
     };
   }
 
-  async getDepartmentStudentsWithNEE(departmentId: string, semester: string): Promise<any[]> {
-    const students = await this.studentsService.findByDepartmentWithNEE(departmentId, semester);
-    
+  async getDepartmentStudentsWithNEE(
+    departmentId: string,
+    semester: string,
+  ): Promise<any[]> {
+    const students = await this.studentsService.findByDepartmentWithNEE(
+      departmentId,
+      semester,
+    );
+
     // Para cada estudiante, buscar sus ajustes asociados
     const studentsWithAdjustments = await Promise.all(
       students.map(async (student) => {
-        const adjustments = await this.adjustmentsService.findByStudentId(student._id.toString());
-        
+        const adjustments = await this.adjustmentsService.findByStudentId(
+          student._id.toString(),
+        );
+
         return {
           id: student._id,
           nombreCompleto: `${student.nombres} ${student.apellidos}`,
@@ -157,22 +182,25 @@ export class DepartmentsService {
           email: student.email,
           career: student.carreraId, // Esto puede necesitar población adicional
           semester: student.semester,
-          adjustments: adjustments.flatMap(adjustment => 
-            adjustment.currentAdjustments.map(adj => ({
+          adjustments: adjustments.flatMap((adjustment) =>
+            adjustment.currentAdjustments.map((adj) => ({
               id: adjustment._id,
               type: adj.type,
               estado: adj.estado,
               createdAt: adjustment.createdAt,
-            }))
+            })),
           ),
         };
-      })
+      }),
     );
-    
+
     return studentsWithAdjustments;
   }
 
-  async getTeachersByDepartment(departmentId: string, semester?: string): Promise<any[]> {
+  async getTeachersByDepartment(
+    departmentId: string,
+    semester?: string,
+  ): Promise<any[]> {
     const department = await this.departmentModel
       .findById(departmentId)
       .populate({
@@ -191,7 +219,10 @@ export class DepartmentsService {
     // Obtener estadísticas de cada docente
     const teachersWithStats = await Promise.all(
       department.teacherIds.map(async (teacher: any) => {
-        const courses = await this.coursesService.findByTeacher(teacher._id.toString(), semester || '2025-1');
+        const courses = await this.coursesService.findByTeacher(
+          teacher._id.toString(),
+          semester || '2025-1',
+        );
         let studentsWithNEE = 0;
         let totalAdjustments = 0;
         let pendingAdjustments = 0;
@@ -201,18 +232,24 @@ export class DepartmentsService {
             course.nrc,
             semester,
           );
-          
-          const courseAdjustments = adjustments.filter(adj => 
-            adj.currentAdjustments.some(ca => ca.courseNrc === course.nrc)
+
+          const courseAdjustments = adjustments.filter((adj) =>
+            adj.currentAdjustments.some((ca) => ca.courseNrc === course.nrc),
           );
-          
+
           studentsWithNEE += new Set(
-            courseAdjustments.flatMap(adj => adj.studentId.toString())
+            courseAdjustments.flatMap((adj) => adj.studentId.toString()),
           ).size;
-          
+
           totalAdjustments += courseAdjustments.length;
-          pendingAdjustments += courseAdjustments.filter(adj => 
-            adj.currentAdjustments && adj.currentAdjustments.some(ca => ca.estado === AdjustmentStatus.PENDING && ca.courseNrc === course.nrc)
+          pendingAdjustments += courseAdjustments.filter(
+            (adj) =>
+              adj.currentAdjustments &&
+              adj.currentAdjustments.some(
+                (ca) =>
+                  ca.estado === AdjustmentStatus.PENDING &&
+                  ca.courseNrc === course.nrc,
+              ),
           ).length;
         }
 
@@ -225,13 +262,16 @@ export class DepartmentsService {
           totalAdjustments,
           pendingAdjustments,
         };
-      })
+      }),
     );
 
     return teachersWithStats;
   }
 
-  async update(id: string, updateDepartmentDto: UpdateDepartmentDto): Promise<Department> {
+  async update(
+    id: string,
+    updateDepartmentDto: UpdateDepartmentDto,
+  ): Promise<Department> {
     const department = await this.departmentModel
       .findByIdAndUpdate(id, updateDepartmentDto, { new: true })
       .exec();

@@ -22,7 +22,7 @@ export class SemesterConfig {
 
   @Prop({ type: Date, required: true })
   evaluacionAjustesFin: Date;
-  
+
   @Prop({ type: Date, required: true })
   implementacionAjustesInicio: Date;
 
@@ -30,4 +30,5 @@ export class SemesterConfig {
   implementacionAjustesFin: Date;
 }
 
-export const SemesterConfigSchema = SchemaFactory.createForClass(SemesterConfig); 
+export const SemesterConfigSchema =
+  SchemaFactory.createForClass(SemesterConfig);

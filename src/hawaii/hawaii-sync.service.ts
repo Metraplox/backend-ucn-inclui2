@@ -8,11 +8,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Student } from '../students/schemas/student.schema';
 import { Course } from '../courses/schemas/course.schema';
 import { Enrollment } from '../enrollments/schemas/enrollment.schema';
-import { 
-  HawaiiService, 
-  HawaiiStudentDto, 
-  HawaiiCourseDto, 
-  HawaiiEnrollmentDto 
+import {
+  HawaiiService,
+  HawaiiStudentDto,
+  HawaiiCourseDto,
+  HawaiiEnrollmentDto,
 } from './';
 import { HawaiiCacheService } from './hawaii-cache.service';
 
@@ -22,7 +22,11 @@ export class HawaiiSyncService {
   private neeRuts: string[] = [];
   private processedStudents: Array<{ rut: string; [key: string]: any }> = [];
   private processedCourses: Array<{ nrc: string; [key: string]: any }> = [];
-  private processedEnrollments: Array<{ rut: string; nrc: string; [key: string]: any }> = [];
+  private processedEnrollments: Array<{
+    rut: string;
+    nrc: string;
+    [key: string]: any;
+  }> = [];
   private errors: Array<{ rut?: string; nrc?: string; error: any }> = [];
 
   constructor(
@@ -31,7 +35,7 @@ export class HawaiiSyncService {
     @InjectModel(Student.name) private studentModel: Model<Student>,
     @InjectModel(Course.name) private courseModel: Model<Course>,
     @InjectModel(Enrollment.name) private enrollmentModel: Model<Enrollment>,
-    private httpService: HttpService
+    private httpService: HttpService,
   ) {
     this.loadNeeStudentsList();
   }
@@ -41,20 +45,26 @@ export class HawaiiSyncService {
    */
   private loadNeeStudentsList(): void {
     try {
-      const neeFilePath = join(process.cwd(), 'mongodb-init', 'ESTUDIANTES_NEE.txt');
+      const neeFilePath = join(
+        process.cwd(),
+        'mongodb-init',
+        'ESTUDIANTES_NEE.txt',
+      );
       const content = readFileSync(neeFilePath, 'utf-8');
-      
+
       this.neeRuts = content
         .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => {
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => {
           const parts = line.split(',');
           return parts[0] ? parts[0].trim() : '';
         })
-        .filter(rut => rut.length > 0);
-      
-      this.logger.log(`📋 Lista NEE cargada: ${this.neeRuts.length} estudiantes`);
+        .filter((rut) => rut.length > 0);
+
+      this.logger.log(
+        `📋 Lista NEE cargada: ${this.neeRuts.length} estudiantes`,
+      );
     } catch (error) {
       this.logger.error('❌ Error cargando lista de estudiantes NEE:', error);
       this.neeRuts = [];
@@ -65,16 +75,18 @@ export class HawaiiSyncService {
    * Sincroniza estudiantes NEE con Hawaii usando caché inteligente
    * @param semester Semestre actual (formato YYYYPP)
    */
-  async syncNeeStudents(semester: string): Promise<{ 
-    success: boolean; 
-    synchronized: number; 
+  async syncNeeStudents(semester: string): Promise<{
+    success: boolean;
+    synchronized: number;
     notFound: string[];
     errors: any[];
     cacheUsed: boolean;
   }> {
     try {
-      this.logger.log(`🔄 Sincronizando estudiantes NEE para semestre ${semester}...`);
-      
+      this.logger.log(
+        `🔄 Sincronizando estudiantes NEE para semestre ${semester}...`,
+      );
+
       const result: {
         success: boolean;
         synchronized: number;
@@ -86,23 +98,27 @@ export class HawaiiSyncService {
         synchronized: 0,
         notFound: [],
         errors: [],
-        cacheUsed: false
+        cacheUsed: false,
       };
 
       // ✅ Usar caché inteligente en lugar de llamada directa
-      const allStudents: HawaiiStudentDto[] = await this.hawaiiCacheService.getEstudiantesWithCache();
+      const allStudents: HawaiiStudentDto[] =
+        await this.hawaiiCacheService.getEstudiantesWithCache();
       result.cacheUsed = true; // El servicio de caché maneja esto internamente
-      
+
       // Filter only NEE students
-      const neeStudents = allStudents.filter(student => 
-        this.neeRuts.includes(student.rut));
-      
+      const neeStudents = allStudents.filter((student) =>
+        this.neeRuts.includes(student.rut),
+      );
+
       // Track not found students
-      const foundRuts = neeStudents.map(student => student.rut);
-      result.notFound = this.neeRuts.filter(rut => !foundRuts.includes(rut));
-      
-      this.logger.log(`📊 Estudiantes encontrados: ${neeStudents.length}/${this.neeRuts.length} NEE`);
-      
+      const foundRuts = neeStudents.map((student) => student.rut);
+      result.notFound = this.neeRuts.filter((rut) => !foundRuts.includes(rut));
+
+      this.logger.log(
+        `📊 Estudiantes encontrados: ${neeStudents.length}/${this.neeRuts.length} NEE`,
+      );
+
       // Sync each NEE student
       for (const student of neeStudents) {
         try {
@@ -118,22 +134,24 @@ export class HawaiiSyncService {
               hasNee: true,
               updatedAt: new Date(),
             },
-            { upsert: true, new: true }
+            { upsert: true, new: true },
           );
-          
+
           result.synchronized++;
         } catch (error) {
           result.errors.push({
             rut: student.rut,
-            error: error.message
+            error: error.message,
           });
         }
       }
-      
+
       result.success = result.errors.length === 0;
-      
-      this.logger.log(`✅ Sincronización estudiantes completada: ${result.synchronized} exitosos, ${result.errors.length} errores`);
-      
+
+      this.logger.log(
+        `✅ Sincronización estudiantes completada: ${result.synchronized} exitosos, ${result.errors.length} errores`,
+      );
+
       return result;
     } catch (error) {
       this.logger.error('❌ Error syncing NEE students', error);
@@ -153,8 +171,10 @@ export class HawaiiSyncService {
     cacheUsed: boolean;
   }> {
     try {
-      this.logger.log(`🔄 Sincronizando cursos e inscripciones NEE para semestre ${semester}...`);
-      
+      this.logger.log(
+        `🔄 Sincronizando cursos e inscripciones NEE para semestre ${semester}...`,
+      );
+
       const result: {
         success: boolean;
         courses: number;
@@ -166,25 +186,30 @@ export class HawaiiSyncService {
         courses: 0,
         enrollments: 0,
         errors: [],
-        cacheUsed: true
+        cacheUsed: true,
       };
 
       // ✅ Usar caché inteligente para obtener datos en paralelo
       const [allCourses, allEnrollments] = await Promise.all([
         this.hawaiiCacheService.getOfertaWithCache(semester),
-        this.hawaiiCacheService.getInscripcionWithCache(semester)
+        this.hawaiiCacheService.getInscripcionWithCache(semester),
       ]);
-      
+
       // Filter enrollments for NEE students only
-      const neeEnrollments = allEnrollments.filter(enrollment => 
-        this.neeRuts.includes(enrollment.rut));
-      
+      const neeEnrollments = allEnrollments.filter((enrollment) =>
+        this.neeRuts.includes(enrollment.rut),
+      );
+
       // Get the list of courses that NEE students are enrolled in
-      const neeCourseNRCs = new Set(neeEnrollments.map(e => e.nrc));
-      const neeCourses = allCourses.filter(course => neeCourseNRCs.has(course.nrc));
-      
-      this.logger.log(`📊 Datos a sincronizar: ${neeCourses.length} cursos, ${neeEnrollments.length} matrículas NEE`);
-      
+      const neeCourseNRCs = new Set(neeEnrollments.map((e) => e.nrc));
+      const neeCourses = allCourses.filter((course) =>
+        neeCourseNRCs.has(course.nrc),
+      );
+
+      this.logger.log(
+        `📊 Datos a sincronizar: ${neeCourses.length} cursos, ${neeEnrollments.length} matrículas NEE`,
+      );
+
       // Sync courses
       for (const course of neeCourses) {
         try {
@@ -202,26 +227,31 @@ export class HawaiiSyncService {
               teacherName: course.getProfesorNombre() || '',
               updatedAt: new Date(),
             },
-            { upsert: true, new: true }
+            { upsert: true, new: true },
           );
-          
+
           result.courses++;
         } catch (error) {
           result.errors.push({
             nrc: course.nrc,
-            error: error.message
+            error: error.message,
           });
         }
       }
-      
+
       // Sync enrollments
-      const enrollmentsSynced = await this.syncEnrollments(neeEnrollments, semester);
+      const enrollmentsSynced = await this.syncEnrollments(
+        neeEnrollments,
+        semester,
+      );
       result.enrollments = enrollmentsSynced;
-      
+
       result.success = result.errors.length === 0;
-      
-      this.logger.log(`✅ Sincronización cursos/matrículas completada: ${result.courses} cursos, ${result.enrollments} matrículas`);
-      
+
+      this.logger.log(
+        `✅ Sincronización cursos/matrículas completada: ${result.courses} cursos, ${result.enrollments} matrículas`,
+      );
+
       return result;
     } catch (error) {
       this.logger.error('❌ Error syncing NEE courses and enrollments', error);
@@ -232,16 +262,19 @@ export class HawaiiSyncService {
   /**
    * Sincroniza matrículas individuales
    */
-  private async syncEnrollments(enrollments: HawaiiEnrollmentDto[], semester: string): Promise<number> {
+  private async syncEnrollments(
+    enrollments: HawaiiEnrollmentDto[],
+    semester: string,
+  ): Promise<number> {
     let synced = 0;
-    
+
     for (const enrollment of enrollments) {
       try {
         await this.enrollmentModel.findOneAndUpdate(
-          { 
-            studentRut: enrollment.rut, 
+          {
+            studentRut: enrollment.rut,
             nrc: enrollment.nrc,
-            semester: semester 
+            semester: semester,
           },
           {
             studentRut: enrollment.rut,
@@ -249,19 +282,19 @@ export class HawaiiSyncService {
             semester: semester,
             updatedAt: new Date(),
           },
-          { upsert: true, new: true }
+          { upsert: true, new: true },
         );
-        
+
         synced++;
       } catch (error) {
         this.errors.push({
           rut: enrollment.rut,
           nrc: enrollment.nrc,
-          error: error.message
+          error: error.message,
         });
       }
     }
-    
+
     return synced;
   }
 
@@ -282,10 +315,12 @@ export class HawaiiSyncService {
     };
   }> {
     try {
-      this.logger.log(`🚀 Iniciando sincronización completa optimizada de datos NEE para semestre ${semester}`);
-      
+      this.logger.log(
+        `🚀 Iniciando sincronización completa optimizada de datos NEE para semestre ${semester}`,
+      );
+
       const startTime = Date.now();
-      
+
       // Reset counters and errors
       this.processedStudents = [];
       this.processedCourses = [];
@@ -294,31 +329,46 @@ export class HawaiiSyncService {
 
       // ✅ Pre-cargar todos los datos en una sola operación optimizada
       this.logger.log('📦 Pre-cargando datos Hawaii con caché inteligente...');
-      const preloadData = await this.hawaiiCacheService.preloadSemesterData(semester);
-      
-      this.logger.log(`📊 Pre-carga completada: ${preloadData.cacheStats.totalApiCalls}/3 llamadas API realizadas`);
+      const preloadData =
+        await this.hawaiiCacheService.preloadSemesterData(semester);
+
+      this.logger.log(
+        `📊 Pre-carga completada: ${preloadData.cacheStats.totalApiCalls}/3 llamadas API realizadas`,
+      );
 
       // 1. Sync NEE students usando datos pre-cargados
       this.logger.log('👥 Sincronizando estudiantes NEE...');
-      const studentsResult = await this.syncNeeStudentsFromPreload(preloadData.students, semester);
-      
+      const studentsResult = await this.syncNeeStudentsFromPreload(
+        preloadData.students,
+        semester,
+      );
+
       // 2. Sync NEE courses and enrollments usando datos pre-cargados
       this.logger.log('📚 Sincronizando cursos y matrículas NEE...');
       const coursesResult = await this.syncNeeCoursesFromPreload(
         preloadData.courses,
         preloadData.enrollments,
-        semester
+        semester,
       );
 
       const duration = Date.now() - startTime;
-      const overallSuccess = studentsResult.success && coursesResult.success && this.errors.length === 0;
-      
-      this.logger.log(`🎉 Sincronización completa finalizada en ${duration}ms:`);
+      const overallSuccess =
+        studentsResult.success &&
+        coursesResult.success &&
+        this.errors.length === 0;
+
+      this.logger.log(
+        `🎉 Sincronización completa finalizada en ${duration}ms:`,
+      );
       this.logger.log(`   👥 Estudiantes: ${studentsResult.synchronized}`);
       this.logger.log(`   📚 Cursos: ${coursesResult.courses}`);
       this.logger.log(`   📝 Matrículas: ${coursesResult.enrollments}`);
-      this.logger.log(`   🌐 Llamadas API: ${preloadData.cacheStats.totalApiCalls}/3`);
-      this.logger.log(`   ⚡ Velocidad: ${overallSuccess ? 'EXCELENTE' : 'CON ADVERTENCIAS'}`);
+      this.logger.log(
+        `   🌐 Llamadas API: ${preloadData.cacheStats.totalApiCalls}/3`,
+      );
+      this.logger.log(
+        `   ⚡ Velocidad: ${overallSuccess ? 'EXCELENTE' : 'CON ADVERTENCIAS'}`,
+      );
 
       return {
         success: overallSuccess,
@@ -329,17 +379,21 @@ export class HawaiiSyncService {
         cacheStats: {
           totalApiCalls: preloadData.cacheStats.totalApiCalls,
           cachingEnabled: true,
-          preloadUsed: true
-        }
+          preloadUsed: true,
+        },
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      this.logger.error(`❌ Error en syncAllNeeData optimizado: ${errorMessage}`, error instanceof Error ? error.stack : '');
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error desconocido';
+      this.logger.error(
+        `❌ Error en syncAllNeeData optimizado: ${errorMessage}`,
+        error instanceof Error ? error.stack : '',
+      );
+
       this.errors.push({
-        error: `Error en sincronización completa optimizada: ${errorMessage}`
+        error: `Error en sincronización completa optimizada: ${errorMessage}`,
       });
-      
+
       return {
         success: false,
         students: 0,
@@ -349,8 +403,8 @@ export class HawaiiSyncService {
         cacheStats: {
           totalApiCalls: 0,
           cachingEnabled: true,
-          preloadUsed: false
-        }
+          preloadUsed: false,
+        },
       };
     }
   }
@@ -358,7 +412,10 @@ export class HawaiiSyncService {
   /**
    * Sincroniza estudiantes NEE desde datos pre-cargados
    */
-  private async syncNeeStudentsFromPreload(allStudents: HawaiiStudentDto[], semester: string): Promise<{
+  private async syncNeeStudentsFromPreload(
+    allStudents: HawaiiStudentDto[],
+    semester: string,
+  ): Promise<{
     success: boolean;
     synchronized: number;
     notFound: string[];
@@ -368,17 +425,18 @@ export class HawaiiSyncService {
       success: false,
       synchronized: 0,
       notFound: [] as string[],
-      errors: [] as any[]
+      errors: [] as any[],
     };
 
     // Filter only NEE students
-    const neeStudents = allStudents.filter(student => 
-      this.neeRuts.includes(student.rut));
-    
+    const neeStudents = allStudents.filter((student) =>
+      this.neeRuts.includes(student.rut),
+    );
+
     // Track not found students
-    const foundRuts = neeStudents.map(student => student.rut);
-    result.notFound = this.neeRuts.filter(rut => !foundRuts.includes(rut));
-    
+    const foundRuts = neeStudents.map((student) => student.rut);
+    result.notFound = this.neeRuts.filter((rut) => !foundRuts.includes(rut));
+
     // Sync each NEE student
     for (const student of neeStudents) {
       try {
@@ -394,18 +452,18 @@ export class HawaiiSyncService {
             hasNee: true,
             updatedAt: new Date(),
           },
-          { upsert: true, new: true }
+          { upsert: true, new: true },
         );
-        
+
         result.synchronized++;
       } catch (error) {
         result.errors.push({
           rut: student.rut,
-          error: error.message
+          error: error.message,
         });
       }
     }
-    
+
     result.success = result.errors.length === 0;
     return result;
   }
@@ -416,7 +474,7 @@ export class HawaiiSyncService {
   private async syncNeeCoursesFromPreload(
     allCourses: HawaiiCourseDto[],
     allEnrollments: HawaiiEnrollmentDto[],
-    semester: string
+    semester: string,
   ): Promise<{
     success: boolean;
     courses: number;
@@ -427,17 +485,20 @@ export class HawaiiSyncService {
       success: false,
       courses: 0,
       enrollments: 0,
-      errors: [] as any[]
+      errors: [] as any[],
     };
 
     // Filter enrollments for NEE students only
-    const neeEnrollments = allEnrollments.filter(enrollment => 
-      this.neeRuts.includes(enrollment.rut));
-    
+    const neeEnrollments = allEnrollments.filter((enrollment) =>
+      this.neeRuts.includes(enrollment.rut),
+    );
+
     // Get the list of courses that NEE students are enrolled in
-    const neeCourseNRCs = new Set(neeEnrollments.map(e => e.nrc));
-    const neeCourses = allCourses.filter(course => neeCourseNRCs.has(course.nrc));
-    
+    const neeCourseNRCs = new Set(neeEnrollments.map((e) => e.nrc));
+    const neeCourses = allCourses.filter((course) =>
+      neeCourseNRCs.has(course.nrc),
+    );
+
     // Sync courses
     for (const course of neeCourses) {
       try {
@@ -455,21 +516,21 @@ export class HawaiiSyncService {
             teacherName: course.getProfesorNombre() || '',
             updatedAt: new Date(),
           },
-          { upsert: true, new: true }
+          { upsert: true, new: true },
         );
-        
+
         result.courses++;
       } catch (error) {
         result.errors.push({
           nrc: course.nrc,
-          error: error.message
+          error: error.message,
         });
       }
     }
-    
+
     // Sync enrollments
     result.enrollments = await this.syncEnrollments(neeEnrollments, semester);
-    
+
     result.success = result.errors.length === 0;
     return result;
   }

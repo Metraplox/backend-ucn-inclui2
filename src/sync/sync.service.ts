@@ -1,4 +1,9 @@
-import { Injectable, Logger, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Model, Types, isValidObjectId } from 'mongoose';
@@ -7,12 +12,21 @@ import axios from 'axios';
 import { UcnStudentDto } from './dto/ucn-student.dto';
 import { UcnCourseDto } from './dto/ucn-course.dto';
 import { UcnInscriptionDto } from './dto/ucn-inscription.dto';
-import { readNeeList, normalizeRut, getOnlyDigits } from './utils/read-nee-list';
+import {
+  readNeeList,
+  normalizeRut,
+  getOnlyDigits,
+} from './utils/read-nee-list';
 
 import { Student, StudentDocument } from '../students/schemas/student.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { Course, CourseDocument } from '../courses/schemas/course.schema';
-import { SyncLog, SyncLogDocument, SyncType, SyncStatus } from './schemas/sync-log.schema';
+import {
+  SyncLog,
+  SyncLogDocument,
+  SyncType,
+  SyncStatus,
+} from './schemas/sync-log.schema';
 import { CareersService } from '../careers/careers.service';
 import { UsersService } from '../users/users.service';
 
@@ -25,7 +39,7 @@ const HAWAII_ESTUDIANTES_HEADER = { 'X-HAWAII-AUTH': 'mnqpkUk00jioab' };
 @Injectable()
 export class SyncService {
   private readonly logger = new Logger(SyncService.name);
-  
+
   /**
    * Convierte de forma segura un valor a ObjectId válido
    * @param id Valor a convertir (string, ObjectId, o cualquier valor)
@@ -33,16 +47,16 @@ export class SyncService {
    */
   private safeObjectId(id: any): Types.ObjectId | undefined {
     if (!id) return undefined;
-    
+
     try {
       // Si ya es un ObjectId válido
       if (id instanceof Types.ObjectId) return id;
-      
+
       // Si es string y representa un ObjectId válido
       if (typeof id === 'string' && isValidObjectId(id)) {
         return new Types.ObjectId(id);
       }
-      
+
       // Si tiene toString(), intentar convertir su representación string
       if (id && typeof id.toString === 'function') {
         const idStr = id.toString();
@@ -50,14 +64,14 @@ export class SyncService {
           return new Types.ObjectId(idStr);
         }
       }
-      
+
       return undefined;
     } catch (error) {
       this.logger.warn(`Error al convertir a ObjectId: ${error.message}`);
       return undefined;
     }
-  };
-  
+  }
+
   constructor(
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
     @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
@@ -76,44 +90,66 @@ export class SyncService {
   async syncNeeStudents(): Promise<UcnStudentDto[]> {
     // Leer lista de NEE desde archivo
     const neeList = await readNeeList();
-    
+
     // Extraer solo los dígitos de los RUTs para comparación consistente
-    const neeRutsDigits = neeList.map(e => getOnlyDigits(e.rut));
-    this.logger.log(`📋 NEE list loaded: ${neeList.length} students (solo dígitos para comparación)`);
+    const neeRutsDigits = neeList.map((e) => getOnlyDigits(e.rut));
+    this.logger.log(
+      `📋 NEE list loaded: ${neeList.length} students (solo dígitos para comparación)`,
+    );
     // Mostrar los primeros 5 RUTs para diagnóstico
-    this.logger.debug(`Primeros 5 RUTs de lista NEE (solo dígitos): ${neeRutsDigits.slice(0, 5).join(', ')}`);
+    this.logger.debug(
+      `Primeros 5 RUTs de lista NEE (solo dígitos): ${neeRutsDigits.slice(0, 5).join(', ')}`,
+    );
 
     // ✅ Consumir datos usando caché inteligente si está disponible
     let estudiantes: UcnStudentDto[] = [];
     try {
       if (this.hawaiiCacheService) {
-        this.logger.log('🚀 Usando caché inteligente Hawaii para estudiantes...');
+        this.logger.log(
+          '🚀 Usando caché inteligente Hawaii para estudiantes...',
+        );
         // Usar el sistema de caché optimizado
-        const cachedStudents = await this.hawaiiCacheService.getEstudiantesWithCache();
+        const cachedStudents =
+          await this.hawaiiCacheService.getEstudiantesWithCache();
         // Convertir formato Hawaii a formato UCN
-        estudiantes = cachedStudents.map(student => ({
+        estudiantes = cachedStudents.map((student) => ({
           rut: student.rut,
           nombres: student.nombres,
           apellidos: student.apellidos,
           email_ucn: student.email_ucn,
           // Agregar campos adicionales si es necesario
         })) as UcnStudentDto[];
-        
-        this.logger.log(`✅ Estudiantes obtenidos desde caché: ${estudiantes.length}`);
+
+        this.logger.log(
+          `✅ Estudiantes obtenidos desde caché: ${estudiantes.length}`,
+        );
       } else {
         // Fallback al método original
-        this.logger.log('⚠️ Caché Hawaii no disponible, usando método directo...');
-        const response = await axios.get<UcnStudentDto[]>(HAWAII_ESTUDIANTES_URL, { headers: HAWAII_ESTUDIANTES_HEADER });
+        this.logger.log(
+          '⚠️ Caché Hawaii no disponible, usando método directo...',
+        );
+        const response = await axios.get<UcnStudentDto[]>(
+          HAWAII_ESTUDIANTES_URL,
+          { headers: HAWAII_ESTUDIANTES_HEADER },
+        );
         estudiantes = response.data;
-        this.logger.log(`📡 Total estudiantes recibidos desde endpoint: ${estudiantes.length}`);
+        this.logger.log(
+          `📡 Total estudiantes recibidos desde endpoint: ${estudiantes.length}`,
+        );
       }
-      
+
       // Mostrar los primeros 5 RUTs de Hawaii para diagnóstico
       if (estudiantes.length > 0) {
-        const primeros5RutsHawaii = estudiantes.slice(0, 5).map(e => e.rut);
-        const primeros5RutsHawaiiDigits = estudiantes.slice(0, 5).map(e => getOnlyDigits(e.rut));
-        this.logger.debug(`Primeros 5 RUTs de Hawaii (original): ${primeros5RutsHawaii.join(', ')}`);
-        this.logger.debug(`Primeros 5 RUTs de Hawaii (solo dígitos): ${primeros5RutsHawaiiDigits.join(', ')}`);
+        const primeros5RutsHawaii = estudiantes.slice(0, 5).map((e) => e.rut);
+        const primeros5RutsHawaiiDigits = estudiantes
+          .slice(0, 5)
+          .map((e) => getOnlyDigits(e.rut));
+        this.logger.debug(
+          `Primeros 5 RUTs de Hawaii (original): ${primeros5RutsHawaii.join(', ')}`,
+        );
+        this.logger.debug(
+          `Primeros 5 RUTs de Hawaii (solo dígitos): ${primeros5RutsHawaiiDigits.join(', ')}`,
+        );
       }
     } catch (error) {
       this.logger.error('❌ Error al consumir endpoint /estudiantes', error);
@@ -121,22 +157,28 @@ export class SyncService {
     }
 
     // Filtrar solo los estudiantes NEE usando comparación de solo dígitos
-    const estudiantesNee = estudiantes.filter(e => {
+    const estudiantesNee = estudiantes.filter((e) => {
       const rutDigits = getOnlyDigits(e.rut);
       const coincide = neeRutsDigits.includes(rutDigits);
-      
+
       // Si hay alguna coincidencia, log detallado para verificar
       if (coincide) {
-        this.logger.debug(`✅ Coincidencia encontrada: RUT Hawaii=${e.rut} (${rutDigits}) coincide con lista NEE`);
+        this.logger.debug(
+          `✅ Coincidencia encontrada: RUT Hawaii=${e.rut} (${rutDigits}) coincide con lista NEE`,
+        );
       }
-      
+
       return coincide;
     });
 
-    this.logger.log(`🎯 Estudiantes NEE encontrados: ${estudiantesNee.length} de ${estudiantes.length} total`);
-    
+    this.logger.log(
+      `🎯 Estudiantes NEE encontrados: ${estudiantesNee.length} de ${estudiantes.length} total`,
+    );
+
     if (estudiantesNee.length === 0) {
-      this.logger.warn('⚠️ No se encontraron estudiantes NEE en los datos de Hawaii');
+      this.logger.warn(
+        '⚠️ No se encontraron estudiantes NEE en los datos de Hawaii',
+      );
     }
 
     return estudiantesNee;
@@ -147,14 +189,15 @@ export class SyncService {
    */
   async syncCourses(semester: string): Promise<UcnCourseDto[]> {
     this.logger.log(`🔄 Sincronizando cursos para el semestre ${semester}`);
-    
+
     try {
       if (this.hawaiiCacheService) {
         this.logger.log('🚀 Usando caché inteligente Hawaii para cursos...');
         // Usar el sistema de caché optimizado
-        const cachedCourses = await this.hawaiiCacheService.getOfertaWithCache(semester);
+        const cachedCourses =
+          await this.hawaiiCacheService.getOfertaWithCache(semester);
         // Convertir formato Hawaii a formato UCN
-        const cursos = cachedCourses.map(course => ({
+        const cursos = cachedCourses.map((course) => ({
           periodo: course.periodo,
           nrc: course.nrc,
           asignatura: course.asignatura,
@@ -164,22 +207,31 @@ export class SyncService {
           departamento: course.departamento,
           profesores: course.profesores ? [course.profesores] : [],
         })) as UcnCourseDto[];
-        
+
         this.logger.log(`✅ Cursos obtenidos desde caché: ${cursos.length}`);
         return cursos;
       } else {
         // Fallback al método original
-        this.logger.log('⚠️ Caché Hawaii no disponible, usando método directo...');
+        this.logger.log(
+          '⚠️ Caché Hawaii no disponible, usando método directo...',
+        );
         const HAWAII_OFERTA_URL = `https://losvilos.ucn.cl/hawaii/api/oferta?${semester}`;
         const HAWAII_OFERTA_HEADER = { 'X-HAWAII-AUTH': 'qnbdg8k20jio90' };
-        
-        const response = await axios.get<UcnCourseDto[]>(HAWAII_OFERTA_URL, { headers: HAWAII_OFERTA_HEADER });
+
+        const response = await axios.get<UcnCourseDto[]>(HAWAII_OFERTA_URL, {
+          headers: HAWAII_OFERTA_HEADER,
+        });
         const cursos = response.data;
-        this.logger.log(`📡 Total cursos recibidos desde endpoint: ${cursos.length}`);
+        this.logger.log(
+          `📡 Total cursos recibidos desde endpoint: ${cursos.length}`,
+        );
         return cursos;
       }
     } catch (error) {
-      this.logger.error(`❌ Error al consumir endpoint /oferta para semestre ${semester}`, error);
+      this.logger.error(
+        `❌ Error al consumir endpoint /oferta para semestre ${semester}`,
+        error,
+      );
       return [];
     }
   }
@@ -188,54 +240,75 @@ export class SyncService {
    * 🚀 OPTIMIZADO: Sincroniza inscripciones usando caché inteligente
    */
   async syncInscriptions(semester: string): Promise<UcnInscriptionDto[]> {
-    this.logger.log(`🔄 Sincronizando inscripciones para el semestre ${semester}`);
-    
+    this.logger.log(
+      `🔄 Sincronizando inscripciones para el semestre ${semester}`,
+    );
+
     try {
       if (this.hawaiiCacheService) {
-        this.logger.log('🚀 Usando caché inteligente Hawaii para inscripciones...');
+        this.logger.log(
+          '🚀 Usando caché inteligente Hawaii para inscripciones...',
+        );
         // Usar el sistema de caché optimizado
-        const cachedEnrollments = await this.hawaiiCacheService.getInscripcionWithCache(semester);
+        const cachedEnrollments =
+          await this.hawaiiCacheService.getInscripcionWithCache(semester);
         // Convertir formato Hawaii a formato UCN
-        const inscripciones = cachedEnrollments.map(enrollment => ({
+        const inscripciones = cachedEnrollments.map((enrollment) => ({
           rut: enrollment.rut,
           nrc: enrollment.nrc,
           // Agregar campos adicionales si es necesario según el formato UCN
         })) as UcnInscriptionDto[];
-        
-        this.logger.log(`✅ Inscripciones obtenidas desde caché: ${inscripciones.length}`);
+
+        this.logger.log(
+          `✅ Inscripciones obtenidas desde caché: ${inscripciones.length}`,
+        );
         return inscripciones;
       } else {
         // Fallback al método original
-        this.logger.log('⚠️ Caché Hawaii no disponible, usando método directo...');
+        this.logger.log(
+          '⚠️ Caché Hawaii no disponible, usando método directo...',
+        );
         const HAWAII_INSCRIPCION_URL = `https://losvilos.ucn.cl/hawaii/api/inscripcion?${semester}`;
         const HAWAII_INSCRIPCION_HEADER = { 'X-HAWAII-AUTH': 'knf3g8k29pjht8' };
-        
-        const response = await axios.get<UcnInscriptionDto[]>(HAWAII_INSCRIPCION_URL, { headers: HAWAII_INSCRIPCION_HEADER });
+
+        const response = await axios.get<UcnInscriptionDto[]>(
+          HAWAII_INSCRIPCION_URL,
+          { headers: HAWAII_INSCRIPCION_HEADER },
+        );
         const inscripciones = response.data;
-        this.logger.log(`📡 Total inscripciones recibidas desde endpoint: ${inscripciones.length}`);
+        this.logger.log(
+          `📡 Total inscripciones recibidas desde endpoint: ${inscripciones.length}`,
+        );
         return inscripciones;
       }
     } catch (error) {
-      this.logger.error(`❌ Error al consumir endpoint /inscripcion para semestre ${semester}`, error);
+      this.logger.error(
+        `❌ Error al consumir endpoint /inscripcion para semestre ${semester}`,
+        error,
+      );
       return [];
     }
   }
-  
+
   async syncNeeInscriptions(semester: string): Promise<UcnInscriptionDto[]> {
     // 1. Obtener lista de RUTs de estudiantes NEE
     const neeList = await readNeeList();
-    const neeRuts = neeList.map(e => e.rut);
-    
+    const neeRuts = neeList.map((e) => e.rut);
+
     // 2. Obtener todas las inscripciones del semestre
     const inscripciones = await this.syncInscriptions(semester);
-    
+
     // 3. Filtrar solo inscripciones de estudiantes NEE
-    const inscripcionesNee = inscripciones.filter(i => neeRuts.includes(i.rut));
-    
-    this.logger.log(`Inscripciones de estudiantes NEE: ${inscripcionesNee.length}`);
+    const inscripcionesNee = inscripciones.filter((i) =>
+      neeRuts.includes(i.rut),
+    );
+
+    this.logger.log(
+      `Inscripciones de estudiantes NEE: ${inscripcionesNee.length}`,
+    );
     return inscripcionesNee;
   }
-  
+
   /**
    * 🚀 NUEVO: Método optimizado para sincronización completa usando pre-carga
    */
@@ -249,34 +322,45 @@ export class SyncService {
       cachingEnabled: boolean;
     };
   }> {
-    this.logger.log(`🚀 Iniciando sincronización completa optimizada para semestre ${semester}`);
-    
+    this.logger.log(
+      `🚀 Iniciando sincronización completa optimizada para semestre ${semester}`,
+    );
+
     const startTime = Date.now();
-    
+
     try {
       if (this.hawaiiCacheService) {
         // ✅ Pre-cargar todos los datos en una sola operación
         this.logger.log('📦 Pre-cargando datos Hawaii...');
-        const preloadData = await this.hawaiiCacheService.preloadSemesterData(semester);
-        
-        this.logger.log(`📊 Pre-carga completada: ${preloadData.cacheStats.totalApiCalls}/3 llamadas API`);
-        
+        const preloadData =
+          await this.hawaiiCacheService.preloadSemesterData(semester);
+
+        this.logger.log(
+          `📊 Pre-carga completada: ${preloadData.cacheStats.totalApiCalls}/3 llamadas API`,
+        );
+
         // Procesar estudiantes NEE
         const neeList = await readNeeList();
-        const neeRutsDigits = neeList.map(e => getOnlyDigits(e.rut));
-        
-        const estudiantesNee = preloadData.students.filter(student => 
-          neeRutsDigits.includes(getOnlyDigits(student.rut))
+        const neeRutsDigits = neeList.map((e) => getOnlyDigits(e.rut));
+
+        const estudiantesNee = preloadData.students.filter((student) =>
+          neeRutsDigits.includes(getOnlyDigits(student.rut)),
         );
-        
+
         // Estadísticas finales
         const duration = Date.now() - startTime;
-        this.logger.log(`🎉 Sincronización optimizada completada en ${duration}ms:`);
+        this.logger.log(
+          `🎉 Sincronización optimizada completada en ${duration}ms:`,
+        );
         this.logger.log(`   👥 Estudiantes NEE: ${estudiantesNee.length}`);
         this.logger.log(`   📚 Cursos: ${preloadData.courses.length}`);
-        this.logger.log(`   📝 Inscripciones: ${preloadData.enrollments.length}`);
-        this.logger.log(`   🌐 Llamadas API: ${preloadData.cacheStats.totalApiCalls}/3`);
-        
+        this.logger.log(
+          `   📝 Inscripciones: ${preloadData.enrollments.length}`,
+        );
+        this.logger.log(
+          `   🌐 Llamadas API: ${preloadData.cacheStats.totalApiCalls}/3`,
+        );
+
         return {
           success: true,
           students: estudiantesNee.length,
@@ -284,22 +368,26 @@ export class SyncService {
           inscriptions: preloadData.enrollments.length,
           cacheStats: {
             totalApiCalls: preloadData.cacheStats.totalApiCalls,
-            cachingEnabled: true
-          }
+            cachingEnabled: true,
+          },
         };
       } else {
-        this.logger.warn('⚠️ Sistema de caché no disponible, usando métodos individuales...');
-        
+        this.logger.warn(
+          '⚠️ Sistema de caché no disponible, usando métodos individuales...',
+        );
+
         // Fallback a métodos individuales
         const [estudiantes, cursos, inscripciones] = await Promise.all([
           this.syncNeeStudents(),
           this.syncCourses(semester),
-          this.syncInscriptions(semester)
+          this.syncInscriptions(semester),
         ]);
-        
+
         const duration = Date.now() - startTime;
-        this.logger.log(`✅ Sincronización tradicional completada en ${duration}ms`);
-        
+        this.logger.log(
+          `✅ Sincronización tradicional completada en ${duration}ms`,
+        );
+
         return {
           success: true,
           students: estudiantes.length,
@@ -307,12 +395,15 @@ export class SyncService {
           inscriptions: inscripciones.length,
           cacheStats: {
             totalApiCalls: 3, // Máximo posible sin caché
-            cachingEnabled: false
-          }
+            cachingEnabled: false,
+          },
         };
       }
     } catch (error) {
-      this.logger.error('❌ Error en sincronización completa optimizada:', error);
+      this.logger.error(
+        '❌ Error en sincronización completa optimizada:',
+        error,
+      );
       throw error;
     }
   }
@@ -539,16 +630,27 @@ export class SyncService {
   /**
    * Busca o crea una carrera por nombre. Si no existe, la crea con datos mínimos.
    */
-  private async findOrCreateCareer(careerName: string, options?: { faculty?: string; currentSemester?: string; departmentId?: string }) {
+  private async findOrCreateCareer(
+    careerName: string,
+    options?: {
+      faculty?: string;
+      currentSemester?: string;
+      departmentId?: string;
+    },
+  ) {
     if (!careerName) return null;
     try {
       // Buscar carrera por nombre usando el servicio
       // Buscar carrera por nombre usando el modelo si es público
-      let existing: import('../careers/schemas/career.schema').CareerDocument | null = null;
-if (typeof this.careersService['careerModel'] !== 'undefined') {
-  existing = await this.careersService['careerModel'].findOne({ name: careerName }).exec();
-}
-if (existing) return existing;
+      let existing:
+        | import('../careers/schemas/career.schema').CareerDocument
+        | null = null;
+      if (typeof this.careersService['careerModel'] !== 'undefined') {
+        existing = await this.careersService['careerModel']
+          .findOne({ name: careerName })
+          .exec();
+      }
+      if (existing) return existing;
 
       // Construir DTO completo con valores por defecto si no se proveen
       const createCareerDto = {
@@ -562,7 +664,10 @@ if (existing) return existing;
       this.logger.log(`Carrera creada: ${careerName}`);
       return career;
     } catch (error) {
-      this.logger.error(`Error al buscar o crear carrera (${careerName}):`, error);
+      this.logger.error(
+        `Error al buscar o crear carrera (${careerName}):`,
+        error,
+      );
       return null;
     }
   }
@@ -571,12 +676,18 @@ if (existing) return existing;
    * Busca o crea un usuario por email. Si no existe, lo crea con datos mínimos.
    * Implementa múltiples estrategias de fallback para garantizar éxito.
    */
-  private async findOrCreateUser(email: string, nombres: string, apellidos: string, rut: string, modoPruebas: boolean = false) {
+  private async findOrCreateUser(
+    email: string,
+    nombres: string,
+    apellidos: string,
+    rut: string,
+    modoPruebas: boolean = false,
+  ) {
     if (!email) {
       this.logger.error('Se intentó crear usuario sin email');
       return null;
     }
-    
+
     try {
       // 1. Primer intento: buscar usuario por email usando el servicio
       try {
@@ -586,20 +697,28 @@ if (existing) return existing;
           return existing;
         }
       } catch (findError) {
-        this.logger.warn(`Error al buscar usuario por email: ${findError.message}`);
+        this.logger.warn(
+          `Error al buscar usuario por email: ${findError.message}`,
+        );
         // Continuar al siguiente intento
       }
 
       // 2. Segundo intento: buscar directamente en el modelo si está disponible
       if (this.usersService['userModel']) {
         try {
-          const existingUser = await this.usersService['userModel'].findOne({ email }).exec();
+          const existingUser = await this.usersService['userModel']
+            .findOne({ email })
+            .exec();
           if (existingUser) {
-            this.logger.debug(`Usuario encontrado directamente en el modelo: ${email}`);
+            this.logger.debug(
+              `Usuario encontrado directamente en el modelo: ${email}`,
+            );
             return existingUser;
           }
         } catch (directFindError) {
-          this.logger.warn(`Error al buscar usuario directamente: ${directFindError.message}`);
+          this.logger.warn(
+            `Error al buscar usuario directamente: ${directFindError.message}`,
+          );
           // Continuar al siguiente intento
         }
       }
@@ -614,15 +733,19 @@ if (existing) return existing;
         password: this.configService.get('DEFAULT_USER_PASSWORD', 'inclui2025'),
         rut,
       };
-      
+
       try {
         const user = await this.usersService.create(userDto);
         if (user) {
-          this.logger.debug(`Usuario creado exitosamente vía servicio: ${email}`);
+          this.logger.debug(
+            `Usuario creado exitosamente vía servicio: ${email}`,
+          );
           return user;
         }
       } catch (createError) {
-        this.logger.warn(`Error al crear usuario vía servicio: ${createError.message}`);
+        this.logger.warn(
+          `Error al crear usuario vía servicio: ${createError.message}`,
+        );
         // Continuar al siguiente intento
       }
 
@@ -634,43 +757,59 @@ if (existing) return existing;
             nombreCompleto: `${nombres} ${apellidos}`.trim(),
             roles: ['student'],
             isActive: true,
-            password: this.configService.get('DEFAULT_USER_PASSWORD', 'inclui2025'),
+            password: this.configService.get(
+              'DEFAULT_USER_PASSWORD',
+              'inclui2025',
+            ),
             rut,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           }).save();
-          
+
           if (newUser) {
-            this.logger.debug(`Usuario creado directamente en modelo: ${email}`);
+            this.logger.debug(
+              `Usuario creado directamente en modelo: ${email}`,
+            );
             return newUser;
           }
         } catch (directCreateError) {
-          this.logger.error(`Error al crear usuario directamente en modelo: ${directCreateError.message}`);
-          
+          this.logger.error(
+            `Error al crear usuario directamente en modelo: ${directCreateError.message}`,
+          );
+
           // Si es error de duplicado, intentar obtener el existente
           if (directCreateError.code === 11000) {
             try {
-              const duplicateUser = await this.usersService['userModel'].findOne({ email }).exec();
+              const duplicateUser = await this.usersService['userModel']
+                .findOne({ email })
+                .exec();
               if (duplicateUser) {
                 this.logger.debug(`Recuperado usuario duplicado: ${email}`);
                 return duplicateUser;
               }
             } catch (dupFindError) {
-              this.logger.error(`Error al recuperar duplicado: ${dupFindError.message}`);
+              this.logger.error(
+                `Error al recuperar duplicado: ${dupFindError.message}`,
+              );
             }
           }
         }
       }
-      
+
       // Si llegamos aquí, todos los intentos fallaron
-      this.logger.error(`Todos los intentos de crear/encontrar usuario fallaron: ${email}`);
+      this.logger.error(
+        `Todos los intentos de crear/encontrar usuario fallaron: ${email}`,
+      );
       return null;
     } catch (error) {
-      this.logger.error(`Error general al buscar o crear usuario (${email}):`, error);
+      this.logger.error(
+        `Error general al buscar o crear usuario (${email}):`,
+        error,
+      );
       return null;
     }
   }
-  
+
   /**
    * Sincroniza y persiste cursos en la base de datos
    * @param semester Semestre académico
@@ -681,12 +820,21 @@ if (existing) return existing;
    * @param semester Semestre académico
    * @returns Número de estudiantes NEE persistidos
    */
-  async syncAndPersistNeeStudents(semester: string): Promise<{count: number, students: Student[]}> {
+  async syncAndPersistNeeStudents(
+    semester: string,
+  ): Promise<{ count: number; students: Student[] }> {
     try {
       // 1. Obtener estudiantes NEE desde Hawaii y lista institucional
       const estudiantesNee = await this.syncNeeStudents();
       if (!estudiantesNee || estudiantesNee.length === 0) {
-        await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, SyncStatus.ERROR, 0, 0, 'No se encontraron estudiantes NEE');
+        await this.createSyncLog(
+          SyncType.ESTUDIANTES_NEE,
+          semester,
+          SyncStatus.ERROR,
+          0,
+          0,
+          'No se encontraron estudiantes NEE',
+        );
         return { count: 0, students: [] };
       }
 
@@ -697,11 +845,15 @@ if (existing) return existing;
       for (const estudiante of estudiantesNee) {
         try {
           // Buscar si el estudiante ya existe por RUT y semestre
-          const existing = await this.studentModel.findOne({ rut: estudiante.rut, semester }).exec();
+          const existing = await this.studentModel
+            .findOne({ rut: estudiante.rut, semester })
+            .exec();
           // Buscar o crear usuario asociado (User)
           let userId: import('mongoose').Types.ObjectId | undefined = undefined;
           if (estudiante.email_ucn) {
-            let user = await this.userModel.findOne({ email: estudiante.email_ucn.toLowerCase() });
+            let user = await this.userModel.findOne({
+              email: estudiante.email_ucn.toLowerCase(),
+            });
             if (!user) {
               user = new this.userModel({
                 email: estudiante.email_ucn.toLowerCase(),
@@ -710,14 +862,23 @@ if (existing) return existing;
               });
               await user.save();
             }
-            userId = (typeof user._id === 'string') ? new Types.ObjectId(user._id) : user._id;
+            userId =
+              typeof user._id === 'string'
+                ? new Types.ObjectId(user._id)
+                : user._id;
           }
           // Buscar el id de carrera usando careersService
-          let carreraId: import('mongoose').Types.ObjectId | undefined = undefined;
+          let carreraId: import('mongoose').Types.ObjectId | undefined =
+            undefined;
           if (estudiante.carrera) {
-            const carrera = await this.careersService.findByName(estudiante.carrera);
+            const carrera = await this.careersService.findByName(
+              estudiante.carrera,
+            );
             if (carrera && carrera._id) {
-              carreraId = (typeof carrera._id === 'string') ? new (require('mongoose')).Types.ObjectId(carrera._id) : carrera._id;
+              carreraId =
+                typeof carrera._id === 'string'
+                  ? new (require('mongoose').Types.ObjectId)(carrera._id)
+                  : carrera._id;
             }
           }
           if (existing) {
@@ -749,59 +910,97 @@ if (existing) return existing;
             syncedCount++;
           }
         } catch (error) {
-          this.logger.error(`Error al persistir estudiante NEE ${estudiante.rut}:`, error);
+          this.logger.error(
+            `Error al persistir estudiante NEE ${estudiante.rut}:`,
+            error,
+          );
         }
       }
 
       // 3. Registrar log de sincronización
-      const status = syncedCount === estudiantesNee.length ? SyncStatus.SUCCESS : 
-                    (syncedCount > 0 ? SyncStatus.PARTIAL : SyncStatus.ERROR);
-      await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, status, estudiantesNee.length, syncedCount);
+      const status =
+        syncedCount === estudiantesNee.length
+          ? SyncStatus.SUCCESS
+          : syncedCount > 0
+            ? SyncStatus.PARTIAL
+            : SyncStatus.ERROR;
+      await this.createSyncLog(
+        SyncType.ESTUDIANTES_NEE,
+        semester,
+        status,
+        estudiantesNee.length,
+        syncedCount,
+      );
       return { count: syncedCount, students: persistedStudents };
     } catch (error) {
-      this.logger.error('Error en sincronización y persistencia de estudiantes NEE:', error);
-      await this.createSyncLog(SyncType.ESTUDIANTES_NEE, semester, SyncStatus.ERROR, 0, 0, error.message);
-      throw new InternalServerErrorException('Error al sincronizar y persistir estudiantes NEE');
+      this.logger.error(
+        'Error en sincronización y persistencia de estudiantes NEE:',
+        error,
+      );
+      await this.createSyncLog(
+        SyncType.ESTUDIANTES_NEE,
+        semester,
+        SyncStatus.ERROR,
+        0,
+        0,
+        error.message,
+      );
+      throw new InternalServerErrorException(
+        'Error al sincronizar y persistir estudiantes NEE',
+      );
     }
   }
 
-  async syncAndPersistCourses(semester: string): Promise<{count: number, courses: Course[]}> {
+  async syncAndPersistCourses(
+    semester: string,
+  ): Promise<{ count: number; courses: Course[] }> {
     try {
       // 1. Obtener cursos desde Hawaii UCN
       const cursos = await this.syncCourses(semester);
       if (cursos.length === 0) {
-        await this.createSyncLog(SyncType.CURSOS, semester, SyncStatus.ERROR, 0, 0, 'No se encontraron cursos');
+        await this.createSyncLog(
+          SyncType.CURSOS,
+          semester,
+          SyncStatus.ERROR,
+          0,
+          0,
+          'No se encontraron cursos',
+        );
         return { count: 0, courses: [] };
       }
-      
+
       // 2. Persistir o actualizar cursos en la base de datos
       const persistedCourses: Course[] = [];
       let syncedCount = 0;
-      
+
       for (const curso of cursos) {
         try {
           // Buscar si el curso ya existe por NRC y semestre
-          const existingCourse = await this.courseModel.findOne({
-            nrc: curso.nrc,
-            semester: semester
-          }).exec();
-          
+          const existingCourse = await this.courseModel
+            .findOne({
+              nrc: curso.nrc,
+              semester: semester,
+            })
+            .exec();
+
           if (existingCourse) {
             // Actualizar curso existente
-            const updated = await this.courseModel.findByIdAndUpdate(
-              existingCourse._id,
-              {
-                name: curso.asignatura,
-                code: curso.codigo,
-                parallel: curso.paralelo,
-                campus: curso.sede,
-                department: curso.departamento,
-                professorInfo: curso.profesores,
-                updatedAt: new Date(),
-              },
-              { new: true }
-            ).exec();
-            
+            const updated = await this.courseModel
+              .findByIdAndUpdate(
+                existingCourse._id,
+                {
+                  name: curso.asignatura,
+                  code: curso.codigo,
+                  parallel: curso.paralelo,
+                  campus: curso.sede,
+                  department: curso.departamento,
+                  professorInfo: curso.profesores,
+                  updatedAt: new Date(),
+                },
+                { new: true },
+              )
+              .exec();
+
             if (updated) {
               persistedCourses.push(updated);
               syncedCount++;
@@ -820,7 +1019,7 @@ if (existing) return existing;
               createdAt: new Date(),
               updatedAt: new Date(),
             });
-            
+
             const saved = await nuevoCurso.save();
             persistedCourses.push(saved);
             syncedCount++;
@@ -830,32 +1029,54 @@ if (existing) return existing;
           // Continuar con el siguiente curso
         }
       }
-      
+
       // 3. Registrar log de sincronización
-      const status = syncedCount === cursos.length ? SyncStatus.SUCCESS : 
-                    (syncedCount > 0 ? SyncStatus.PARTIAL : SyncStatus.ERROR);
-                    
-      await this.createSyncLog(SyncType.CURSOS, semester, status, cursos.length, syncedCount);
-      
+      const status =
+        syncedCount === cursos.length
+          ? SyncStatus.SUCCESS
+          : syncedCount > 0
+            ? SyncStatus.PARTIAL
+            : SyncStatus.ERROR;
+
+      await this.createSyncLog(
+        SyncType.CURSOS,
+        semester,
+        status,
+        cursos.length,
+        syncedCount,
+      );
+
       return { count: syncedCount, courses: persistedCourses };
     } catch (error) {
-      this.logger.error('Error en sincronización y persistencia de cursos:', error);
-      await this.createSyncLog(SyncType.CURSOS, semester, SyncStatus.ERROR, 0, 0, error.message);
-      throw new InternalServerErrorException('Error al sincronizar y persistir cursos');
+      this.logger.error(
+        'Error en sincronización y persistencia de cursos:',
+        error,
+      );
+      await this.createSyncLog(
+        SyncType.CURSOS,
+        semester,
+        SyncStatus.ERROR,
+        0,
+        0,
+        error.message,
+      );
+      throw new InternalServerErrorException(
+        'Error al sincronizar y persistir cursos',
+      );
     }
   }
-  
+
   /**
    * Crea un registro de log de sincronización
    */
   private async createSyncLog(
-    type: SyncType, 
-    semester: string, 
-    status: SyncStatus, 
-    itemsProcessed: number, 
+    type: SyncType,
+    semester: string,
+    status: SyncStatus,
+    itemsProcessed: number,
     itemsSynced: number,
     errorMessage?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<SyncLog | null> {
     try {
       const syncLog = new this.syncLogModel({
@@ -867,7 +1088,7 @@ if (existing) return existing;
         errorMessage,
         metadata,
       });
-      
+
       return await syncLog.save();
     } catch (error) {
       this.logger.error('Error al crear registro de sincronización:', error);

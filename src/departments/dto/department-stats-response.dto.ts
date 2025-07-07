@@ -4,7 +4,9 @@ export class DepartmentStatsResponseDto {
   @ApiProperty({ description: 'Total de docentes en el departamento' })
   totalTeachers: number;
 
-  @ApiProperty({ description: 'Total de estudiantes con NEE en el departamento' })
+  @ApiProperty({
+    description: 'Total de estudiantes con NEE en el departamento',
+  })
   totalStudentsWithNEE: number;
 
   @ApiProperty({ description: 'Total de ajustes razonables asignados' })

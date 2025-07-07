@@ -13,7 +13,7 @@ export class AdjustmentNotificationsService {
     message: string,
     type: NotificationType,
     semester: string,
-    adjustmentId: string
+    adjustmentId: string,
   ): Promise<{ success: boolean; message: string }> {
     try {
       await this.notificationsService.createSystemNotification(
@@ -22,7 +22,7 @@ export class AdjustmentNotificationsService {
         message,
         type,
         semester,
-        { type: 'adjustment', id: new Types.ObjectId(adjustmentId) }
+        { type: 'adjustment', id: new Types.ObjectId(adjustmentId) },
       );
 
       return {
@@ -54,7 +54,7 @@ export class AdjustmentNotificationsService {
       message,
       NotificationType.ADJUSTMENT_CREATED,
       semester,
-      adjustmentId
+      adjustmentId,
     );
   }
 
@@ -76,7 +76,7 @@ export class AdjustmentNotificationsService {
       message,
       NotificationType.ADJUSTMENT_REJECTED,
       semester,
-      adjustmentId
+      adjustmentId,
     );
   }
 
@@ -97,7 +97,7 @@ export class AdjustmentNotificationsService {
       message,
       NotificationType.ADJUSTMENT_APPROVED,
       semester,
-      adjustmentId
+      adjustmentId,
     );
   }
 
@@ -114,20 +114,23 @@ export class AdjustmentNotificationsService {
     const message = `El docente ${teacherName} ha marcado como implementado un ajuste razonable para ${studentName} en el curso ${courseName}.`;
 
     try {
-      await Promise.all(staffIds.map(staffId => 
-        this.notificationsService.createSystemNotification(
-          staffId,
-          title,
-          message,
-          NotificationType.ADJUSTMENT_UPDATED,
-          semester,
-          { type: 'adjustment', id: new Types.ObjectId(adjustmentId) }
-        )
-      ));
+      await Promise.all(
+        staffIds.map((staffId) =>
+          this.notificationsService.createSystemNotification(
+            staffId,
+            title,
+            message,
+            NotificationType.ADJUSTMENT_UPDATED,
+            semester,
+            { type: 'adjustment', id: new Types.ObjectId(adjustmentId) },
+          ),
+        ),
+      );
 
       return {
         success: true,
-        message: 'Notificación de implementación de ajuste enviada correctamente',
+        message:
+          'Notificación de implementación de ajuste enviada correctamente',
       };
     } catch (error) {
       return {

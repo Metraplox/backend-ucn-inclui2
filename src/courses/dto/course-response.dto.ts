@@ -37,9 +37,13 @@ export class CourseResponseDto {
   })
   nombre: string;
 
-  @ApiProperty({ type: CourseTeacherDto, required: false, description: 'Profesor del curso (si está poblado)'})
+  @ApiProperty({
+    type: CourseTeacherDto,
+    required: false,
+    description: 'Profesor del curso (si está poblado)',
+  })
   teacherId: CourseTeacherDto;
-  
+
   @ApiProperty({
     example: 'Departamento de Matemáticas',
     description: 'Departamento académico al que pertenece el curso',
@@ -64,4 +68,4 @@ export class CourseResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
-} 
+}

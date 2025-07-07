@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, PipelineStage } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +19,10 @@ export class StudentsService {
    * Busca estudiantes con NEE por departamento y semestre
    * Implementa lógica real para consultar estudiantes con necesidades especiales
    */
-  async findByDepartmentWithNEE(departmentId: string, semester: string): Promise<Student[]> {
+  async findByDepartmentWithNEE(
+    departmentId: string,
+    semester: string,
+  ): Promise<Student[]> {
     if (!Types.ObjectId.isValid(departmentId)) {
       throw new BadRequestException('ID de departamento inválido');
     }
@@ -60,7 +69,10 @@ export class StudentsService {
       const students = await this.studentModel.aggregate(aggregation).exec();
       return students;
     } catch (error) {
-      console.error(`Error al buscar estudiantes con NEE por departamento ${departmentId}:`, error);
+      console.error(
+        `Error al buscar estudiantes con NEE por departamento ${departmentId}:`,
+        error,
+      );
       return [];
     }
   }
@@ -73,7 +85,9 @@ export class StudentsService {
   async create(createStudentDto: CreateStudentDto): Promise<Student> {
     // Validar que la fecha de nacimiento exista, ya que será la contraseña
     if (!createStudentDto.fechaNacimiento) {
-      throw new BadRequestException('La fecha de nacimiento es obligatoria para crear al estudiante.');
+      throw new BadRequestException(
+        'La fecha de nacimiento es obligatoria para crear al estudiante.',
+      );
     }
 
     // Iniciar una sesión de transacción
@@ -85,7 +99,9 @@ export class StudentsService {
       // Formatear la fecha de nacimiento a 'ddmmyyyy'
       const parts = createStudentDto.fechaNacimiento.split('-'); // YYYY-MM-DD
       if (parts.length !== 3) {
-        throw new BadRequestException('El formato de la fecha de nacimiento debe ser YYYY-MM-DD.');
+        throw new BadRequestException(
+          'El formato de la fecha de nacimiento debe ser YYYY-MM-DD.',
+        );
       }
       const password = `${parts[2]}${parts[1]}${parts[0]}`; // ddmmyyyy
 
@@ -96,10 +112,11 @@ export class StudentsService {
       // 1. Crear el usuario primero
       const user = new this.userModel({
         email: createStudentDto.email.toLowerCase(),
-        nombreCompleto: `${createStudentDto.nombres} ${createStudentDto.apellidos}`.trim(),
+        nombreCompleto:
+          `${createStudentDto.nombres} ${createStudentDto.apellidos}`.trim(),
         roles: [UserRole.ESTUDIANTE],
         isActive: true,
-        isProfileComplete: false, 
+        isProfileComplete: false,
         password_hash: hashedPassword, // Usar la contraseña hasheada
       });
 
@@ -109,7 +126,7 @@ export class StudentsService {
       const createdStudent = new this.studentModel({
         ...createStudentDto,
         userId: savedUser._id,
-        carreraId: new Types.ObjectId(createStudentDto.carreraId)
+        carreraId: new Types.ObjectId(createStudentDto.carreraId),
       });
 
       const savedStudent = await createdStudent.save({ session });
@@ -118,57 +135,61 @@ export class StudentsService {
       await this.userModel.findByIdAndUpdate(
         savedUser._id,
         { $set: { studentId: savedStudent._id, isProfileComplete: true } },
-        { session }
+        { session },
       );
 
       // 4. Actualizar la carrera con el nuevo estudiante
-      await this.updateCareerWithStudent(createStudentDto.carreraId, savedStudent._id.toString(), session);
+      await this.updateCareerWithStudent(
+        createStudentDto.carreraId,
+        savedStudent._id.toString(),
+        session,
+      );
 
       // Confirmar la transacción
       await session.commitTransaction();
-      
+
       return savedStudent;
     } catch (error) {
       // Si hay un error, deshacer la transacción
       await session.abortTransaction();
-      
+
       // Manejar errores de duplicado
 
       if (error.code === 11000) {
         throw new ConflictException('El correo electrónico ya está en uso');
       }
-      
-      throw new InternalServerErrorException('Error al crear el estudiante: ' + error.message);
+
+      throw new InternalServerErrorException(
+        'Error al crear el estudiante: ' + error.message,
+      );
     } finally {
       // Finalizar la sesión
       await session.endSession();
     }
   }
-  
+
   /**
    * Método privado para actualizar la carrera con el ID del estudiante
    * Implementado directamente sobre la colección de MongoDB para evitar dependencias circulares
    */
   private async updateCareerWithStudent(
-    careerId: string, 
-    studentId: string, 
-    session?: any
+    careerId: string,
+    studentId: string,
+    session?: any,
   ): Promise<void> {
     try {
       const studentObjectId = new Types.ObjectId(studentId);
       const careerObjectId = new Types.ObjectId(careerId);
-      
+
       const updateOperation = {
-        $addToSet: { studentIds: studentObjectId }
+        $addToSet: { studentIds: studentObjectId },
       };
-      
+
       const options = session ? { session } : {};
-      
-      await this.studentModel.db.collection('careers').updateOne(
-        { _id: careerObjectId },
-        updateOperation,
-        options
-      );
+
+      await this.studentModel.db
+        .collection('careers')
+        .updateOne({ _id: careerObjectId }, updateOperation, options);
     } catch (error) {
       console.error('Error al actualizar la carrera con el estudiante:', error);
       // En este caso, como estamos en una transacción, es mejor lanzar el error
@@ -183,12 +204,12 @@ export class StudentsService {
    */
   async findAll(semester?: string): Promise<Student[]> {
     const query: any = {};
-    
+
     // Si se proporciona un semestre, filtramos por él
     if (semester) {
       query.semester = semester;
     }
-    
+
     return this.studentModel.find(query).exec(); // .exec() devuelve una Promise
   }
 
@@ -196,7 +217,7 @@ export class StudentsService {
     const student = await this.studentModel
       .findOne({ email: email.toLowerCase().trim() })
       .exec();
-      
+
     if (!student) {
       throw new NotFoundException(
         `Estudiante con email "${email}" no encontrado.`,
@@ -204,7 +225,7 @@ export class StudentsService {
     }
     return student;
   }
-  
+
   /**
    * Encuentra un estudiante basado en el ID de usuario asociado
    * @param userId ID del usuario en la colección de usuarios
@@ -213,19 +234,19 @@ export class StudentsService {
   async findByUserId(userId: string): Promise<Student> {
     // Convertir el string ID a ObjectId para la búsqueda
     const objectId = new Types.ObjectId(userId);
-    
+
     const student = await this.studentModel
       .findOne({ userId: objectId })
       .populate('userId', 'email isActive roles nombreCompleto')
       .populate('carreraId', 'name code')
       .exec();
-    
+
     if (!student) {
       throw new NotFoundException(
         `Perfil de estudiante no encontrado para el usuario con ID "${userId}".`,
       );
     }
-    
+
     return student;
   }
 
@@ -235,7 +256,7 @@ export class StudentsService {
       .populate('userId', 'email isActive roles')
       .populate('carreraId', 'name code')
       .exec();
-      
+
     if (!student) {
       throw new NotFoundException(`Estudiante con ID "${id}" no encontrado.`);
     }
@@ -252,7 +273,7 @@ export class StudentsService {
     if (!Types.ObjectId.isValid(id)) {
       return null;
     }
-    
+
     return this.studentModel
       .findById(id)
       .select('_id name rut email userId carreraId')
@@ -266,35 +287,34 @@ export class StudentsService {
   ): Promise<Student> {
     const updatedStudent = await this.studentModel
       .findByIdAndUpdate(
-        id, 
-        { 
+        id,
+        {
           ...updateStudentDto,
-          ...(updateStudentDto.carreraId && { 
-            carreraId: new Types.ObjectId(updateStudentDto.carreraId) 
-          })
-        }, 
-        { 
+          ...(updateStudentDto.carreraId && {
+            carreraId: new Types.ObjectId(updateStudentDto.carreraId),
+          }),
+        },
+        {
           new: true,
-          runValidators: true 
-        }
+          runValidators: true,
+        },
       )
       .populate('userId', 'email isActive roles')
       .populate('carreraId', 'name code')
       .exec();
-      
+
     if (!updatedStudent) {
       throw new NotFoundException(
         `Estudiante con ID "${id}" no encontrado para actualizar.`,
       );
     }
-    
+
     if (updateStudentDto.email) {
-      await this.userModel.findByIdAndUpdate(
-        updatedStudent.userId,
-        { email: updateStudentDto.email.toLowerCase().trim() }
-      );
+      await this.userModel.findByIdAndUpdate(updatedStudent.userId, {
+        email: updateStudentDto.email.toLowerCase().trim(),
+      });
     }
-    
+
     return updatedStudent;
   }
 
@@ -331,10 +351,9 @@ export class StudentsService {
 
     // Si se actualizó el email, actualizar también en el usuario
     if (updateStudentDto.email) {
-      await this.userModel.findByIdAndUpdate(
-        updatedStudent.userId,
-        { email: updateStudentDto.email.toLowerCase().trim() }
-      );
+      await this.userModel.findByIdAndUpdate(updatedStudent.userId, {
+        email: updateStudentDto.email.toLowerCase().trim(),
+      });
     }
 
     return updatedStudent;
@@ -359,11 +378,11 @@ export class StudentsService {
     const query: any = {
       hasSpecialNeeds: true,
     };
-    
+
     if (semester) {
       query.semester = semester;
     }
-    
+
     return this.studentModel.countDocuments(query).exec();
   }
 
@@ -376,12 +395,13 @@ export class StudentsService {
     const query: any = {
       hasSpecialNeeds: true,
     };
-    
+
     if (semester) {
       query.semester = semester;
     }
-    
-    return this.studentModel.find(query)
+
+    return this.studentModel
+      .find(query)
       .populate('carreraId', 'name department')
       .exec();
   }
@@ -393,40 +413,40 @@ export class StudentsService {
    */
   async getStudentCountByCareer(semester: string): Promise<any[]> {
     const pipeline: PipelineStage[] = [];
-    
+
     // Filtrar por semestre y estudiantes con NEE
     const matchStage: any = { hasSpecialNeeds: true };
     if (semester) {
       matchStage.semester = semester;
     }
     pipeline.push({ $match: matchStage });
-    
+
     // Agrupar por carrera y contar estudiantes
     pipeline.push({
       $group: {
         _id: '$carreraId',
-        count: { $sum: 1 }
-      }
+        count: { $sum: 1 },
+      },
     });
-    
+
     // Lookup para obtener detalles de la carrera
     pipeline.push({
       $lookup: {
         from: 'careers',
         localField: '_id',
         foreignField: '_id',
-        as: 'careerDetails'
-      }
+        as: 'careerDetails',
+      },
     });
-    
+
     // Desenrollar los detalles de la carrera
     pipeline.push({
       $unwind: {
         path: '$careerDetails',
-        preserveNullAndEmptyArrays: true
-      }
+        preserveNullAndEmptyArrays: true,
+      },
     });
-    
+
     // Proyecto para formatear la salida
     pipeline.push({
       $project: {
@@ -434,13 +454,13 @@ export class StudentsService {
         careerId: '$_id',
         careerName: '$careerDetails.name',
         department: '$careerDetails.department',
-        studentCount: '$count'
-      }
+        studentCount: '$count',
+      },
     });
-    
+
     // Ordenar por cantidad de estudiantes descendente
     pipeline.push({ $sort: { studentCount: -1 } });
-    
+
     return this.studentModel.aggregate(pipeline).exec();
   }
 }

@@ -1,13 +1,7 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  Adjustment,
-  AdjustmentDocument,
-} from '../schemas/adjustment.schema';
+import { Adjustment, AdjustmentDocument } from '../schemas/adjustment.schema';
 
 @Injectable()
 export class AdjustmentStatsService {
@@ -33,9 +27,7 @@ export class AdjustmentStatsService {
       })
       .exec();
 
-    this.logger.log(
-      `📈 Ajustes confirmados en semestre ${semester}: ${count}`,
-    );
+    this.logger.log(`📈 Ajustes confirmados en semestre ${semester}: ${count}`);
 
     return count;
   }
@@ -52,9 +44,7 @@ export class AdjustmentStatsService {
       })
       .exec();
 
-    this.logger.log(
-      `⏳ Ajustes pendientes en semestre ${semester}: ${count}`,
-    );
+    this.logger.log(`⏳ Ajustes pendientes en semestre ${semester}: ${count}`);
 
     return count;
   }
@@ -289,7 +279,8 @@ export class AdjustmentStatsService {
     departmentComparison: any[];
   }> {
     // Simulación de métricas avanzadas - en producción conectar con logs reales
-    const averageResponseTime = await this.calculateAverageResponseTime(semester);
+    const averageResponseTime =
+      await this.calculateAverageResponseTime(semester);
     const mostActiveTeachers = await this.getMostActiveTeachers(semester);
     const adjustmentTrends = await this.getAdjustmentTrends(semester);
     const departmentComparison = await this.getDepartmentComparison(semester);
@@ -309,7 +300,9 @@ export class AdjustmentStatsService {
   /**
    * ⏱️ Calcular tiempo promedio de respuesta (simulado)
    */
-  private async calculateAverageResponseTime(semester: string): Promise<number> {
+  private async calculateAverageResponseTime(
+    semester: string,
+  ): Promise<number> {
     // En producción, calcular desde timestamps de lectura/confirmación
     const adjustments = await this.adjustmentModel
       .find({
@@ -382,7 +375,7 @@ export class AdjustmentStatsService {
       ])
       .exec();
 
-    return result.map(item => ({
+    return result.map((item) => ({
       date: item._id,
       count: item.count,
     }));
@@ -422,7 +415,16 @@ export class AdjustmentStatsService {
                 $cond: [
                   {
                     $or: [
-                      { $gt: [{ $size: { $ifNull: ['$currentAdjustments.readBy', []] } }, 0] },
+                      {
+                        $gt: [
+                          {
+                            $size: {
+                              $ifNull: ['$currentAdjustments.readBy', []],
+                            },
+                          },
+                          0,
+                        ],
+                      },
                       { $eq: ['$currentAdjustments.estado', 'ACTIVE'] },
                       { $eq: ['$currentAdjustments.estado', 'COMPLETED'] },
                     ],

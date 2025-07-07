@@ -1,4 +1,14 @@
-import { IsEmail, IsNotEmpty, IsString, IsOptional, IsMongoId, Matches, IsBoolean, MaxLength, IsISO8601 } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsMongoId,
+  Matches,
+  IsBoolean,
+  MaxLength,
+  IsISO8601,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../users/schemas/user.schema';
 
@@ -20,13 +30,15 @@ export class CreateStudentDto {
   apellidos: string;
 
   @ApiProperty({
-    description: 'RUT del estudiante, solo números y termina opcionalmente con K (sin puntos, sin guion, sin espacios)',
+    description:
+      'RUT del estudiante, solo números y termina opcionalmente con K (sin puntos, sin guion, sin espacios)',
     example: '12345678K',
   })
   @IsString({ message: 'El RUT debe ser una cadena de texto' })
   @IsNotEmpty({ message: 'El RUT es obligatorio' })
   @Matches(/^[0-9]{7,8}[0-9K]?$/, {
-    message: 'El RUT debe contener 7 u 8 dígitos y terminar opcionalmente con K, sin guion, sin puntos, sin espacios',
+    message:
+      'El RUT debe contener 7 u 8 dígitos y terminar opcionalmente con K, sin guion, sin puntos, sin espacios',
   })
   rut: string;
 
@@ -48,7 +60,7 @@ export class CreateStudentDto {
   @IsMongoId({ message: 'El ID de la carrera debe ser un MongoID válido.' })
   @IsNotEmpty({ message: 'La carrera no puede estar vacía.' })
   readonly carreraId: string;
-  
+
   @ApiProperty({
     description: 'Semestre académico actual',
     example: '2025-1',

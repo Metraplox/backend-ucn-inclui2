@@ -30,7 +30,8 @@ export class AdditionalResponsibilitiesDto {
   isDIDDECStaff?: boolean;
 
   @ApiProperty({
-    description: 'IDs de los departamentos que gestiona el usuario (si aplica).',
+    description:
+      'IDs de los departamentos que gestiona el usuario (si aplica).',
     type: [String],
     example: ['60f7eabc1234567890abcdef'],
     required: false,

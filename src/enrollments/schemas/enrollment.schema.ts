@@ -21,6 +21,9 @@ export class Enrollment {
 export const EnrollmentSchema = SchemaFactory.createForClass(Enrollment);
 
 // Indexes
-EnrollmentSchema.index({ studentRut: 1, nrc: 1, semester: 1 }, { unique: true });
+EnrollmentSchema.index(
+  { studentRut: 1, nrc: 1, semester: 1 },
+  { unique: true },
+);
 EnrollmentSchema.index({ studentRut: 1, semester: 1 });
 EnrollmentSchema.index({ nrc: 1, semester: 1 });

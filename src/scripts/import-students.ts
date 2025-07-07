@@ -2,14 +2,22 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Logger } from '@nestjs/common';
 import { connect, connection } from 'mongoose';
-import { Student, StudentDocument, StudentSchema } from '../students/schemas/student.schema';
+import {
+  Student,
+  StudentDocument,
+  StudentSchema,
+} from '../students/schemas/student.schema';
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const logger = new Logger('ImportStudentsScript');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/inclui2';
+const MONGODB_URI =
+  process.env.MONGODB_URI || 'mongodb://localhost:27017/inclui2';
 
-const STUDENTS_FILE = path.resolve(__dirname, '../../GUIA-PROYECTO/json_estudiantes-hawaii.txt');
+const STUDENTS_FILE = path.resolve(
+  __dirname,
+  '../../GUIA-PROYECTO/json_estudiantes-hawaii.txt',
+);
 
 async function extractStudents(): Promise<any[]> {
   const raw = fs.readFileSync(STUDENTS_FILE, 'utf-8');
@@ -34,13 +42,19 @@ async function extractStudents(): Promise<any[]> {
 async function main() {
   await connect(MONGODB_URI);
   // Usar type casting para evitar errores de tipo
-  const studentModel = connection.model<StudentDocument>('Student', StudentSchema as any);
+  const studentModel = connection.model<StudentDocument>(
+    'Student',
+    StudentSchema as any,
+  );
 
   const students = await extractStudents();
   let inserted = 0;
   for (const student of students) {
     if (!student.rut || !student.apellidos || !student.nombres) {
-      logger.warn(`⏭️ [SKIP] Faltan campos obligatorios para estudiante:`, student);
+      logger.warn(
+        `⏭️ [SKIP] Faltan campos obligatorios para estudiante:`,
+        student,
+      );
       continue;
     }
     // Validar formato de RUT si es necesario (ejemplo: solo números y K)
@@ -57,7 +71,9 @@ async function main() {
     const doc = new studentModel(student);
     await doc.save();
     inserted++;
-    logger.log(`✅ [OK] Insertado: ${student.nombres} ${student.apellidos} (${student.rut})`);
+    logger.log(
+      `✅ [OK] Insertado: ${student.nombres} ${student.apellidos} (${student.rut})`,
+    );
   }
   logger.log(`📊 Total estudiantes insertados: ${inserted}`);
   process.exit(0);

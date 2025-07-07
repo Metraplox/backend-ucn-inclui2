@@ -16,7 +16,7 @@ export class ExportService {
     user: any,
   ): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
-    
+
     workbook.creator = 'Sistema Incluye UCN';
     workbook.lastModifiedBy = 'Sistema Incluye UCN';
     workbook.created = new Date();
@@ -34,7 +34,7 @@ export class ExportService {
         break;
     }
 
-    return await workbook.xlsx.writeBuffer() as Buffer;
+    return (await workbook.xlsx.writeBuffer()) as Buffer;
   }
 
   private async addDepartmentSheet(
@@ -43,7 +43,7 @@ export class ExportService {
     user: any,
   ): Promise<void> {
     const worksheet = workbook.addWorksheet('Cumplimiento por Departamento');
-    
+
     // Configurar encabezados
     worksheet.columns = [
       { header: 'Departamento', key: 'departmentName', width: 30 },
@@ -87,18 +87,32 @@ export class ExportService {
     });
 
     // Aplicar formato condicional para la tasa de cumplimiento
-    worksheet.getColumn('complianceRate').eachCell({ includeEmpty: false }, (cell, rowNumber) => {
-      if (rowNumber > 1) {
-        const value = cell.value as number;
-        if (value >= 90) {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E8' } };
-        } else if (value >= 70) {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3E0' } };
-        } else {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEBEE' } };
+    worksheet
+      .getColumn('complianceRate')
+      .eachCell({ includeEmpty: false }, (cell, rowNumber) => {
+        if (rowNumber > 1) {
+          const value = cell.value as number;
+          if (value >= 90) {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFE8F5E8' },
+            };
+          } else if (value >= 70) {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFFFF3E0' },
+            };
+          } else {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFFFEBEE' },
+            };
+          }
         }
-      }
-    });
+      });
   }
 
   private async addTeacherSheet(
@@ -107,7 +121,7 @@ export class ExportService {
     user: any,
   ): Promise<void> {
     const worksheet = workbook.addWorksheet('Cumplimiento por Docente');
-    
+
     // Configurar encabezados
     worksheet.columns = [
       { header: 'Nombre Docente', key: 'teacherName', width: 25 },
@@ -118,7 +132,11 @@ export class ExportService {
       { header: 'Ajustes Pendientes', key: 'pendingAdjustments', width: 18 },
       { header: 'Ajustes Vencidos', key: 'overdueAdjustments', width: 18 },
       { header: 'Tasa de Cumplimiento (%)', key: 'complianceRate', width: 25 },
-      { header: 'Tiempo Promedio Revisión (días)', key: 'averageReviewTime', width: 30 },
+      {
+        header: 'Tiempo Promedio Revisión (días)',
+        key: 'averageReviewTime',
+        width: 30,
+      },
       { header: 'Última Revisión', key: 'lastReviewDate', width: 20 },
     ];
 
@@ -152,25 +170,39 @@ export class ExportService {
         overdueAdjustments: item.overdueAdjustments,
         complianceRate: item.complianceRate,
         averageReviewTime: item.averageReviewTime,
-        lastReviewDate: item.lastReviewDate 
+        lastReviewDate: item.lastReviewDate
           ? item.lastReviewDate.toLocaleDateString('es-CL')
           : 'Sin revisiones',
       });
     });
 
     // Aplicar formato condicional
-    worksheet.getColumn('complianceRate').eachCell({ includeEmpty: false }, (cell, rowNumber) => {
-      if (rowNumber > 1) {
-        const value = cell.value as number;
-        if (value >= 90) {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E8' } };
-        } else if (value >= 70) {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3E0' } };
-        } else {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEBEE' } };
+    worksheet
+      .getColumn('complianceRate')
+      .eachCell({ includeEmpty: false }, (cell, rowNumber) => {
+        if (rowNumber > 1) {
+          const value = cell.value as number;
+          if (value >= 90) {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFE8F5E8' },
+            };
+          } else if (value >= 70) {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFFFF3E0' },
+            };
+          } else {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFFFEBEE' },
+            };
+          }
         }
-      }
-    });
+      });
   }
 
   private async addStudentsSheet(
@@ -179,7 +211,7 @@ export class ExportService {
     user: any,
   ): Promise<void> {
     const worksheet = workbook.addWorksheet('Estudiantes con NEE');
-    
+
     // Configurar encabezados
     worksheet.columns = [
       { header: 'RUT', key: 'rut', width: 15 },
@@ -223,7 +255,10 @@ export class ExportService {
     });
   }
 
-  private async getStudentsWithNEEData(semester: string, user: any): Promise<any[]> {
+  private async getStudentsWithNEEData(
+    semester: string,
+    user: any,
+  ): Promise<any[]> {
     // Implementación temporal - esto debería conectar con el servicio real
     return [
       {

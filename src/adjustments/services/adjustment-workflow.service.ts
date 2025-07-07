@@ -299,7 +299,10 @@ export class AdjustmentWorkflowService {
         `Estado cambiado para ajuste ${adjustment._id}: ${oldStatus} → ${newStatus}`,
       );
     } catch (error) {
-      this.logger.error('Error enviando notificación de cambio de estado:', error);
+      this.logger.error(
+        'Error enviando notificación de cambio de estado:',
+        error,
+      );
     }
   }
 
@@ -317,7 +320,10 @@ export class AdjustmentWorkflowService {
         `Solicitud de ayuda para ajuste ${adjustment._id} por usuario ${userId}`,
       );
     } catch (error) {
-      this.logger.error('Error enviando notificación de solicitud de ayuda:', error);
+      this.logger.error(
+        'Error enviando notificación de solicitud de ayuda:',
+        error,
+      );
     }
   }
 }

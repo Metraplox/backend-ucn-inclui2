@@ -39,7 +39,9 @@ class AdjustmentCategoryDto {
   @ApiProperty({ example: 'Tiempo extra para evaluaciones' })
   name: string;
 
-  @ApiProperty({ example: 'Otorga un 50% de tiempo adicional en pruebas y exámenes.' })
+  @ApiProperty({
+    example: 'Otorga un 50% de tiempo adicional en pruebas y exámenes.',
+  })
   description: string;
 }
 
@@ -163,4 +165,4 @@ export class AdjustmentResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
-} 
+}

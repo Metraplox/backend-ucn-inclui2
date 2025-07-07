@@ -8,16 +8,21 @@ import * as mongoose from 'mongoose';
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 // Configuración MongoDB desde .env
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/inclui2';
+const MONGODB_URI =
+  process.env.MONGODB_URI || 'mongodb://localhost:27017/inclui2';
 
 // Archivo fuente de carreras
-const NEE_FILE = path.resolve(__dirname, '../../GUIA-PROYECTO/ESTUDIANTES_NEE.txt');
+const NEE_FILE = path.resolve(
+  __dirname,
+  '../../GUIA-PROYECTO/ESTUDIANTES_NEE.txt',
+);
 
 // Extrae carreras únicas del archivo fuente
 async function extractCareers(): Promise<{ name: string; code: string }[]> {
   const lines = fs.readFileSync(NEE_FILE, 'utf-8').split('\n').filter(Boolean);
   const carrerasSet = new Set<string>();
-  for (const line of lines.slice(1)) { // Saltar cabecera
+  for (const line of lines.slice(1)) {
+    // Saltar cabecera
     const parts = line.split('\t');
     if (parts.length >= 3) {
       carrerasSet.add(parts[2].trim());
@@ -32,7 +37,11 @@ async function extractCareers(): Promise<{ name: string; code: string }[]> {
 
 function generateCareerCode(name: string): string {
   // Simple: primeras letras de cada palabra en mayúsculas
-  return name.split(' ').map(w => w[0]).join('').toUpperCase();
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
 }
 
 async function main() {
@@ -52,8 +61,13 @@ async function main() {
     // Solicitar datos obligatorios faltantes por consola
     const faculty = await ask(`Facultad para "${career.name}": `);
     const departmentId = await ask(`DepartmentId para "${career.name}": `);
-    const duration = parseInt(await ask(`Duración en semestres para "${career.name}": `), 10);
-    const currentSemester = await ask(`Semestre actual para "${career.name}" (ej: 2025-1): `);
+    const duration = parseInt(
+      await ask(`Duración en semestres para "${career.name}": `),
+      10,
+    );
+    const currentSemester = await ask(
+      `Semestre actual para "${career.name}" (ej: 2025-1): `,
+    );
     const campus = await ask(`Campus para "${career.name}" (opcional): `);
 
     const doc = new careerModel({
@@ -75,11 +89,16 @@ async function main() {
 }
 
 function ask(question: string): Promise<string> {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => rl.question(question, (ans) => {
-    rl.close();
-    resolve(ans.trim());
-  }));
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  return new Promise((resolve) =>
+    rl.question(question, (ans) => {
+      rl.close();
+      resolve(ans.trim());
+    }),
+  );
 }
 
 main().catch((err) => {

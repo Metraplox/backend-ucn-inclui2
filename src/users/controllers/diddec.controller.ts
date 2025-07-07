@@ -26,18 +26,23 @@ import { DepartmentsService } from '../../departments/departments.service';
 import { CareersService } from '../../careers/careers.service';
 import { UserRole } from '../schemas/user.schema';
 import { Department } from '../../departments/schemas/department.schema';
-import { Notification, NotificationType } from '../../notifications/schemas/notification.schema';
+import {
+  Notification,
+  NotificationType,
+} from '../../notifications/schemas/notification.schema';
 
 /**
  * Función auxiliar para mapear tipos simples a NotificationType
  * Esto permite compatibilidad con diferentes esquemas de notificaciones
  */
-function mapNotificationTypeToEnum(type: 'info' | 'warning' | 'success' | 'error' | NotificationType): NotificationType {
+function mapNotificationTypeToEnum(
+  type: 'info' | 'warning' | 'success' | 'error' | NotificationType,
+): NotificationType {
   // Si ya es un NotificationType, devolverlo directamente
   if (Object.values(NotificationType).includes(type as NotificationType)) {
     return type as NotificationType;
   }
-  
+
   // Mapear los tipos simples a NotificationType
   switch (type) {
     case 'info':

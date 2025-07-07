@@ -88,7 +88,7 @@ export class UsersService {
   async findByGoogleId(googleId: string): Promise<User | null> {
     return this.userModel.findOne({ googleId }).exec();
   }
-  
+
   async attachGoogleIdToUser(userId: string, googleId: string): Promise<User> {
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
@@ -97,7 +97,6 @@ export class UsersService {
     user.googleId = googleId;
     return user.save();
   }
-    
 
   async findOneById(id: string): Promise<UserPublicData> {
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -223,12 +222,23 @@ export class UsersService {
       adminChangePasswordDto.newPassword,
       10,
     );
-    
-    await this.userModel.updateOne({ _id: id }, { password_hash: hashedPassword }).exec();
+
+    await this.userModel
+      .updateOne({ _id: id }, { password_hash: hashedPassword })
+      .exec();
   }
 
   // --- Métodos de ayuda ---
-  private mapToPublicData(user: UserDocument): UserPublicData {
-    // ... existing code ...
+  private mapToPublicData(user: User & Document): UserPublicData {
+    return {
+      _id: user._id.toString(),
+      email: user.email,
+      nombreCompleto: user.nombreCompleto,
+      roles: user.roles,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      studentId: user.studentId?.toString(),
+    };
   }
 }

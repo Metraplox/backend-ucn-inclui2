@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean, IsMongoId, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsMongoId,
+  IsArray,
+} from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateDepartmentDto } from './create-department.dto';
 
@@ -9,7 +15,10 @@ export class UpdateDepartmentDto extends PartialType(CreateDepartmentDto) {
   @IsString()
   name?: string;
 
-  @ApiProperty({ description: 'Código único del departamento', required: false })
+  @ApiProperty({
+    description: 'Código único del departamento',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   code?: string;
@@ -19,7 +28,11 @@ export class UpdateDepartmentDto extends PartialType(CreateDepartmentDto) {
   @IsMongoId()
   headId?: string;
 
-  @ApiProperty({ description: 'Lista de IDs de docentes del departamento', required: false, type: [String] })
+  @ApiProperty({
+    description: 'Lista de IDs de docentes del departamento',
+    required: false,
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
@@ -35,12 +48,19 @@ export class UpdateDepartmentDto extends PartialType(CreateDepartmentDto) {
   @IsString()
   campus?: string;
 
-  @ApiProperty({ description: 'Estado activo del departamento', required: false })
+  @ApiProperty({
+    description: 'Estado activo del departamento',
+    required: false,
+  })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiProperty({ description: 'Semestre actual', required: false, example: '2025-1' })
+  @ApiProperty({
+    description: 'Semestre actual',
+    required: false,
+    example: '2025-1',
+  })
   @IsOptional()
   @IsString()
   currentSemester?: string;

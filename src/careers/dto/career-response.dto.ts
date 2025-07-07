@@ -33,7 +33,10 @@ export class CareerResponseDto {
   @ApiProperty({ type: CareerDepartmentDto })
   departmentId: CareerDepartmentDto;
 
-  @ApiProperty({ type: [String], description: 'Lista de IDs de estudiantes de la carrera' })
+  @ApiProperty({
+    type: [String],
+    description: 'Lista de IDs de estudiantes de la carrera',
+  })
   studentIds: string[];
 
   @ApiProperty()
@@ -50,10 +53,10 @@ export class CareerResponseDto {
 
   @ApiProperty()
   currentSemester: string;
-  
+
   @ApiProperty()
   createdAt: Date;
 
   @ApiProperty()
   updatedAt: Date;
-} 
+}

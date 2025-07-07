@@ -16,17 +16,21 @@ describe('CoursesService', () => {
         {
           provide: getModelToken(Course.name),
           useValue: {
-            find: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([]) }),
-            findOne: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) }),
+            find: jest
+              .fn()
+              .mockReturnValue({ exec: jest.fn().mockResolvedValue([]) }),
+            findOne: jest
+              .fn()
+              .mockReturnValue({ exec: jest.fn().mockResolvedValue(null) }),
           },
         },
         {
           provide: getModelToken(Adjustment.name),
           useValue: {
-            find: jest.fn().mockReturnValue({ 
+            find: jest.fn().mockReturnValue({
               lean: jest.fn().mockReturnValue({
-                exec: jest.fn().mockResolvedValue([])
-              })
+                exec: jest.fn().mockResolvedValue([]),
+              }),
             }),
           },
         },

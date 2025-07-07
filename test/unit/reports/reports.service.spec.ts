@@ -17,7 +17,7 @@ describe('ReportsService', () => {
     const mockReportDocument = {
       save: jest.fn().mockResolvedValue({}),
     };
-    
+
     mockReportModel = jest.fn().mockImplementation(() => mockReportDocument);
     mockReportModel.find = jest.fn().mockReturnValue({
       exec: jest.fn().mockResolvedValue([]),
@@ -81,7 +81,9 @@ describe('ReportsService', () => {
       const mockUser = { role: 'COORDINADOR', id: 'user123' };
       const filter = { semester: '2025-1', active: true };
 
-      mockStudentsService.findAllWithNEE = jest.fn().mockResolvedValue(mockStudents);
+      mockStudentsService.findAllWithNEE = jest
+        .fn()
+        .mockResolvedValue(mockStudents);
 
       // Act
       const result = await service.getStudentsWithNEE(
@@ -102,7 +104,12 @@ describe('ReportsService', () => {
       const mockUser = { role: 'COORDINADOR', id: 'user123' };
 
       // Act
-      const result = await service.getStudentsWithNEE('2025-1', undefined, true, mockUser);
+      const result = await service.getStudentsWithNEE(
+        '2025-1',
+        undefined,
+        true,
+        mockUser,
+      );
 
       // Assert
       expect(result).toEqual([]);
@@ -115,7 +122,7 @@ describe('ReportsService', () => {
       // Arrange
       const studentId = '507f1f77bcf86cd799439011';
       const semester = '2025-1';
-      
+
       const mockStudent = {
         _id: studentId,
         rut: '12.345.678-9',
@@ -148,7 +155,9 @@ describe('ReportsService', () => {
       };
 
       mockStudentsService.findOne = jest.fn().mockResolvedValue(mockStudent);
-      mockAdjustmentsService.findByStudentId = jest.fn().mockResolvedValue(mockAdjustments);
+      mockAdjustmentsService.findByStudentId = jest
+        .fn()
+        .mockResolvedValue(mockAdjustments);
       mockReportModel.constructor = jest.fn().mockReturnValue(mockReport);
 
       // Act
@@ -157,7 +166,9 @@ describe('ReportsService', () => {
       // Assert
       expect(result).toBeDefined();
       expect(mockStudentsService.findOne).toHaveBeenCalledWith(studentId);
-      expect(mockAdjustmentsService.findByStudentId).toHaveBeenCalledWith(studentId);
+      expect(mockAdjustmentsService.findByStudentId).toHaveBeenCalledWith(
+        studentId,
+      );
     });
   });
 

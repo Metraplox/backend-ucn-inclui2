@@ -52,7 +52,8 @@ export class ConsentService {
       consentDate: new Date(),
       studentRut: student.rut,
       studentName: `${student.nombres} ${student.apellidos}`,
-      studentCareer: (student.carreraId as any)?.name || 'Carrera no especificada',
+      studentCareer:
+        (student.carreraId as any)?.name || 'Carrera no especificada',
       comments,
       registeredBy: new Types.ObjectId(authenticatedUserId),
       ipAddress,
@@ -96,7 +97,9 @@ export class ConsentService {
   /**
    * Obtener el consentimiento activo de un estudiante por su Student ID
    */
-  async getConsentByStudentId(studentId: string): Promise<ConsentDocument | null> {
+  async getConsentByStudentId(
+    studentId: string,
+  ): Promise<ConsentDocument | null> {
     if (!Types.ObjectId.isValid(studentId)) {
       throw new BadRequestException('ID de estudiante inválido.');
     }
@@ -112,10 +115,13 @@ export class ConsentService {
   async canViewSensitiveData(
     studentId: string,
     viewerRole: UserRole,
-    viewerUserId?: string
+    viewerUserId?: string,
   ): Promise<boolean> {
     // Coordinadora y Educadora Social: SIEMPRE pueden ver información sensible
-    if (viewerRole === UserRole.COORDINADOR || viewerRole === UserRole.EDUCADORA_SOCIAL) {
+    if (
+      viewerRole === UserRole.COORDINADOR ||
+      viewerRole === UserRole.EDUCADORA_SOCIAL
+    ) {
       return true;
     }
 
@@ -140,11 +146,14 @@ export class ConsentService {
   async canViewDocuments(
     studentId: string,
     viewerRole: UserRole,
-    viewerUserId?: string
+    viewerUserId?: string,
   ): Promise<boolean> {
     // Solo Coordinadora y Educadora Social pueden ver documentos
     // Y solo si el estudiante tiene consentimiento activo
-    if (viewerRole === UserRole.COORDINADOR || viewerRole === UserRole.EDUCADORA_SOCIAL) {
+    if (
+      viewerRole === UserRole.COORDINADOR ||
+      viewerRole === UserRole.EDUCADORA_SOCIAL
+    ) {
       const consent = await this.getConsentByStudentId(studentId);
       return consent?.allowsDataSharing || false;
     }
@@ -166,10 +175,13 @@ export class ConsentService {
   async canViewAdjustments(
     studentId: string,
     viewerRole: UserRole,
-    viewerUserId?: string
+    viewerUserId?: string,
   ): Promise<boolean> {
     // Coordinadora y Educadora Social: SIEMPRE pueden ver ajustes
-    if (viewerRole === UserRole.COORDINADOR || viewerRole === UserRole.EDUCADORA_SOCIAL) {
+    if (
+      viewerRole === UserRole.COORDINADOR ||
+      viewerRole === UserRole.EDUCADORA_SOCIAL
+    ) {
       return true;
     }
 
@@ -180,7 +192,10 @@ export class ConsentService {
     }
 
     // Jefes de carrera y departamento: pueden ver ajustes
-    if (viewerRole === UserRole.JEFE_CARRERA || viewerRole === UserRole.JEFE_DEPARTAMENTO) {
+    if (
+      viewerRole === UserRole.JEFE_CARRERA ||
+      viewerRole === UserRole.JEFE_DEPARTAMENTO
+    ) {
       return true;
     }
 
@@ -203,7 +218,7 @@ export class ConsentService {
     reason?: string,
   ): Promise<ConsentDocument> {
     const consent = await this.getConsentByUserId(authenticatedUserId);
-    
+
     if (!consent) {
       throw new NotFoundException('No se encontró un consentimiento activo.');
     }
@@ -211,7 +226,7 @@ export class ConsentService {
     consent.allowsDataSharing = false;
     consent.revokedAt = new Date();
     consent.revocationReason = reason;
-    
+
     return consent.save();
   }
 
@@ -225,9 +240,9 @@ export class ConsentService {
     percentageWithConsent: number;
   }> {
     const total = await this.consentModel.countDocuments({ isActive: true });
-    const withConsent = await this.consentModel.countDocuments({ 
-      isActive: true, 
-      allowsDataSharing: true 
+    const withConsent = await this.consentModel.countDocuments({
+      isActive: true,
+      allowsDataSharing: true,
     });
     const withoutConsent = total - withConsent;
     const percentageWithConsent = total > 0 ? (withConsent / total) * 100 : 0;

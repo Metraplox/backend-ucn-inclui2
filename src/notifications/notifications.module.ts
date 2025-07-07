@@ -5,7 +5,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { NotificationsGateway } from './notifications.gateway';
-import { Notification, NotificationSchema } from './schemas/notification.schema';
+import {
+  Notification,
+  NotificationSchema,
+} from './schemas/notification.schema';
 import { NotificationRepository } from './repositories/notification.repository';
 import { AdjustmentNotificationsService } from './services/adjustment-notifications.service';
 
@@ -25,11 +28,15 @@ import { AdjustmentNotificationsService } from './services/adjustment-notificati
   ],
   controllers: [NotificationsController],
   providers: [
-    NotificationsService, 
+    NotificationsService,
     NotificationRepository,
     AdjustmentNotificationsService,
-    NotificationsGateway
+    NotificationsGateway,
   ],
-  exports: [NotificationsService, AdjustmentNotificationsService, NotificationsGateway],
+  exports: [
+    NotificationsService,
+    AdjustmentNotificationsService,
+    NotificationsGateway,
+  ],
 })
 export class NotificationsModule {}

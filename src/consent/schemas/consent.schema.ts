@@ -9,7 +9,8 @@ export type ConsentDocument = Consent & Document;
 @Schema({ timestamps: true })
 export class Consent {
   @ApiProperty({
-    description: 'ID único del registro de consentimiento (generado por MongoDB)',
+    description:
+      'ID único del registro de consentimiento (generado por MongoDB)',
     example: '605c72ef9167f86c2cabc999',
   })
   declare _id: string;
@@ -29,7 +30,8 @@ export class Consent {
   studentId: Types.ObjectId;
 
   @ApiProperty({
-    description: 'Si el estudiante autoriza compartir su diagnóstico con docentes y otras áreas',
+    description:
+      'Si el estudiante autoriza compartir su diagnóstico con docentes y otras áreas',
     example: true,
   })
   @Prop({ type: Boolean, required: true, default: false })
@@ -79,7 +81,8 @@ export class Consent {
   registeredBy: Types.ObjectId;
 
   @ApiProperty({
-    description: 'Dirección IP desde donde se otorgó el consentimiento (auditoría)',
+    description:
+      'Dirección IP desde donde se otorgó el consentimiento (auditoría)',
     example: '192.168.1.100',
     required: false,
   })

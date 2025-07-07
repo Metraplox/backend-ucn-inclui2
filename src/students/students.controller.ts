@@ -46,10 +46,11 @@ export class StudentsController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Crear un nuevo estudiante con NEE',
-    description: 'Registra un nuevo estudiante con necesidades educativas especiales en el sistema. Automáticamente asocia al estudiante con la carrera especificada y crea su perfil completo.',
+    description:
+      'Registra un nuevo estudiante con necesidades educativas especiales en el sistema. Automáticamente asocia al estudiante con la carrera especificada y crea su perfil completo.',
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'Estudiante creado exitosamente y asociado a la carrera.',
     type: StudentResponseDto,
     schema: {
@@ -64,35 +65,37 @@ export class StudentsController {
         semesterInfo: {
           currentSemester: '2025-1',
           entryYear: 2025,
-          academicStatus: 'regular'
+          academicStatus: 'regular',
         },
         neeDetails: {
           primaryDiagnosis: 'Dislexia',
           categories: ['Aprendizaje'],
-          supportLevel: 'moderado'
+          supportLevel: 'moderado',
         },
         isActive: true,
-        createdAt: '2025-06-19T12:00:00.000Z'
-      }
-    }
+        createdAt: '2025-06-19T12:00:00.000Z',
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Datos de entrada inválidos. El RUT, email o datos de carrera son incorrectos.' 
+  @ApiResponse({
+    status: 400,
+    description:
+      'Datos de entrada inválidos. El RUT, email o datos de carrera son incorrectos.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores y educadoras sociales pueden crear estudiantes.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo coordinadores y educadoras sociales pueden crear estudiantes.',
   })
-  @ApiResponse({ 
-    status: 409, 
-    description: 'Conflicto - El RUT o email ya está registrado en el sistema.' 
+  @ApiResponse({
+    status: 409,
+    description: 'Conflicto - El RUT o email ya está registrado en el sistema.',
   })
-  @ApiBody({ 
+  @ApiBody({
     type: CreateStudentDto,
     description: 'Datos completos del estudiante a registrar',
     examples: {
@@ -106,17 +109,17 @@ export class StudentsController {
           careerId: '507f1f77bcf86cd799439012',
           semesterInfo: {
             currentSemester: '2025-1',
-            entryYear: 2025
+            entryYear: 2025,
           },
           neeDetails: {
             primaryDiagnosis: 'Dislexia',
             categories: ['Aprendizaje'],
             supportLevel: 'moderado',
-            additionalNotes: 'Requiere tiempo adicional en evaluaciones'
-          }
-        }
-      }
-    }
+            additionalNotes: 'Requiere tiempo adicional en evaluaciones',
+          },
+        },
+      },
+    },
   })
   async create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
     return this.studentsService.create(createStudentDto);
@@ -126,7 +129,8 @@ export class StudentsController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF)
   @ApiOperation({
     summary: 'Listar todos los estudiantes con NEE',
-    description: 'Retorna la lista completa de estudiantes registrados en el sistema con sus datos académicos y de NEE. Permite filtrar por semestre académico.',
+    description:
+      'Retorna la lista completa de estudiantes registrados en el sistema con sus datos académicos y de NEE. Permite filtrar por semestre académico.',
   })
   @ApiQuery({
     name: 'semester',
@@ -135,22 +139,22 @@ export class StudentsController {
     example: '2025-1',
     schema: {
       type: 'string',
-      pattern: '^\\d{4}-[12]$'
-    }
+      pattern: '^\\d{4}-[12]$',
+    },
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Lista de estudiantes obtenida exitosamente.',
     type: [StudentResponseDto],
-    isArray: true
+    isArray: true,
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Usuario no tiene los roles requeridos.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Usuario no tiene los roles requeridos.',
   })
   async findAll(@Query('semester') semester?: string): Promise<Student[]> {
     // Actualizamos el servicio para que acepte el parámetro de semestre
@@ -161,7 +165,8 @@ export class StudentsController {
   @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Obtener mi perfil académico como estudiante',
-    description: 'ENDPOINT CON PROBLEMAS CONOCIDOS: Retorna el perfil completo del estudiante autenticado. Busca al estudiante por el email del usuario JWT. Actualmente puede fallar con error 500 si el estudiante no tiene cuenta de usuario asociada correctamente.',
+    description:
+      'ENDPOINT CON PROBLEMAS CONOCIDOS: Retorna el perfil completo del estudiante autenticado. Busca al estudiante por el email del usuario JWT. Actualmente puede fallar con error 500 si el estudiante no tiene cuenta de usuario asociada correctamente.',
   })
   @ApiResponse({
     status: 200,
@@ -170,57 +175,62 @@ export class StudentsController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Estudiante no encontrado - El email del usuario no corresponde a ningún estudiante registrado.',
+    description:
+      'Estudiante no encontrado - El email del usuario no corresponde a ningún estudiante registrado.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo estudiantes pueden acceder a su propio perfil.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo estudiantes pueden acceder a su propio perfil.',
   })
-  @ApiResponse({ 
-    status: 500, 
-    description: 'Error interno - Problema conocido cuando el estudiante no tiene cuenta de usuario asociada.' 
+  @ApiResponse({
+    status: 500,
+    description:
+      'Error interno - Problema conocido cuando el estudiante no tiene cuenta de usuario asociada.',
   })
   async getProfile(@CurrentUser() user: any): Promise<Student> {
     if (!user) {
       throw new BadRequestException('Usuario no encontrado en token JWT');
     }
-    
+
     // Usar la implementación que funcionaba: buscar por ID del usuario
     return this.studentsService.findByUserId(user._id);
   }
 
   @Get(':id')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obtener un estudiante específico por ID',
-    description: 'Busca y retorna la información completa de un estudiante utilizando su ID único de MongoDB.'
+    description:
+      'Busca y retorna la información completa de un estudiante utilizando su ID único de MongoDB.',
   })
   @ApiParam({
     name: 'id',
     description: 'ID único del estudiante (ObjectId de MongoDB)',
     type: String,
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiResponse({
     status: 200,
     description: 'Información completa del estudiante encontrada.',
     type: StudentResponseDto,
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Estudiante no encontrado con el ID especificado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Estudiante no encontrado con el ID especificado.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores y educadoras sociales tienen acceso.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo coordinadores y educadoras sociales tienen acceso.',
   })
   async findOne(@Param('id') id: string): Promise<Student> {
     // El servicio ahora lanza NotFoundException si no se encuentra.
@@ -231,38 +241,41 @@ export class StudentsController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Actualizar información de un estudiante',
-    description: 'Actualiza parcialmente los datos de un estudiante existente. Solo se actualizan los campos enviados en el body.',
+    description:
+      'Actualiza parcialmente los datos de un estudiante existente. Solo se actualizan los campos enviados en el body.',
   })
   @ApiParam({
     name: 'id',
     description: 'ID único del estudiante a actualizar',
     type: String,
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiBody({ 
+  @ApiBody({
     type: UpdateStudentDto,
-    description: 'Campos del estudiante a actualizar. Solo incluir los campos que se desean modificar.',
+    description:
+      'Campos del estudiante a actualizar. Solo incluir los campos que se desean modificar.',
   })
   @ApiResponse({
     status: 200,
     description: 'Estudiante actualizado exitosamente.',
     type: StudentResponseDto,
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Estudiante no encontrado con el ID especificado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Estudiante no encontrado con el ID especificado.',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Datos de entrada inválidos - Validación fallida.' 
+  @ApiResponse({
+    status: 400,
+    description: 'Datos de entrada inválidos - Validación fallida.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores y educadoras sociales pueden actualizar estudiantes.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo coordinadores y educadoras sociales pueden actualizar estudiantes.',
   })
   async update(
     @Param('id') id: string,
@@ -276,13 +289,14 @@ export class StudentsController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Actualizar información semestral de un estudiante',
-    description: 'Actualiza o renueva la información del estudiante para un semestre específico. Útil para actualizar estado académico, renovar ajustes o modificar información que cambia cada semestre.',
+    description:
+      'Actualiza o renueva la información del estudiante para un semestre específico. Útil para actualizar estado académico, renovar ajustes o modificar información que cambia cada semestre.',
   })
   @ApiParam({
     name: 'id',
     description: 'ID único del estudiante',
     type: String,
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiParam({
     name: 'semester',
@@ -290,10 +304,10 @@ export class StudentsController {
     type: String,
     example: '2025-1',
     schema: {
-      pattern: '^\\d{4}-[12]$'
-    }
+      pattern: '^\\d{4}-[12]$',
+    },
   })
-  @ApiBody({ 
+  @ApiBody({
     type: UpdateStudentDto,
     description: 'Información semestral a actualizar',
     examples: {
@@ -301,36 +315,37 @@ export class StudentsController {
         value: {
           semesterInfo: {
             currentSemester: '2025-2',
-            academicStatus: 'regular'
+            academicStatus: 'regular',
           },
           neeDetails: {
             supportLevel: 'alto',
-            additionalNotes: 'Aumentar apoyo este semestre'
-          }
-        }
-      }
-    }
+            additionalNotes: 'Aumentar apoyo este semestre',
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
     description: 'Información semestral actualizada exitosamente.',
     type: StudentResponseDto,
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Estudiante no encontrado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Estudiante no encontrado.',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Formato de semestre inválido o datos incorrectos.' 
+  @ApiResponse({
+    status: 400,
+    description: 'Formato de semestre inválido o datos incorrectos.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores y educadoras sociales pueden actualizar información semestral.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo coordinadores y educadoras sociales pueden actualizar información semestral.',
   })
   async updateSemester(
     @Param('id') id: string,
@@ -343,31 +358,34 @@ export class StudentsController {
   @Delete(':id')
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Eliminar un estudiante del sistema',
-    description: 'Elimina permanentemente un estudiante y toda su información asociada. Esta acción es irreversible y también elimina ajustes, documentos y registros relacionados.'
+    description:
+      'Elimina permanentemente un estudiante y toda su información asociada. Esta acción es irreversible y también elimina ajustes, documentos y registros relacionados.',
   })
   @ApiParam({
     name: 'id',
     description: 'ID único del estudiante a eliminar',
     type: String,
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiResponse({
     status: 204,
-    description: 'Estudiante eliminado exitosamente. Sin contenido en la respuesta.',
+    description:
+      'Estudiante eliminado exitosamente. Sin contenido en la respuesta.',
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Estudiante no encontrado con el ID especificado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Estudiante no encontrado con el ID especificado.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores y educadoras sociales pueden eliminar estudiantes.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo coordinadores y educadoras sociales pueden eliminar estudiantes.',
   })
   async remove(@Param('id') id: string): Promise<void> {
     // El servicio ahora lanza NotFoundException si no se encuentra para eliminar.

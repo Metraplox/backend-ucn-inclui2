@@ -113,7 +113,7 @@ export class User extends Document {
   @ApiProperty({
     description: 'Indica si el usuario ha completado su perfil',
     example: true,
-    default: false
+    default: false,
   })
   @Prop({ type: Boolean, default: false })
   isProfileComplete: boolean;
@@ -121,21 +121,21 @@ export class User extends Document {
   // Campos para autenticación externa
   @ApiPropertyOptional({
     description: 'ID de Google (si se registró con Google)',
-    example: '123456789012345678901'
+    example: '123456789012345678901',
   })
   @Prop({ type: String, sparse: true })
   googleId?: string;
 
   @ApiPropertyOptional({
     description: 'Hashed refresh token',
-    example: '$2b$10$...'
+    example: '$2b$10$...',
   })
   @Prop({ type: String, required: false })
   refreshToken?: string;
 
   @ApiPropertyOptional({
     description: 'Fecha del último inicio de sesión',
-    example: '2025-05-27T12:00:00.000Z'
+    example: '2025-05-27T12:00:00.000Z',
   })
   @Prop({ type: Date })
   lastLogin?: Date;

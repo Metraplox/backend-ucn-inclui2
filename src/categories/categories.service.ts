@@ -28,8 +28,13 @@ export class CategoriesService {
     return category;
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
-    const updatedCategory = await this.categoryModel.findByIdAndUpdate(id, updateCategoryDto, { new: true }).exec();
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<Category> {
+    const updatedCategory = await this.categoryModel
+      .findByIdAndUpdate(id, updateCategoryDto, { new: true })
+      .exec();
     if (!updatedCategory) {
       throw new NotFoundException(`Category with ID "${id}" not found`);
     }
@@ -42,4 +47,4 @@ export class CategoriesService {
       throw new NotFoundException(`Category with ID "${id}" not found`);
     }
   }
-} 
+}

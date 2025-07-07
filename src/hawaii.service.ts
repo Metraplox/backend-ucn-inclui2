@@ -10,15 +10,16 @@ export class HawaiiService {
 
   async getOferta(semester: string): Promise<AxiosResponse<any, any>> {
     try {
-      const response = await this.httpService.get(
-        `https://losvilos.ucn.cl/hawaii/api/oferta?${semester}`,
-        { headers: { 'X-HAWAII-AUTH': 'qnbdg8k20jio90' } }
-      ).toPromise();
-      
+      const response = await this.httpService
+        .get(`https://losvilos.ucn.cl/hawaii/api/oferta?${semester}`, {
+          headers: { 'X-HAWAII-AUTH': 'qnbdg8k20jio90' },
+        })
+        .toPromise();
+
       if (!response) {
         throw new Error('No se recibió respuesta de la API de Hawaii');
       }
-      
+
       return response;
     } catch (error) {
       this.logger.error('Error fetching oferta', error);
@@ -28,15 +29,16 @@ export class HawaiiService {
 
   async getEstudiantes(): Promise<AxiosResponse<any, any>> {
     try {
-      const response = await this.httpService.get(
-        'https://losvilos.ucn.cl/hawaii/api/estudiantes',
-        { headers: { 'X-HAWAII-AUTH': 'mnqpkUk00jioab' } }
-      ).toPromise();
-      
+      const response = await this.httpService
+        .get('https://losvilos.ucn.cl/hawaii/api/estudiantes', {
+          headers: { 'X-HAWAII-AUTH': 'mnqpkUk00jioab' },
+        })
+        .toPromise();
+
       if (!response) {
         throw new Error('No se recibió respuesta de la API de Hawaii');
       }
-      
+
       return response;
     } catch (error) {
       this.logger.error('Error fetching estudiantes', error);
@@ -46,15 +48,16 @@ export class HawaiiService {
 
   async getInscripcion(semester: string): Promise<AxiosResponse<any, any>> {
     try {
-      const response = await this.httpService.get(
-        `https://losvilos.ucn.cl/hawaii/api/inscripcion?${semester}`,
-        { headers: { 'X-HAWAII-AUTH': 'knf3g8k29pjht8' } }
-      ).toPromise();
-      
+      const response = await this.httpService
+        .get(`https://losvilos.ucn.cl/hawaii/api/inscripcion?${semester}`, {
+          headers: { 'X-HAWAII-AUTH': 'knf3g8k29pjht8' },
+        })
+        .toPromise();
+
       if (!response) {
         throw new Error('No se recibió respuesta de la API de Hawaii');
       }
-      
+
       return response;
     } catch (error) {
       this.logger.error('Error fetching inscripcion', error);

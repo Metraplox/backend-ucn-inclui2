@@ -24,8 +24,10 @@ export class SemesterSchedulerService implements OnModuleInit {
 
   async onModuleInit() {
     this.isInitialized = true;
-    this.logger.log('🕐 SemesterSchedulerService inicializado - Programación automática activada');
-    
+    this.logger.log(
+      '🕐 SemesterSchedulerService inicializado - Programación automática activada',
+    );
+
     // Verificar configuración inicial
     await this.validateConfiguration();
   }
@@ -43,16 +45,23 @@ export class SemesterSchedulerService implements OnModuleInit {
 
     const currentDate = new Date();
     const semester = this.calculateCurrentSemester(currentDate);
-    
-    this.logger.log(`🚀 Iniciando sincronización automática semestral para ${semester}`);
-    
+
+    this.logger.log(
+      `🚀 Iniciando sincronización automática semestral para ${semester}`,
+    );
+
     try {
       const result = await this.executeFullSemesterSync(semester);
-      
+
       if (result.success) {
-        this.logger.log(`✅ Sincronización semestral ${semester} completada exitosamente`);
+        this.logger.log(
+          `✅ Sincronización semestral ${semester} completada exitosamente`,
+        );
       } else {
-        this.logger.error(`❌ Error en sincronización semestral ${semester}:`, result.error);
+        this.logger.error(
+          `❌ Error en sincronización semestral ${semester}:`,
+          result.error,
+        );
       }
     } catch (error) {
       this.logger.error('❌ Error crítico en sincronización semestral:', error);
@@ -68,11 +77,14 @@ export class SemesterSchedulerService implements OnModuleInit {
     if (!this.isInitialized) return;
 
     this.logger.log('🔍 Iniciando verificación semanal de integridad de datos');
-    
+
     try {
-      const currentSemester = this.configService.get('CURRENT_SEMESTER', '202510');
+      const currentSemester = this.configService.get(
+        'CURRENT_SEMESTER',
+        '202510',
+      );
       const result = await this.performIntegrityCheck(currentSemester);
-      
+
       this.logger.log('✅ Verificación de integridad completada:', result);
     } catch (error) {
       this.logger.error('❌ Error en verificación de integridad:', error);
@@ -87,7 +99,9 @@ export class SemesterSchedulerService implements OnModuleInit {
   async handleNotificationsCleanup() {
     if (!this.isInitialized) return;
 
-    this.logger.log('🧹 Iniciando limpieza de notificaciones antiguas (>90 días)');
+    this.logger.log(
+      '🧹 Iniciando limpieza de notificaciones antiguas (>90 días)',
+    );
     try {
       await this.notificationsService.cleanupOldNotifications(90);
       this.logger.log('✅ Limpieza de notificaciones completada');
@@ -101,15 +115,17 @@ export class SemesterSchedulerService implements OnModuleInit {
    */
   async executeFullSemesterSync(semester: string): Promise<SyncResult> {
     const startTime = Date.now();
-    
+
     try {
-      this.logger.log(`📊 Iniciando sincronización completa para semestre ${semester}`);
-      
+      this.logger.log(
+        `📊 Iniciando sincronización completa para semestre ${semester}`,
+      );
+
       // Simular sincronización (se implementará con Hawaii API real)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const duration = Date.now() - startTime;
-      
+
       return {
         success: true,
         operation: 'FULL_SEMESTER_SYNC',
@@ -119,18 +135,18 @@ export class SemesterSchedulerService implements OnModuleInit {
           semester,
           studentsProcessed: 63,
           coursesProcessed: 0,
-          enrollmentsProcessed: 0
-        }
+          enrollmentsProcessed: 0,
+        },
       };
     } catch (error) {
       const duration = Date.now() - startTime;
-      
+
       return {
         success: false,
         operation: 'FULL_SEMESTER_SYNC',
         timestamp: new Date(),
         duration,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -139,8 +155,10 @@ export class SemesterSchedulerService implements OnModuleInit {
    * Realiza verificación de integridad de datos
    */
   private async performIntegrityCheck(semester: string): Promise<any> {
-    this.logger.log(`🔍 Verificando integridad de datos para semestre ${semester}`);
-    
+    this.logger.log(
+      `🔍 Verificando integridad de datos para semestre ${semester}`,
+    );
+
     try {
       // Verificaciones básicas de integridad
       const checks = {
@@ -150,26 +168,29 @@ export class SemesterSchedulerService implements OnModuleInit {
           this.configService.get('HAWAII_AUTH_ESTUDIANTES') &&
           this.configService.get('HAWAII_AUTH_INSCRIPCION')
         ),
-        currentSemesterValid: semester === this.configService.get('CURRENT_SEMESTER'),
-        timestamp: new Date()
+        currentSemesterValid:
+          semester === this.configService.get('CURRENT_SEMESTER'),
+        timestamp: new Date(),
       };
-      
-      const allChecksPass = Object.values(checks).every(check => 
-        typeof check === 'boolean' ? check : true
+
+      const allChecksPass = Object.values(checks).every((check) =>
+        typeof check === 'boolean' ? check : true,
       );
-      
+
       return {
         success: allChecksPass,
         checks,
         semester,
-        recommendations: allChecksPass ? [] : ['Revisar configuración', 'Verificar credenciales Hawaii']
+        recommendations: allChecksPass
+          ? []
+          : ['Revisar configuración', 'Verificar credenciales Hawaii'],
       };
     } catch (error) {
       this.logger.error('❌ Error en verificación de integridad:', error);
       return {
         success: false,
         error: error.message,
-        semester
+        semester,
       };
     }
   }
@@ -180,11 +201,11 @@ export class SemesterSchedulerService implements OnModuleInit {
   private calculateCurrentSemester(date: Date): string {
     const year = date.getFullYear();
     const month = date.getMonth() + 1; // getMonth() retorna 0-11
-    
+
     // Primer semestre: Marzo - Julio (período 1)
     // Segundo semestre: Agosto - Diciembre (período 2)
     const period = month >= 3 && month <= 7 ? '1' : '2';
-    
+
     return `${year}${period}0`; // Formato: YYYYP0 (ej: 20251, 20252)
   }
 
@@ -197,17 +218,22 @@ export class SemesterSchedulerService implements OnModuleInit {
       const hawaiiCreds = {
         oferta: this.configService.get('HAWAII_AUTH_OFERTA'),
         estudiantes: this.configService.get('HAWAII_AUTH_ESTUDIANTES'),
-        inscripcion: this.configService.get('HAWAII_AUTH_INSCRIPCION')
+        inscripcion: this.configService.get('HAWAII_AUTH_INSCRIPCION'),
       };
-      
-      if (!hawaiiBaseUrl || !hawaiiCreds.oferta || !hawaiiCreds.estudiantes || !hawaiiCreds.inscripcion) {
+
+      if (
+        !hawaiiBaseUrl ||
+        !hawaiiCreds.oferta ||
+        !hawaiiCreds.estudiantes ||
+        !hawaiiCreds.inscripcion
+      ) {
         throw new Error('Credenciales Hawaii no configuradas');
       }
-      
+
       this.logger.log('✅ Configuración validada:', {
         baseUrl: hawaiiBaseUrl,
         credentialsConfigured: true,
-        currentSemester: this.configService.get('CURRENT_SEMESTER')
+        currentSemester: this.configService.get('CURRENT_SEMESTER'),
       });
     } catch (error) {
       this.logger.error('❌ Error validando configuración:', error);
@@ -219,9 +245,12 @@ export class SemesterSchedulerService implements OnModuleInit {
    * API para sincronización manual
    */
   async triggerManualSync(semester?: string): Promise<SyncResult> {
-    const targetSemester = semester || this.configService.get<string>('CURRENT_SEMESTER', '202510');
-    this.logger.log(`🔄 Sincronización manual iniciada para semestre ${targetSemester}`);
-    
+    const targetSemester =
+      semester || this.configService.get<string>('CURRENT_SEMESTER', '202510');
+    this.logger.log(
+      `🔄 Sincronización manual iniciada para semestre ${targetSemester}`,
+    );
+
     return await this.executeFullSemesterSync(targetSemester);
   }
 
@@ -238,7 +267,7 @@ export class SemesterSchedulerService implements OnModuleInit {
         this.configService.get('HAWAII_BASE_URL') &&
         this.configService.get('HAWAII_AUTH_OFERTA')
       ),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
@@ -248,11 +277,11 @@ export class SemesterSchedulerService implements OnModuleInit {
   private getNextSemesterSyncDate(): Date {
     const now = new Date();
     const year = now.getFullYear();
-    
+
     // Próximas fechas: 1 marzo y 1 agosto
     const marchSync = new Date(year, 2, 1, 6, 0, 0); // Marzo es mes 2 (0-indexed)
     const augustSync = new Date(year, 7, 1, 6, 0, 0); // Agosto es mes 7
-    
+
     if (now < marchSync) {
       return marchSync;
     } else if (now < augustSync) {
@@ -269,12 +298,12 @@ export class SemesterSchedulerService implements OnModuleInit {
   private getNextIntegrityCheckDate(): Date {
     const now = new Date();
     const nextMonday = new Date(now);
-    
+
     // Calcular próximo lunes
     const daysUntilMonday = (7 - now.getDay() + 1) % 7 || 7;
     nextMonday.setDate(now.getDate() + daysUntilMonday);
     nextMonday.setHours(5, 0, 0, 0);
-    
+
     return nextMonday;
   }
-} 
+}

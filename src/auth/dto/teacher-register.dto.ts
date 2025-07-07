@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  Matches,
+} from 'class-validator';
 
 export class TeacherRegisterDto {
   @ApiProperty({
@@ -11,12 +17,14 @@ export class TeacherRegisterDto {
   nombreCompleto: string;
 
   @ApiProperty({
-    description: 'Correo electrónico institucional del docente (debe ser @ucn.cl, pero no @alumnos.ucn.cl)',
+    description:
+      'Correo electrónico institucional del docente (debe ser @ucn.cl, pero no @alumnos.ucn.cl)',
     example: 'ana.torres@ucn.cl',
   })
   @IsEmail({}, { message: 'El formato del email no es válido.' })
   @Matches(/^[\w-\.]+@(?<!alumnos\.)ucn\.cl$/, {
-    message: 'El email debe ser una dirección de correo @ucn.cl que no pertenezca al dominio de alumnos.',
+    message:
+      'El email debe ser una dirección de correo @ucn.cl que no pertenezca al dominio de alumnos.',
   })
   @IsNotEmpty()
   email: string;
@@ -30,4 +38,4 @@ export class TeacherRegisterDto {
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
   @IsNotEmpty()
   password: string;
-} 
+}

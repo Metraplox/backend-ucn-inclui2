@@ -40,8 +40,8 @@ export class CreateCareerDto {
   })
   @IsString({ message: 'El semestre debe ser texto' })
   @IsNotEmpty({ message: 'El semestre no puede estar vacío' })
-  @Matches(/^\d{4}-[1-2]$/, { 
-    message: 'El semestre debe tener el formato YYYY-P donde P es 1 o 2' 
+  @Matches(/^\d{4}-[1-2]$/, {
+    message: 'El semestre debe tener el formato YYYY-P donde P es 1 o 2',
   })
   currentSemester: string;
 
@@ -53,7 +53,7 @@ export class CreateCareerDto {
   @IsOptional()
   @IsNumber({}, { message: 'La duración debe ser un número' })
   duration?: number;
-  
+
   @ApiProperty({
     description: 'ID del departamento al que pertenece la carrera',
     example: '6836440b3928a28e0e78eca1',

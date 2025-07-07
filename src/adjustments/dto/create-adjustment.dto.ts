@@ -47,12 +47,11 @@ export class CurrentAdjustmentDto {
   requiresSemesterConfirmation: boolean;
 
   @ApiProperty({
-    description:"Fecha de Inicio del Ajuste",
-    example:'2025-04-15T00:00:00Z',
+    description: 'Fecha de Inicio del Ajuste',
+    example: '2025-04-15T00:00:00Z',
   })
   @IsDateString()
-  fechaInicio:string;
-
+  fechaInicio: string;
 
   @ApiProperty({
     description: 'Fecha de expiración del ajuste (ISO 8601)',
@@ -77,12 +76,11 @@ export class CreateAdjustmentDto {
   studentRut: string;
 
   @ApiProperty({
-    description:'Id del estudiante',
-    example:'749je919247eb81724'
+    description: 'Id del estudiante',
+    example: '749je919247eb81724',
   })
   @IsString()
-  studentId:string;
-
+  studentId: string;
 
   @ApiProperty({
     type: [CurrentAdjustmentDto],

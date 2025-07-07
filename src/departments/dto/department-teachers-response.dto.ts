@@ -37,7 +37,10 @@ export class DepartmentTeachersResponseDto {
   @ApiProperty({ description: 'Total de docentes en el departamento' })
   totalTeachers: number;
 
-  @ApiProperty({ description: 'Lista de docentes con sus estadísticas', type: [TeacherStatsDto] })
+  @ApiProperty({
+    description: 'Lista de docentes con sus estadísticas',
+    type: [TeacherStatsDto],
+  })
   teachers: TeacherStatsDto[];
 
   @ApiProperty({ description: 'Fecha de generación del reporte' })

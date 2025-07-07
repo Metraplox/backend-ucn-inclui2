@@ -52,7 +52,6 @@ const nonPrivilegedUser: UserPublicData = {
   isActive: true,
 };
 
-
 describe('DocumentsService', () => {
   let service: DocumentsService;
   let documentModel: Model<DocumentEntity>;
@@ -84,32 +83,42 @@ describe('DocumentsService', () => {
     }).compile();
 
     service = module.get<DocumentsService>(DocumentsService);
-    documentModel = module.get<Model<DocumentEntity>>(getModelToken(DocumentEntity.name));
-    
+    documentModel = module.get<Model<DocumentEntity>>(
+      getModelToken(DocumentEntity.name),
+    );
+
     // Mock para getDocumentById que es llamado internamente por authorizeAccess
     jest.spyOn(service, 'getDocumentById').mockImplementation(async (id) => {
-        if (id === mockDocumentId) {
-            return mockDocument as any;
-        }
-        return null;
+      if (id === mockDocumentId) {
+        return mockDocument as any;
+      }
+      return null;
     });
   });
 
   describe('authorizeAccess', () => {
     it('debería permitir el acceso a un usuario con rol de administrador', async () => {
-      await expect(service.authorizeAccess(mockDocumentId, adminUser)).resolves.not.toThrow();
+      await expect(
+        service.authorizeAccess(mockDocumentId, adminUser),
+      ).resolves.not.toThrow();
     });
 
     it('debería permitir el acceso a un estudiante que es propietario del documento', async () => {
-      await expect(service.authorizeAccess(mockDocumentId, ownerStudentUser)).resolves.not.toThrow();
+      await expect(
+        service.authorizeAccess(mockDocumentId, ownerStudentUser),
+      ).resolves.not.toThrow();
     });
 
     it('debería lanzar ForbiddenException para un estudiante que no es propietario del documento', async () => {
-      await expect(service.authorizeAccess(mockDocumentId, otherStudentUser)).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.authorizeAccess(mockDocumentId, otherStudentUser),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('debería lanzar ForbiddenException para un usuario con un rol no privilegiado (DOCENTE)', async () => {
-      await expect(service.authorizeAccess(mockDocumentId, nonPrivilegedUser)).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.authorizeAccess(mockDocumentId, nonPrivilegedUser),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
-}); 
+});

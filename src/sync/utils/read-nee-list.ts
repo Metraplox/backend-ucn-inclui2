@@ -3,8 +3,14 @@ import * as path from 'path';
 
 // Archivos de estudiantes NEE
 const NEE_FILES = {
-  production: path.resolve(__dirname, '../../../../backend-ucn-inclui2/GUIA-PROYECTO/ESTUDIANTES_NEE_CSV.txt'),
-  test: path.resolve(__dirname, '../../../../backend-ucn-inclui2/GUIA-PROYECTO/ESTUDIANTES_NEE_TEST.txt')
+  production: path.resolve(
+    __dirname,
+    '../../../../backend-ucn-inclui2/GUIA-PROYECTO/ESTUDIANTES_NEE_CSV.txt',
+  ),
+  test: path.resolve(
+    __dirname,
+    '../../../../backend-ucn-inclui2/GUIA-PROYECTO/ESTUDIANTES_NEE_TEST.txt',
+  ),
 };
 
 // Usar el archivo de prueba para mejor diagnóstico
@@ -31,13 +37,13 @@ export function getOnlyDigits(rut: string): string {
 export function normalizeRut(rut: string, dv?: string): string {
   // Elimina puntos, guiones, espacios y convierte DV a mayúscula
   if (!rut) return '';
-  let cleanRut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
-  
+  const cleanRut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+
   // Si se proporciona el DV por separado
   if (dv) {
     return cleanRut + dv.toUpperCase();
   }
-  
+
   // Si el RUT ya viene completo, solo lo limpiamos
   return cleanRut;
 }
@@ -46,21 +52,23 @@ export function normalizeRut(rut: string, dv?: string): string {
  * Lee el archivo CSV de estudiantes NEE y devuelve un array con sus datos
  * @returns Array de objetos con rut, dv y carrera de estudiantes NEE
  */
-export async function readNeeList(): Promise<{ rut: string; dv: string; carrera: string }[]> {
+export async function readNeeList(): Promise<
+  { rut: string; dv: string; carrera: string }[]
+> {
   try {
     const content = await fs.readFile(NEE_FILE_PATH, 'utf-8');
     const lines = content.split('\n').filter(Boolean);
-    
+
     // El archivo ya no tiene encabezado y usa comas como separador
-    const result = lines.map(line => {
+    const result = lines.map((line) => {
       const [rut, dv, carrera] = line.split(',');
-      return { 
-        rut: rut?.trim() || '', 
-        dv: dv?.trim() || '', 
-        carrera: carrera?.trim() || '' 
+      return {
+        rut: rut?.trim() || '',
+        dv: dv?.trim() || '',
+        carrera: carrera?.trim() || '',
       };
     });
-    
+
     return result;
   } catch (error) {
     console.error('Error al leer el archivo de estudiantes NEE:', error);

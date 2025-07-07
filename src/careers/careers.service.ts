@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CareerHeadCareerDto } from './dto/career-head.dto';
@@ -80,24 +85,27 @@ export class CareersService {
     }
   }
 
-  async addStudent(careerId: string, studentId: string): Promise<Career | null> {
+  async addStudent(
+    careerId: string,
+    studentId: string,
+  ): Promise<Career | null> {
     try {
       // Verificar que la carrera existe
       const career = await this.findOne(careerId);
-      
+
       // Verificar si el estudiante ya está en la carrera
       const studentIdObj = new Types.ObjectId(studentId);
-      if (!career.studentIds.some(id => id.equals(studentIdObj))) {
+      if (!career.studentIds.some((id) => id.equals(studentIdObj))) {
         // Actualizar con una operación de MongoDB directamente
         return await this.careerModel
           .findByIdAndUpdate(
             careerId,
             { $push: { studentIds: studentIdObj } },
-            { new: true }
+            { new: true },
           )
           .exec();
       }
-      
+
       // Devolver el objeto directamente, ya que lo hemos recuperado de la base de datos
       return career as unknown as Career;
     } catch (error) {
@@ -108,17 +116,20 @@ export class CareersService {
     }
   }
 
-  async removeStudent(careerId: string, studentId: string): Promise<Career | null> {
+  async removeStudent(
+    careerId: string,
+    studentId: string,
+  ): Promise<Career | null> {
     const career = await this.findOne(careerId);
-    
+
     const studentIdObj = new Types.ObjectId(studentId);
-    
+
     // Actualizar con una operación de MongoDB directamente
     return await this.careerModel
       .findByIdAndUpdate(
         careerId,
         { $pull: { studentIds: studentIdObj } },
-        { new: true }
+        { new: true },
       )
       .exec();
   }
@@ -150,40 +161,48 @@ export class CareersService {
 
   async getStudents(careerId: string, semester?: string): Promise<any[]> {
     const career = await this.findOne(careerId);
-    
+
     if (career.studentIds.length === 0) {
       return [];
     }
-    
+
     // Construir la consulta para MongoDB agregando filtro de semestre si es necesario
     const matchStage: any = { _id: { $in: career.studentIds } };
     if (semester) {
       matchStage.semester = semester;
     }
-    
+
     // Consultar directamente la colección de estudiantes para obtener los datos completos
-    const students = await this.careerModel.db.collection('students').find(matchStage).toArray();
-    
+    const students = await this.careerModel.db
+      .collection('students')
+      .find(matchStage)
+      .toArray();
+
     return students;
   }
 
-  async getCareerHeadStatistics(careerId: string, semester?: string): Promise<CareerHeadStatsDto> {
+  async getCareerHeadStatistics(
+    careerId: string,
+    semester?: string,
+  ): Promise<CareerHeadStatsDto> {
     const career = await this.careerModel.findById(careerId).lean().exec();
     if (!career) {
       throw new NotFoundException(`Career with ID ${careerId} not found`);
     }
-    
+
     // Obtener estudiantes de la carrera
     const students = await this.getStudents(careerId, semester);
     const totalStudents = students.length;
-    
+
     // Obtener ajustes razonables de los estudiantes
-    const studentIds = students.map(student => new Types.ObjectId(student._id));
-    const matchStage: Record<string, any> = { 
+    const studentIds = students.map(
+      (student) => new Types.ObjectId(student._id),
+    );
+    const matchStage: Record<string, any> = {
       studentId: { $in: studentIds },
-      ...(semester && { semester }) 
+      ...(semester && { semester }),
     };
-    
+
     // Definir la interfaz para los ajustes
     interface AdjustmentDocument {
       studentId?: Types.ObjectId;
@@ -196,19 +215,19 @@ export class CareersService {
       .collection('adjustments')
       .find(matchStage)
       .toArray();
-    
+
     // Calcular estadísticas
     const studentsWithNEE = new Set(
       adjustments
-        .map(adj => adj.studentId?.toString())
-        .filter((id): id is string => !!id)
+        .map((adj) => adj.studentId?.toString())
+        .filter((id): id is string => !!id),
     ).size;
-    
+
     const totalAdjustments = adjustments.length;
     const implementedAdjustments = adjustments.filter(
-      adj => adj.status === AdjustmentStatus.IMPLEMENTED
+      (adj) => adj.status === AdjustmentStatus.IMPLEMENTED,
     ).length;
-    
+
     // Formatear respuesta
     const careerDto: CareerHeadCareerDto = {
       _id: career._id.toString(),
@@ -219,16 +238,17 @@ export class CareersService {
       duration: 'duration' in career ? Number(career.duration) : 10,
       totalStudents,
     };
-    
+
     return {
       careers: [careerDto],
       totalStudents,
       studentsWithNEE,
       totalAdjustments,
       implementedAdjustments,
-      implementationRate: totalAdjustments > 0 
-        ? Math.round((implementedAdjustments / totalAdjustments) * 100) 
-        : 0,
+      implementationRate:
+        totalAdjustments > 0
+          ? Math.round((implementedAdjustments / totalAdjustments) * 100)
+          : 0,
     };
   }
 
@@ -249,30 +269,30 @@ export class CareersService {
   }
 
   async getCareerAdjustments(
-    careerId: string, 
-    status?: string, 
-    semester?: string
+    careerId: string,
+    status?: string,
+    semester?: string,
   ): Promise<any[]> {
     const career = await this.findOne(careerId);
     const students = await this.getStudents(careerId, semester);
-    
+
     if (students.length === 0) {
       return [];
     }
-    
-    const studentIds = students.map(student => student._id);
-    
+
+    const studentIds = students.map((student) => student._id);
+
     // Construir la consulta
     const matchStage: any = { studentId: { $in: studentIds } };
-    
+
     if (status) {
       matchStage.status = status.toUpperCase();
     }
-    
+
     if (semester) {
       matchStage.semester = semester;
     }
-    
+
     // Consultar ajustes con información de estudiante
     const adjustments = await this.careerModel.db
       .collection('adjustments')
@@ -283,8 +303,8 @@ export class CareersService {
             from: 'students',
             localField: 'studentId',
             foreignField: '_id',
-            as: 'student'
-          }
+            as: 'student',
+          },
         },
         { $unwind: '$student' },
         {
@@ -296,7 +316,9 @@ export class CareersService {
             createdAt: 1,
             updatedAt: 1,
             studentId: 1,
-            studentName: { $concat: ['$student.firstName', ' ', '$student.lastName'] },
+            studentName: {
+              $concat: ['$student.firstName', ' ', '$student.lastName'],
+            },
             studentRut: '$student.rut',
             studentEmail: '$student.email',
             courseId: 1,
@@ -304,12 +326,12 @@ export class CareersService {
             details: 1,
             documents: 1,
             comments: 1,
-          }
+          },
         },
-        { $sort: { createdAt: -1 } }
+        { $sort: { createdAt: -1 } },
       ])
       .toArray();
-    
+
     return adjustments;
   }
 }

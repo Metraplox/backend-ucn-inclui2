@@ -8,7 +8,10 @@ import { SyncModule } from '../sync/sync.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { UsersModule } from '../users/users.module';
 import { AdjustmentsModule } from '../adjustments/adjustments.module';
-import { Adjustment, AdjustmentSchema } from '../adjustments/schemas/adjustment.schema';
+import {
+  Adjustment,
+  AdjustmentSchema,
+} from '../adjustments/schemas/adjustment.schema';
 
 @Module({
   imports: [
@@ -25,4 +28,4 @@ import { Adjustment, AdjustmentSchema } from '../adjustments/schemas/adjustment.
   controllers: [SemesterSyncController],
   exports: [SemesterSchedulerService, ComplianceSchedulerService],
 })
-export class SemesterSchedulerModule {} 
+export class SemesterSchedulerModule {}

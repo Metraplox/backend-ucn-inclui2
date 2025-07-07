@@ -25,7 +25,10 @@ export class DepartmentResponseDto {
   @ApiProperty({ type: DepartmentHeadDto, required: false })
   headId: DepartmentHeadDto;
 
-  @ApiProperty({ type: [String], description: 'Lista de IDs de docentes del departamento' })
+  @ApiProperty({
+    type: [String],
+    description: 'Lista de IDs de docentes del departamento',
+  })
   teacherIds: string[];
 
   @ApiProperty()
@@ -45,4 +48,4 @@ export class DepartmentResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
-} 
+}

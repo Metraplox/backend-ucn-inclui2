@@ -41,6 +41,6 @@ export class Department extends Document {
 
 export const DepartmentSchema = SchemaFactory.createForClass(Department);
 
-DepartmentSchema.index({ code: 1 });
+// Nota: code ya tiene índice único automático por la prop unique: true
 DepartmentSchema.index({ headId: 1 });
 DepartmentSchema.index({ currentSemester: 1 });

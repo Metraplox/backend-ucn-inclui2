@@ -22,7 +22,10 @@ export class HawaiiCourseDto {
   @ApiProperty({ description: 'Nombre del departamento responsable' })
   departamento: string;
 
-  @ApiProperty({ description: 'Información de profesores (puede ser null)', nullable: true })
+  @ApiProperty({
+    description: 'Información de profesores (puede ser null)',
+    nullable: true,
+  })
   profesores: string | null;
 
   /**

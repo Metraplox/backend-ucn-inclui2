@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsMongoId, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsMongoId,
+  IsArray,
+} from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateDepartmentDto {
@@ -18,7 +25,11 @@ export class CreateDepartmentDto {
   @IsMongoId()
   headId?: string;
 
-  @ApiProperty({ description: 'Lista de IDs de docentes del departamento', required: false, type: [String] })
+  @ApiProperty({
+    description: 'Lista de IDs de docentes del departamento',
+    required: false,
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })

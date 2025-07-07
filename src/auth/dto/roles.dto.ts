@@ -18,7 +18,11 @@ export class RolesInfoDto {
 
   @ApiProperty({
     description: 'Permisos principales del rol',
-    example: ['Gestión completa de usuarios', 'Acceso a todos los reportes', 'Configuración del sistema'],
+    example: [
+      'Gestión completa de usuarios',
+      'Acceso a todos los reportes',
+      'Configuración del sistema',
+    ],
     type: [String],
   })
   permissions: string[];
@@ -33,7 +37,8 @@ export class SystemRolesDto {
 
   @ApiProperty({
     description: 'Información adicional sobre el sistema de roles',
-    example: 'Los roles determinan el acceso a diferentes funcionalidades del sistema',
+    example:
+      'Los roles determinan el acceso a diferentes funcionalidades del sistema',
   })
   info: string;
-} 
+}

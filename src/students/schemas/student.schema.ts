@@ -54,7 +54,7 @@ export class Student {
   })
   @Prop({ type: Types.ObjectId, ref: 'Career', required: true })
   carreraId: Types.ObjectId;
-  
+
   @ApiProperty({
     description: 'Semestre académico actual',
     example: '2025-1',
@@ -125,5 +125,4 @@ export const StudentSchema = SchemaFactory.createForClass(Student);
 // Crear índices para optimizar consultas
 StudentSchema.index({ semester: 1 }); // Índice para consultas por semestre
 StudentSchema.index({ carreraId: 1, semester: 1 }); // Índice compuesto para consultas de estudiantes por carrera y semestre
-StudentSchema.index({ email: 1 }, { unique: true }); // Índice único para búsquedas por email
-StudentSchema.index({ rut: 1 }, { unique: true }); // Índice único para búsquedas por rut
+// Nota: email y rut ya tienen índices únicos automáticos por las props unique: true

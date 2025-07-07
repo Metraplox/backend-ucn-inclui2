@@ -27,7 +27,11 @@ type VerifyImports = {
     CareersModule,
     ResourcesModule,
   ],
-  controllers: [DiddecController, DiddecReportsController, DiddecResourcesController],
+  controllers: [
+    DiddecController,
+    DiddecReportsController,
+    DiddecResourcesController,
+  ],
   providers: [DiddecService, ExportService],
   exports: [DiddecService, ExportService],
 })

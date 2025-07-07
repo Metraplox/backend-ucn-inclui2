@@ -14,7 +14,7 @@ export enum AdjustmentStatus {
   IMPLEMENTED = 'implementado',
   EXPIRED = 'vencido',
   CANCELLED = 'cancelado',
-  ACTIVE = 'activo'
+  ACTIVE = 'activo',
 }
 
 // Sub-esquema para ajustes actuales

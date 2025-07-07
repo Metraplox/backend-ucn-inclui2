@@ -38,9 +38,10 @@ export class ConsentController {
   @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Otorgar o actualizar consentimiento para compartir información',
-    description: 'Permite a los estudiantes otorgar o actualizar su consentimiento para compartir su información con docentes y personal autorizado. Se registra la IP y navegador para auditoría.',
+    description:
+      'Permite a los estudiantes otorgar o actualizar su consentimiento para compartir su información con docentes y personal autorizado. Se registra la IP y navegador para auditoría.',
   })
-  @ApiBody({ 
+  @ApiBody({
     type: CreateConsentDto,
     description: 'Datos del consentimiento a otorgar',
     examples: {
@@ -49,20 +50,20 @@ export class ConsentController {
           shareWithTeachers: true,
           shareWithDiddec: true,
           shareDocuments: true,
-          additionalNotes: 'Autorizo compartir toda mi información académica'
+          additionalNotes: 'Autorizo compartir toda mi información académica',
         },
-        description: 'Consentimiento completo'
+        description: 'Consentimiento completo',
       },
       consentimiento_parcial: {
         value: {
           shareWithTeachers: true,
           shareWithDiddec: false,
           shareDocuments: false,
-          additionalNotes: 'Solo autorizo compartir con mis profesores'
+          additionalNotes: 'Solo autorizo compartir con mis profesores',
         },
-        description: 'Consentimiento parcial'
-      }
-    }
+        description: 'Consentimiento parcial',
+      },
+    },
   })
   @ApiResponse({
     status: 201,
@@ -81,25 +82,25 @@ export class ConsentController {
         userAgent: 'Mozilla/5.0...',
         isActive: true,
         createdAt: '2025-06-19T12:00:00.000Z',
-        updatedAt: '2025-06-19T12:00:00.000Z'
-      }
-    }
+        updatedAt: '2025-06-19T12:00:00.000Z',
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Datos inválidos - Validación fallida.' 
+  @ApiResponse({
+    status: 400,
+    description: 'Datos inválidos - Validación fallida.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo estudiantes pueden otorgar consentimiento.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Solo estudiantes pueden otorgar consentimiento.',
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Estudiante no encontrado en el sistema.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Estudiante no encontrado en el sistema.',
   })
   async createOrUpdateConsent(
     @Body() createConsentDto: CreateConsentDto,
@@ -108,7 +109,7 @@ export class ConsentController {
   ): Promise<Consent> {
     const authenticatedUserId = req.user._id;
     const userAgent = req.headers['user-agent'];
-    
+
     return this.consentService.createOrUpdateConsent(
       authenticatedUserId.toString(),
       createConsentDto,
@@ -121,7 +122,8 @@ export class ConsentController {
   @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Obtener mi consentimiento actual',
-    description: 'Retorna el estado actual del consentimiento del estudiante autenticado. Si no existe consentimiento previo, retorna null.',
+    description:
+      'Retorna el estado actual del consentimiento del estudiante autenticado. Si no existe consentimiento previo, retorna null.',
   })
   @ApiResponse({
     status: 200,
@@ -139,30 +141,34 @@ export class ConsentController {
         consentDate: '2025-06-19T12:00:00.000Z',
         isActive: true,
         revocationDate: null,
-        revocationReason: null
-      }
-    }
+        revocationReason: null,
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo estudiantes pueden consultar su consentimiento.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo estudiantes pueden consultar su consentimiento.',
   })
   async getMyConsent(
     @Req() req: ExpressRequest & { user: UserPublicData },
   ): Promise<Consent | null> {
     const authenticatedUserId = req.user._id;
-    return this.consentService.getConsentByUserId(authenticatedUserId.toString());
+    return this.consentService.getConsentByUserId(
+      authenticatedUserId.toString(),
+    );
   }
 
   @Patch('revoke')
   @Roles(UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Revocar mi consentimiento',
-    description: 'Permite a un estudiante revocar su consentimiento previamente otorgado. Se debe proporcionar una razón para la revocación.',
+    description:
+      'Permite a un estudiante revocar su consentimiento previamente otorgado. Se debe proporcionar una razón para la revocación.',
   })
   @ApiBody({
     description: 'Razón para revocar el consentimiento',
@@ -175,10 +181,10 @@ export class ConsentController {
           description: 'Razón para revocar el consentimiento',
           example: 'Prefiero mantener mi información privada',
           minLength: 10,
-          maxLength: 500
-        }
-      }
-    }
+          maxLength: 500,
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -193,28 +199,32 @@ export class ConsentController {
         shareDocuments: false,
         isActive: false,
         revocationDate: '2025-06-19T12:00:00.000Z',
-        revocationReason: 'Prefiero mantener mi información privada'
-      }
-    }
+        revocationReason: 'Prefiero mantener mi información privada',
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'No se encontró consentimiento activo para revocar.' 
+  @ApiResponse({
+    status: 404,
+    description: 'No se encontró consentimiento activo para revocar.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo estudiantes pueden revocar su consentimiento.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo estudiantes pueden revocar su consentimiento.',
   })
   async revokeMyConsent(
     @Body('reason') reason: string,
     @Req() req: ExpressRequest & { user: UserPublicData },
   ): Promise<Consent> {
     const authenticatedUserId = req.user._id;
-    return this.consentService.revokeConsent(authenticatedUserId.toString(), reason);
+    return this.consentService.revokeConsent(
+      authenticatedUserId.toString(),
+      reason,
+    );
   }
 
   // Endpoints administrativos
@@ -222,7 +232,8 @@ export class ConsentController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL)
   @ApiOperation({
     summary: 'Listar todos los consentimientos',
-    description: 'Retorna la lista completa de consentimientos del sistema. Solo accesible para coordinadores y educadoras sociales para fines de auditoría y gestión.',
+    description:
+      'Retorna la lista completa de consentimientos del sistema. Solo accesible para coordinadores y educadoras sociales para fines de auditoría y gestión.',
   })
   @ApiResponse({
     status: 200,
@@ -230,13 +241,14 @@ export class ConsentController {
     type: [Consent],
     isArray: true,
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores y educadoras sociales tienen acceso.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Solo coordinadores y educadoras sociales tienen acceso.',
   })
   async getAllConsents(): Promise<Consent[]> {
     return this.consentService.findAll();
@@ -246,7 +258,8 @@ export class ConsentController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.DIDDEC_STAFF)
   @ApiOperation({
     summary: 'Obtener estadísticas de consentimientos',
-    description: 'Proporciona estadísticas agregadas sobre el estado de los consentimientos en el sistema.',
+    description:
+      'Proporciona estadísticas agregadas sobre el estado de los consentimientos en el sistema.',
   })
   @ApiResponse({
     status: 200,
@@ -254,44 +267,44 @@ export class ConsentController {
     schema: {
       type: 'object',
       properties: {
-        total: { 
-          type: 'number', 
+        total: {
+          type: 'number',
           description: 'Total de estudiantes con registro de consentimiento',
-          example: 150
+          example: 150,
         },
-        withConsent: { 
-          type: 'number', 
+        withConsent: {
+          type: 'number',
           description: 'Estudiantes que autorizaron compartir información',
-          example: 120
+          example: 120,
         },
-        withoutConsent: { 
-          type: 'number', 
+        withoutConsent: {
+          type: 'number',
           description: 'Estudiantes que no autorizaron o revocaron',
-          example: 30
+          example: 30,
         },
-        percentageWithConsent: { 
-          type: 'number', 
+        percentageWithConsent: {
+          type: 'number',
           description: 'Porcentaje de estudiantes que autorizó',
           example: 80,
           minimum: 0,
-          maximum: 100
+          maximum: 100,
         },
         lastUpdated: {
           type: 'string',
           format: 'date-time',
           description: 'Fecha de última actualización de estadísticas',
-          example: '2025-06-19T12:00:00.000Z'
-        }
-      }
-    }
+          example: '2025-06-19T12:00:00.000Z',
+        },
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Usuario no tiene los roles requeridos.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Usuario no tiene los roles requeridos.',
   })
   async getConsentStats() {
     return this.consentService.getConsentStats();

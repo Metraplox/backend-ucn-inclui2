@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Resource, ResourceDocument } from './schemas/resource.schema';
@@ -38,13 +42,15 @@ export class ResourcesService {
     const fileExt = path.extname(file.originalname);
     const uniqueFilename = `${uuidv4()}${fileExt}`;
     const filePath = path.join(this.uploadDir, uniqueFilename);
-    
+
     // Save file to disk
     fs.writeFileSync(filePath, file.buffer);
 
     // Create resource document
-    const relativePath = path.join('uploads', 'resources', uniqueFilename).replace(/\\/g, '/');
-    
+    const relativePath = path
+      .join('uploads', 'resources', uniqueFilename)
+      .replace(/\\/g, '/');
+
     const resource = new this.resourceModel({
       ...createResourceDto,
       filePath: relativePath,
@@ -83,11 +89,11 @@ export class ResourcesService {
     }
 
     const resource = await this.resourceModel.findById(id).exec();
-    
+
     if (!resource) {
       throw new NotFoundException(`Resource with ID ${id} not found`);
     }
-    
+
     return resource;
   }
 
@@ -102,11 +108,11 @@ export class ResourcesService {
     const updatedResource = await this.resourceModel
       .findByIdAndUpdate(id, updateResourceDto, { new: true })
       .exec();
-    
+
     if (!updatedResource) {
       throw new NotFoundException(`Resource with ID ${id} not found`);
     }
-    
+
     return updatedResource;
   }
 
@@ -116,7 +122,7 @@ export class ResourcesService {
     }
 
     const resource = await this.resourceModel.findById(id).exec();
-    
+
     if (!resource) {
       throw new NotFoundException(`Resource with ID ${id} not found`);
     }
@@ -132,7 +138,9 @@ export class ResourcesService {
 
   async findByAdjustmentType(adjustmentTypeId: string): Promise<Resource[]> {
     if (!Types.ObjectId.isValid(adjustmentTypeId)) {
-      throw new BadRequestException(`Invalid adjustment type ID: ${adjustmentTypeId}`);
+      throw new BadRequestException(
+        `Invalid adjustment type ID: ${adjustmentTypeId}`,
+      );
     }
 
     return this.resourceModel
@@ -140,7 +148,10 @@ export class ResourcesService {
       .exec();
   }
 
-  async findBySearchTerm(searchTerm: string, semester?: string): Promise<Resource[]> {
+  async findBySearchTerm(
+    searchTerm: string,
+    semester?: string,
+  ): Promise<Resource[]> {
     const query: any = {
       $or: [
         { title: { $regex: searchTerm, $options: 'i' } },

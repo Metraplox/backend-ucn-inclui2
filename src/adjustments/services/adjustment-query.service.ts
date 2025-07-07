@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -58,20 +54,23 @@ export class AdjustmentQueryService {
   /**
    * Buscar ajustes por NRC de curso
    */
-  async findByCourseNrc(courseNrc: string, semester?: string): Promise<Adjustment[]> {
+  async findByCourseNrc(
+    courseNrc: string,
+    semester?: string,
+  ): Promise<Adjustment[]> {
     const query: any = {};
     if (semester) {
       query.currentAdjustments = {
         $elemMatch: {
           courseNrc,
-          semester
-        }
+          semester,
+        },
       };
     } else {
       query.currentAdjustments = {
         $elemMatch: {
-          courseNrc
-        }
+          courseNrc,
+        },
       };
     }
     return this.adjustmentModel.find(query).exec();
@@ -80,12 +79,18 @@ export class AdjustmentQueryService {
   /**
    * Buscar ajustes por departamento y semestre
    */
-  async findByDepartment(departmentId: string, semester: string): Promise<Adjustment[]> {
-    return this.adjustmentModel.find({
-      'student.department': departmentId,
-      semester: semester,
-      status: { $ne: 'archived' }
-    }).populate('student').exec();
+  async findByDepartment(
+    departmentId: string,
+    semester: string,
+  ): Promise<Adjustment[]> {
+    return this.adjustmentModel
+      .find({
+        'student.department': departmentId,
+        semester: semester,
+        status: { $ne: 'archived' },
+      })
+      .populate('student')
+      .exec();
   }
 
   /**
@@ -141,4 +146,4 @@ export class AdjustmentQueryService {
   ): Promise<any[]> {
     return this.getAdjustmentReadStatus(undefined, courseNrc, semester);
   }
-} 
+}

@@ -3,17 +3,31 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Department, DepartmentDocument } from '../schemas/department.schema';
 import { DepartmentStatsResponseDto } from '../dto/department-stats-response.dto';
-import { DepartmentStudentsNeeResponseDto, StudentNeeResponseDto } from '../dto/department-student-nee-response.dto';
-import { DepartmentTeachersResponseDto, TeacherStatsDto } from '../dto/department-teachers-response.dto';
-import { Adjustment, AdjustmentDocument, AdjustmentStatus } from '../../adjustments/schemas/adjustment.schema';
+import {
+  DepartmentStudentsNeeResponseDto,
+  StudentNeeResponseDto,
+} from '../dto/department-student-nee-response.dto';
+import {
+  DepartmentTeachersResponseDto,
+  TeacherStatsDto,
+} from '../dto/department-teachers-response.dto';
+import {
+  Adjustment,
+  AdjustmentDocument,
+  AdjustmentStatus,
+} from '../../adjustments/schemas/adjustment.schema';
 import { StudentsService } from '../../students/students.service';
 import { CoursesService } from '../../courses/courses.service';
 import { AdjustmentsService } from '../../adjustments/adjustments.service';
-import { Student, StudentDocument } from '../../students/schemas/student.schema';
+import {
+  Student,
+  StudentDocument,
+} from '../../students/schemas/student.schema';
 import { Course, CourseDocument } from '../../courses/schemas/course.schema';
 import { User, UserDocument } from '../../users/schemas/user.schema';
 
-interface StudentWithNEE extends Omit<Student, 'rut' | '_id' | 'carreraId' | 'semestre'> {
+interface StudentWithNEE
+  extends Omit<Student, 'rut' | '_id' | 'carreraId' | 'semestre'> {
   rut: string;
   _id: Types.ObjectId;
   carreraId?: Types.ObjectId | string;
@@ -25,7 +39,8 @@ interface StudentWithNEE extends Omit<Student, 'rut' | '_id' | 'carreraId' | 'se
   disabilityType?: string;
 }
 
-interface AdjustmentWithStatus extends Omit<Adjustment, 'currentAdjustments' | '_id' | 'studentId'> {
+interface AdjustmentWithStatus
+  extends Omit<Adjustment, 'currentAdjustments' | '_id' | 'studentId'> {
   _id: Types.ObjectId | string;
   currentAdjustments: Array<{
     type: string;
@@ -46,17 +61,24 @@ export class DepartmentStatsService {
     private readonly adjustmentsService: AdjustmentsService,
   ) {}
 
-  async getDepartmentByHead(headId: string): Promise<DepartmentDocument | null> {
+  async getDepartmentByHead(
+    headId: string,
+  ): Promise<DepartmentDocument | null> {
     const department = await this.departmentModel
       .findOne({ headId: new Types.ObjectId(headId) })
-      .populate<{ teacherIds: UserDocument[] }>('teacherIds', 'nombres apellidos email')
+      .populate<{ teacherIds: UserDocument[] }>(
+        'teacherIds',
+        'nombres apellidos email',
+      )
       .lean()
       .exec();
-    
+
     if (!department) {
-      throw new NotFoundException(`Department head with ID ${headId} not found`);
+      throw new NotFoundException(
+        `Department head with ID ${headId} not found`,
+      );
     }
-    
+
     return department as unknown as DepartmentDocument;
   }
 
@@ -67,23 +89,28 @@ export class DepartmentStatsService {
     // Get department with populated teachers
     const department = await this.departmentModel
       .findById(departmentId)
-      .populate<{ teacherIds: UserDocument[] }>('teacherIds', 'nombres apellidos email')
+      .populate<{
+        teacherIds: UserDocument[];
+      }>('teacherIds', 'nombres apellidos email')
       .lean()
       .exec();
 
     if (!department) {
-      throw new NotFoundException(`Department with ID ${departmentId} not found`);
+      throw new NotFoundException(
+        `Department with ID ${departmentId} not found`,
+      );
     }
 
     // Get department courses for the semester
     const courses = await this.coursesService.findBySemester(semester);
-    
+
     // Get students with special educational needs in the department
     const students = await this.studentsService.findAllWithNEE(semester);
-    
+
     // Filter students by department if needed
-    const departmentStudents = students.filter(student => 
-      student.carreraId && student.carreraId.toString() === departmentId
+    const departmentStudents = students.filter(
+      (student) =>
+        student.carreraId && student.carreraId.toString() === departmentId,
     ) as unknown as StudentWithNEE[];
 
     // Get adjustments for these students
@@ -95,11 +122,25 @@ export class DepartmentStatsService {
 
     // Calculate adjustment statistics
     const implementedCount = adjustments.reduce((count, adj) => {
-      return count + (adj.currentAdjustments?.some(a => a.estado === AdjustmentStatus.IMPLEMENTED) ? 1 : 0);
+      return (
+        count +
+        (adj.currentAdjustments?.some(
+          (a) => a.estado === AdjustmentStatus.IMPLEMENTED,
+        )
+          ? 1
+          : 0)
+      );
     }, 0);
 
     const pendingCount = adjustments.reduce((count, adj) => {
-      return count + (adj.currentAdjustments?.some(a => a.estado === AdjustmentStatus.PENDING) ? 1 : 0);
+      return (
+        count +
+        (adj.currentAdjustments?.some(
+          (a) => a.estado === AdjustmentStatus.PENDING,
+        )
+          ? 1
+          : 0)
+      );
     }, 0);
 
     // Calculate implementation rate
@@ -132,19 +173,22 @@ export class DepartmentStatsService {
       .exec();
 
     if (!department) {
-      throw new NotFoundException(`Department with ID ${departmentId} not found`);
+      throw new NotFoundException(
+        `Department with ID ${departmentId} not found`,
+      );
     }
 
     // Get students with special educational needs
     const allStudents = await this.studentsService.findAllWithNEE(semester);
-    
+
     // Filter students by department
-    const students = allStudents.filter(student => 
-      student.carreraId && student.carreraId.toString() === departmentId
+    const students = allStudents.filter(
+      (student) =>
+        student.carreraId && student.carreraId.toString() === departmentId,
     ) as unknown as StudentWithNEE[];
 
     // Get adjustments for students
-    const studentIds = students.map(s => s._id);
+    const studentIds = students.map((s) => s._id);
     const adjustments = await this.adjustmentsService.findAll({
       studentId: { $in: studentIds },
       semester,
@@ -165,7 +209,8 @@ export class DepartmentStatsService {
       const studentId = student._id.toString();
       const studentAdjustments = adjustmentsByStudent.get(studentId) || [];
       const implementedAdjustments = studentAdjustments.filter(
-        (adj: AdjustmentDocument) => (adj as any).status === AdjustmentStatus.IMPLEMENTED
+        (adj: AdjustmentDocument) =>
+          (adj as any).status === AdjustmentStatus.IMPLEMENTED,
       ).length;
 
       const totalAdjustments = studentAdjustments.length;
@@ -213,7 +258,9 @@ export class DepartmentStatsService {
       .exec();
 
     if (!department) {
-      throw new NotFoundException(`Department with ID ${departmentId} not found`);
+      throw new NotFoundException(
+        `Department with ID ${departmentId} not found`,
+      );
     }
 
     // Get all department courses for the semester
@@ -223,7 +270,8 @@ export class DepartmentStatsService {
     const coursesByTeacher = new Map<string, CourseDocument[]>();
     courses.forEach((course: CourseDocument) => {
       const courseWithTeacher = course as any; // Temporary type assertion
-      const teacherId = courseWithTeacher.teacherId || courseWithTeacher.teacher?._id;
+      const teacherId =
+        courseWithTeacher.teacherId || courseWithTeacher.teacher?._id;
       if (teacherId) {
         const teacherIdStr = teacherId.toString();
         if (!coursesByTeacher.has(teacherIdStr)) {
@@ -237,7 +285,7 @@ export class DepartmentStatsService {
     const students = await this.studentsService.findAllWithNEE(semester);
 
     // Get all adjustments for these students
-    const studentIds = students.map(s => s._id);
+    const studentIds = students.map((s) => s._id);
     const adjustments = await this.adjustmentsService.findAll({
       studentId: { $in: studentIds },
       semester,
@@ -248,23 +296,26 @@ export class DepartmentStatsService {
       department.teacherIds.map(async (teacher) => {
         const teacherId = teacher._id.toString();
         const teacherCourses = coursesByTeacher.get(teacherId) || [];
-        
+
         // Get teacher's adjustments and ensure they match the AdjustmentWithStatus type
         const teacherAdjustments = adjustments
           .filter((adj: any) => {
-            const adjTeacherId = adj.teacherId?.toString() || adj.teacher?._id?.toString();
-            return adjTeacherId === teacherId && 
-                   adj.currentAdjustments && 
-                   adj.currentAdjustments.length > 0;
+            const adjTeacherId =
+              adj.teacherId?.toString() || adj.teacher?._id?.toString();
+            return (
+              adjTeacherId === teacherId &&
+              adj.currentAdjustments &&
+              adj.currentAdjustments.length > 0
+            );
           })
-          .map(adj => ({
+          .map((adj) => ({
             ...adj,
             _id: new Types.ObjectId(adj._id),
             studentId: new Types.ObjectId(adj.studentId),
             currentAdjustments: adj.currentAdjustments.map((ca: any) => ({
               ...ca,
-              estado: ca.estado || AdjustmentStatus.ACTIVE
-            }))
+              estado: ca.estado || AdjustmentStatus.ACTIVE,
+            })),
           })) as unknown as AdjustmentWithStatus[];
 
         // Count unique students with NEE in teacher's courses
@@ -278,20 +329,29 @@ export class DepartmentStatsService {
           }
         }
 
-        const studentsWithNEECount = Array.from(studentSet).filter(id => 
-          students.some(s => s._id.toString() === id)
+        const studentsWithNEECount = Array.from(studentSet).filter((id) =>
+          students.some((s) => s._id.toString() === id),
         ).length;
 
         const teacherAdjustmentsCount = teacherAdjustments.length;
-        const implementedTeacherAdjustments = teacherAdjustments.reduce((count, adj) => {
-          return count + adj.currentAdjustments.filter(
-            ca => ca.estado === AdjustmentStatus.IMPLEMENTED
-          ).length;
-        }, 0);
+        const implementedTeacherAdjustments = teacherAdjustments.reduce(
+          (count, adj) => {
+            return (
+              count +
+              adj.currentAdjustments.filter(
+                (ca) => ca.estado === AdjustmentStatus.IMPLEMENTED,
+              ).length
+            );
+          },
+          0,
+        );
 
-        const implementationRate = teacherAdjustmentsCount > 0
-          ? Math.round((implementedTeacherAdjustments / teacherAdjustmentsCount) * 100)
-          : 0;
+        const implementationRate =
+          teacherAdjustmentsCount > 0
+            ? Math.round(
+                (implementedTeacherAdjustments / teacherAdjustmentsCount) * 100,
+              )
+            : 0;
 
         return {
           _id: new Types.ObjectId(teacher._id.toString()),
@@ -303,7 +363,7 @@ export class DepartmentStatsService {
           implementedAdjustments: implementedTeacherAdjustments,
           implementationRate,
         } as unknown as TeacherStatsDto;
-      })
+      }),
     );
 
     return {

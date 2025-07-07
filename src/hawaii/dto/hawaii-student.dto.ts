@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class HawaiiStudentDto {
-  @ApiProperty({ description: 'RUT del estudiante (incluyendo dígito verificador)' })
+  @ApiProperty({
+    description: 'RUT del estudiante (incluyendo dígito verificador)',
+  })
   rut: string;
 
   @ApiProperty({ description: 'Apellidos del estudiante' })
@@ -10,7 +12,10 @@ export class HawaiiStudentDto {
   @ApiProperty({ description: 'Nombres del estudiante' })
   nombres: string;
 
-  @ApiProperty({ description: 'Correo electrónico institucional', nullable: true })
+  @ApiProperty({
+    description: 'Correo electrónico institucional',
+    nullable: true,
+  })
   email_ucn: string | null;
 
   /**

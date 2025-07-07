@@ -46,11 +46,11 @@ export class ComplianceReportService {
     user?: any,
   ): Promise<ComplianceByDepartment[]> {
     const matchStage: any = {};
-    
+
     if (semester) {
       matchStage.semester = semester;
     }
-    
+
     if (departmentFilter) {
       matchStage['course.department'] = departmentFilter;
     }
@@ -117,7 +117,7 @@ export class ComplianceReportService {
     ];
 
     const results = await this.adjustmentModel.aggregate(pipeline as any);
-    
+
     return results.map((result) => ({
       departmentId: result._id.toString(),
       departmentName: result.departmentName,
@@ -136,11 +136,11 @@ export class ComplianceReportService {
     user?: any,
   ): Promise<ComplianceByTeacher[]> {
     const matchStage: any = {};
-    
+
     if (semester) {
       matchStage.semester = semester;
     }
-    
+
     if (departmentFilter) {
       matchStage['course.department'] = departmentFilter;
     }
@@ -177,7 +177,11 @@ export class ComplianceReportService {
       {
         $group: {
           _id: '$teacher._id',
-          teacherName: { $first: { $concat: ['$teacher.firstName', ' ', '$teacher.lastName'] } },
+          teacherName: {
+            $first: {
+              $concat: ['$teacher.firstName', ' ', '$teacher.lastName'],
+            },
+          },
           teacherEmail: { $first: '$teacher.email' },
           department: { $first: '$department.name' },
           totalAdjustments: { $sum: 1 },
@@ -230,7 +234,7 @@ export class ComplianceReportService {
     ];
 
     const results = await this.adjustmentModel.aggregate(pipeline as any);
-    
+
     return results.map((result) => ({
       teacherId: result._id.toString(),
       teacherName: result.teacherName,
@@ -241,7 +245,8 @@ export class ComplianceReportService {
       pendingAdjustments: result.pendingAdjustments,
       overdueAdjustments: result.overdueAdjustments,
       complianceRate: Math.round(result.complianceRate * 100) / 100,
-      averageReviewTime: Math.round((result.averageReviewTime || 0) * 100) / 100,
+      averageReviewTime:
+        Math.round((result.averageReviewTime || 0) * 100) / 100,
       lastReviewDate: result.lastReviewDate,
     }));
   }

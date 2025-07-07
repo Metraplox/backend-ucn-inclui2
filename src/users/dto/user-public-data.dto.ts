@@ -49,9 +49,10 @@ export class UserPublicDataDto {
   updatedAt?: Date;
 
   @ApiProperty({
-    description: 'ID del perfil de estudiante asociado (si el rol es ESTUDIANTE)',
+    description:
+      'ID del perfil de estudiante asociado (si el rol es ESTUDIANTE)',
     example: '6372e3e2a3c7e6a2b0f3b3b4',
     required: false,
   })
   studentId?: string;
-} 
+}

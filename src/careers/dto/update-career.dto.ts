@@ -1,7 +1,15 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateCareerDto } from './create-career.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsBoolean, IsNumber, IsMongoId, Matches, IsArray } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsBoolean,
+  IsNumber,
+  IsMongoId,
+  Matches,
+  IsArray,
+} from 'class-validator';
 
 export class UpdateCareerDto extends PartialType(CreateCareerDto) {
   @ApiProperty({
@@ -42,7 +50,7 @@ export class UpdateCareerDto extends PartialType(CreateCareerDto) {
     message: 'El semestre debe tener el formato YYYY-P donde P es 1 o 2',
   })
   currentSemester?: string;
-  
+
   @ApiProperty({
     description: 'ID del departamento al que pertenece la carrera',
     example: '6836440b3928a28e0e78eca1',
@@ -51,7 +59,7 @@ export class UpdateCareerDto extends PartialType(CreateCareerDto) {
   @IsOptional()
   @IsMongoId({ message: 'El ID del departamento debe ser un MongoID válido' })
   departmentId?: string;
-  
+
   @ApiProperty({
     description: 'Duración de la carrera en semestres',
     example: 10,
@@ -60,7 +68,7 @@ export class UpdateCareerDto extends PartialType(CreateCareerDto) {
   @IsOptional()
   @IsNumber({}, { message: 'La duración debe ser un número' })
   duration?: number;
-  
+
   @ApiProperty({
     description: 'Lista de IDs de estudiantes de la carrera',
     example: ['6836440b3928a28e0e78eca1', '6836440b3928a28e0e78eca2'],
@@ -69,7 +77,10 @@ export class UpdateCareerDto extends PartialType(CreateCareerDto) {
   })
   @IsOptional()
   @IsArray()
-  @IsMongoId({ each: true, message: 'Cada ID de estudiante debe ser un MongoID válido' })
+  @IsMongoId({
+    each: true,
+    message: 'Cada ID de estudiante debe ser un MongoID válido',
+  })
   studentIds?: string[];
 
   @ApiProperty({
@@ -87,6 +98,8 @@ export class UpdateCareerDto extends PartialType(CreateCareerDto) {
     required: false,
   })
   @IsOptional()
-  @IsMongoId({ message: 'El ID del jefe de carrera debe ser un MongoID válido' })
+  @IsMongoId({
+    message: 'El ID del jefe de carrera debe ser un MongoID válido',
+  })
   headId?: string;
 }

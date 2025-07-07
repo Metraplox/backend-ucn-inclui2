@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SemesterConfig, SemesterConfigDocument } from './schemas/semester-config.schema';
+import {
+  SemesterConfig,
+  SemesterConfigDocument,
+} from './schemas/semester-config.schema';
 
 @Injectable()
 export class SemesterConfigService {
@@ -12,4 +15,4 @@ export class SemesterConfigService {
 
   // Lógica del servicio irá aquí (CRUD)
   // ej: async create(createDto: ...): Promise<SemesterConfig>
-} 
+}

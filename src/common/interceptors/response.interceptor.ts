@@ -1,9 +1,9 @@
-import { 
-  CallHandler, 
-  ExecutionContext, 
-  Injectable, 
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
   NestInterceptor,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -16,14 +16,16 @@ export interface ApiResponse<T> {
 }
 
 @Injectable()
-export class ResponseInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
+export class ResponseInterceptor<T>
+  implements NestInterceptor<T, ApiResponse<T>>
+{
   intercept(
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<ApiResponse<T>> {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse<Response>();
-    
+
     // Para endpoints que no devuelven contenido (ej. DELETE 204), no interceptar.
     if (response.statusCode === HttpStatus.NO_CONTENT) {
       return next.handle();

@@ -24,7 +24,12 @@ export class NotificationRepository {
     return createdNotification.save();
   }
 
-  async findAll(userId: string, semester?: string, page = 1, limit = 20): Promise<Notification[]> {
+  async findAll(
+    userId: string,
+    semester?: string,
+    page = 1,
+    limit = 20,
+  ): Promise<Notification[]> {
     const query: any = { userId: new Types.ObjectId(userId) };
 
     if (semester) {

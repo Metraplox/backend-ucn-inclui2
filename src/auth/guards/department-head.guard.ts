@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  Logger,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '../../users/schemas/user.schema';
 
@@ -23,7 +28,9 @@ export class DepartmentHeadGuard implements CanActivate {
 
     // Verificar si el usuario tiene roles
     if (!user.roles || !Array.isArray(user.roles)) {
-      this.logger.warn(`Usuario sin roles definidos: ${user.userId || 'ID no disponible'}`);
+      this.logger.warn(
+        `Usuario sin roles definidos: ${user.userId || 'ID no disponible'}`,
+      );
       return false;
     }
 
@@ -37,11 +44,15 @@ export class DepartmentHeadGuard implements CanActivate {
     if (user.roles.includes(UserRole.JEFE_DEPARTAMENTO)) {
       // Verificar que tenga un departamento asignado
       if (!user.departmentId) {
-        this.logger.warn(`Jefe de departamento sin departamento asignado: ${user.userId}`);
+        this.logger.warn(
+          `Jefe de departamento sin departamento asignado: ${user.userId}`,
+        );
         return false;
       }
-      
-      this.logger.debug(`Acceso concedido a jefe de departamento: ${user.userId}, departamento: ${user.departmentId}`);
+
+      this.logger.debug(
+        `Acceso concedido a jefe de departamento: ${user.userId}, departamento: ${user.departmentId}`,
+      );
       return true;
     }
 

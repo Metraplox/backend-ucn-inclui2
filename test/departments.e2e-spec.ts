@@ -24,12 +24,14 @@ describe('DepartmentsController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
-    userModel = moduleFixture.get<Model<UserDocument>>(getModelToken(User.name));
+    userModel = moduleFixture.get<Model<UserDocument>>(
+      getModelToken(User.name),
+    );
     authService = moduleFixture.get<AuthService>(AuthService);
 
     // Limpiar usuarios y crear usuarios de prueba
     await userModel.deleteMany({});
-    
+
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash('password123', salt);
 
@@ -50,8 +52,8 @@ describe('DepartmentsController (e2e)', () => {
     }).save();
 
     // Generar tokens
-    coordinatorToken = (await authService.login(coordinator)).access_token;
-    teacherToken = (await authService.login(teacher)).access_token;
+    coordinatorToken = (await authService.login(coordinator)).accessToken;
+    teacherToken = (await authService.login(teacher)).accessToken;
   });
 
   afterAll(async () => {
@@ -69,7 +71,7 @@ describe('DepartmentsController (e2e)', () => {
           code: 'DP-TEST-FORBIDDEN',
           faculty: 'Facultad de Prueba',
           campus: 'Campus Prueba',
-          currentSemester: '2025-1'
+          currentSemester: '2025-1',
         })
         .expect(403);
     });
@@ -80,7 +82,7 @@ describe('DepartmentsController (e2e)', () => {
         code: 'DIS-001',
         faculty: 'Ingeniería',
         campus: 'Antofagasta',
-        currentSemester: '2025-1'
+        currentSemester: '2025-1',
       };
 
       const response = await request(app.getHttpServer())
@@ -88,10 +90,10 @@ describe('DepartmentsController (e2e)', () => {
         .set('Authorization', `Bearer ${coordinatorToken}`)
         .send(createDepartmentDto)
         .expect(201);
-      
+
       expect(response.body).toBeDefined();
       expect(response.body.name).toEqual(createDepartmentDto.name);
       expect(response.body.code).toEqual(createDepartmentDto.code);
     });
   });
-}); 
+});

@@ -9,7 +9,10 @@ import {
   Adjustment,
   AdjustmentSchema,
 } from '../adjustments/schemas/adjustment.schema';
-import { AcademicHistory, AcademicHistorySchema } from './schemas/academic-history.schema';
+import {
+  AcademicHistory,
+  AcademicHistorySchema,
+} from './schemas/academic-history.schema';
 import { AcademicHistoryController } from './controllers/academic-history.controller';
 import { AcademicHistoryService } from './services/academic-history.service';
 

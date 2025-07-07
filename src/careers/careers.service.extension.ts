@@ -17,11 +17,11 @@ export class CareersServiceExtension {
    */
   async countCareers(semester: string): Promise<number> {
     const query: any = {};
-    
+
     if (semester) {
       query.semester = semester;
     }
-    
+
     return this.careerModel.countDocuments(query).exec();
   }
 
@@ -32,22 +32,22 @@ export class CareersServiceExtension {
    */
   async getCareerStatistics(semester: string): Promise<any[]> {
     const pipeline: PipelineStage[] = [];
-      
+
     // Match por semestre si se proporciona
     if (semester) {
       pipeline.push({ $match: { semester } });
     }
-    
+
     // Lookup para obtener estudiantes
     pipeline.push({
       $lookup: {
         from: 'students',
         localField: 'studentIds',
         foreignField: '_id',
-        as: 'students'
-      }
+        as: 'students',
+      },
     });
-    
+
     // Añadir campos calculados
     pipeline.push({
       $addFields: {
@@ -57,13 +57,13 @@ export class CareersServiceExtension {
             $filter: {
               input: '$students',
               as: 'student',
-              cond: { $eq: ['$$student.hasSpecialNeeds', true] }
-            }
-          }
-        }
-      }
+              cond: { $eq: ['$$student.hasSpecialNeeds', true] },
+            },
+          },
+        },
+      },
     });
-    
+
     // Calcular porcentaje
     pipeline.push({
       $addFields: {
@@ -71,12 +71,17 @@ export class CareersServiceExtension {
           $cond: [
             { $eq: ['$totalStudents', 0] },
             0,
-            { $multiply: [{ $divide: ['$studentsWithNEE', '$totalStudents'] }, 100] }
-          ]
-        }
-      }
+            {
+              $multiply: [
+                { $divide: ['$studentsWithNEE', '$totalStudents'] },
+                100,
+              ],
+            },
+          ],
+        },
+      },
     });
-    
+
     // Proyectar campos necesarios
     pipeline.push({
       $project: {
@@ -87,15 +92,15 @@ export class CareersServiceExtension {
         semester: 1,
         totalStudents: 1,
         studentsWithNEE: 1,
-        percentageWithNEE: { $round: ['$percentageWithNEE', 2] }
-      }
+        percentageWithNEE: { $round: ['$percentageWithNEE', 2] },
+      },
     });
-    
+
     // Ordenar por porcentaje descendente
-    pipeline.push({ 
-      $sort: { percentageWithNEE: -1 as -1 } 
+    pipeline.push({
+      $sort: { percentageWithNEE: -1 as -1 },
     });
-    
+
     return this.careerModel.aggregate(pipeline).exec();
   }
 }

@@ -64,7 +64,6 @@ export class CreateCourseDto {
   @IsNotEmpty({ message: 'El código no puede estar vacío' })
   teacherId: string;
 
-
   @IsOptional()
   @IsArray({ message: 'Los estudiantes deben ser un array' })
   @IsMongoId({

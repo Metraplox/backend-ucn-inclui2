@@ -49,7 +49,7 @@ export class Career {
 
 export const CareerSchema = SchemaFactory.createForClass(Career);
 
-CareerSchema.index({ code: 1 });
+// CareerSchema.index({ code: 1 }); // Eliminado para evitar duplicación, unique:true en @Prop es suficiente
 CareerSchema.index({ headId: 1 });
 CareerSchema.index({ departmentId: 1 });
 CareerSchema.index({ currentSemester: 1 });

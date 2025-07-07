@@ -53,7 +53,10 @@ export class DocumentsService {
    * - Otros roles: NUNCA
    * - Propio estudiante: SIEMPRE
    */
-  async authorizeAccess(documentId: string, user: UserPublicData): Promise<void> {
+  async authorizeAccess(
+    documentId: string,
+    user: UserPublicData,
+  ): Promise<void> {
     const document = await this.getDocumentById(documentId);
 
     // El propio estudiante siempre puede ver sus documentos
@@ -61,23 +64,35 @@ export class DocumentsService {
       if (document.studentId.toString() === user.studentId) {
         return; // El estudiante es el propietario del documento
       }
-      throw new ForbiddenException('No tiene permiso para acceder a este documento.');
+      throw new ForbiddenException(
+        'No tiene permiso para acceder a este documento.',
+      );
     }
 
     // Solo Coordinadora y Educadora Social pueden ver documentos (otros roles prohibidos)
-    if (!user.roles.some(role => [UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL].includes(role))) {
-      throw new ForbiddenException('Su rol no tiene acceso a documentos de estudiantes.');
+    if (
+      !user.roles.some((role) =>
+        [UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL].includes(role),
+      )
+    ) {
+      throw new ForbiddenException(
+        'Su rol no tiene acceso a documentos de estudiantes.',
+      );
     }
 
     // Verificar consentimiento para Coordinadora/Educadora Social
     const canViewDocuments = await this.consentService.canViewDocuments(
       document.studentId.toString(),
-      user.roles.includes(UserRole.COORDINADOR) ? UserRole.COORDINADOR : UserRole.EDUCADORA_SOCIAL,
-      user._id.toString()
+      user.roles.includes(UserRole.COORDINADOR)
+        ? UserRole.COORDINADOR
+        : UserRole.EDUCADORA_SOCIAL,
+      user._id.toString(),
     );
 
     if (!canViewDocuments) {
-      throw new ForbiddenException('El estudiante no ha autorizado compartir sus documentos.');
+      throw new ForbiddenException(
+        'El estudiante no ha autorizado compartir sus documentos.',
+      );
     }
   }
 

@@ -1,16 +1,27 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { connect, connection } from 'mongoose';
-import { Course, CourseDocument, CourseSchema } from '../courses/schemas/course.schema';
+import {
+  Course,
+  CourseDocument,
+  CourseSchema,
+} from '../courses/schemas/course.schema';
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/inclui2';
-const COURSES_FILE = path.resolve(__dirname, '../../GUIA-PROYECTO/json_oferta-202510-hawaii.txt');
+const MONGODB_URI =
+  process.env.MONGODB_URI || 'mongodb://localhost:27017/inclui2';
+const COURSES_FILE = path.resolve(
+  __dirname,
+  '../../GUIA-PROYECTO/json_oferta-202510-hawaii.txt',
+);
 
 function parseProfesores(prof: any): string[] {
   // Si viene como string separados por coma, convertir a array
   if (typeof prof === 'string') {
-    return prof.split(',').map(p => p.trim()).filter(Boolean);
+    return prof
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean);
   }
   if (Array.isArray(prof)) {
     return prof;
@@ -43,7 +54,10 @@ async function extractCourses(): Promise<any[]> {
 async function main() {
   await connect(MONGODB_URI);
   // Usar type casting para evitar errores de tipo
-  const courseModel = connection.model<CourseDocument>('Course', CourseSchema as any);
+  const courseModel = connection.model<CourseDocument>(
+    'Course',
+    CourseSchema as any,
+  );
 
   const courses = await extractCourses();
   let inserted = 0;

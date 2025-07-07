@@ -17,8 +17,8 @@ export class HawaiiService {
   private getHeaders() {
     return {
       'x-api-key': this.apiKey,
-      'Authorization': `Bearer ${this.token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${this.token}`,
+      'Content-Type': 'application/json',
     };
   }
 
@@ -26,14 +26,14 @@ export class HawaiiService {
     try {
       const response: AxiosResponse<HawaiiStudentDto[]> = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/estudiantes`, {
-          headers: this.getHeaders()
-        })
+          headers: this.getHeaders(),
+        }),
       );
       return { data: response.data };
     } catch (error) {
       throw new HttpException(
         'Error al obtener estudiantes desde Hawaii API',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -42,30 +42,36 @@ export class HawaiiService {
     try {
       const response: AxiosResponse<HawaiiCourseDto[]> = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/oferta?semestre=${semester}`, {
-          headers: this.getHeaders()
-        })
+          headers: this.getHeaders(),
+        }),
       );
       return { data: response.data };
     } catch (error) {
       throw new HttpException(
         'Error al obtener oferta académica desde Hawaii API',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async getInscripcion(semester: string): Promise<{ data: HawaiiEnrollmentDto[] }> {
+  async getInscripcion(
+    semester: string,
+  ): Promise<{ data: HawaiiEnrollmentDto[] }> {
     try {
-      const response: AxiosResponse<HawaiiEnrollmentDto[]> = await firstValueFrom(
-        this.httpService.get(`${this.baseUrl}/inscripcion?semestre=${semester}`, {
-          headers: this.getHeaders()
-        })
-      );
+      const response: AxiosResponse<HawaiiEnrollmentDto[]> =
+        await firstValueFrom(
+          this.httpService.get(
+            `${this.baseUrl}/inscripcion?semestre=${semester}`,
+            {
+              headers: this.getHeaders(),
+            },
+          ),
+        );
       return { data: response.data };
     } catch (error) {
       throw new HttpException(
         'Error al obtener inscripciones desde Hawaii API',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

@@ -13,7 +13,7 @@ export interface CareerHeadCareerDto {
 
 // Class for the API response with Swagger decorators
 export class CareerHeadStatsDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Carreras a cargo del jefe de carrera',
     type: 'array',
     items: {
@@ -22,47 +22,59 @@ export class CareerHeadStatsDto {
         _id: { type: 'string', description: 'ID de la carrera' },
         code: { type: 'string', description: 'Código de la carrera' },
         name: { type: 'string', description: 'Nombre de la carrera' },
-        faculty: { type: 'string', description: 'Facultad a la que pertenece la carrera' },
-        campus: { type: 'string', description: 'Sede donde se imparte la carrera' },
-        duration: { type: 'number', description: 'Duración de la carrera en semestres' },
-        totalStudents: { type: 'number', description: 'Número total de estudiantes en la carrera' }
-      }
-    }
+        faculty: {
+          type: 'string',
+          description: 'Facultad a la que pertenece la carrera',
+        },
+        campus: {
+          type: 'string',
+          description: 'Sede donde se imparte la carrera',
+        },
+        duration: {
+          type: 'number',
+          description: 'Duración de la carrera en semestres',
+        },
+        totalStudents: {
+          type: 'number',
+          description: 'Número total de estudiantes en la carrera',
+        },
+      },
+    },
   })
   careers: CareerHeadCareerDto[];
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Número total de estudiantes en todas las carreras',
     type: 'number',
-    example: 150
+    example: 150,
   })
   totalStudents: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Número total de estudiantes con NEE',
     type: 'number',
-    example: 25
+    example: 25,
   })
   studentsWithNEE: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Número total de ajustes razonables',
     type: 'number',
-    example: 50
+    example: 50,
   })
   totalAdjustments: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Número de ajustes implementados',
     type: 'number',
-    example: 40
+    example: 40,
   })
   implementedAdjustments: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Porcentaje de implementación de ajustes',
     type: 'number',
-    example: 80
+    example: 80,
   })
   implementationRate: number;
 }

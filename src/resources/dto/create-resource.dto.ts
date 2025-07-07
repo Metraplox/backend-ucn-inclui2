@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
 import { ResourceType } from '../schemas/resource.schema';
 import { Types } from 'mongoose';
 
@@ -14,7 +22,8 @@ export class CreateResourceDto {
 
   @ApiProperty({
     description: 'Resource description',
-    example: 'This guide provides recommendations for students with visual impairment',
+    example:
+      'This guide provides recommendations for students with visual impairment',
   })
   @IsNotEmpty()
   @IsString()

@@ -41,9 +41,10 @@ export class CoursesController {
 
   @Post()
   @Roles(UserRole.COORDINADOR)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Crear un nuevo curso',
-    description: 'Registra un nuevo curso en el sistema. El curso se asocia automáticamente a la carrera especificada. Solo coordinadores pueden crear cursos.'
+    description:
+      'Registra un nuevo curso en el sistema. El curso se asocia automáticamente a la carrera especificada. Solo coordinadores pueden crear cursos.',
   })
   @ApiBody({
     type: CreateCourseDto,
@@ -59,11 +60,11 @@ export class CoursesController {
           schedule: 'Lu-Mi-Vi 08:00-09:30',
           teacherId: '507f1f77bcf86cd799439012',
           capacity: 40,
-          isActive: true
+          isActive: true,
         },
-        description: 'Curso de matemáticas básicas'
-      }
-    }
+        description: 'Curso de matemáticas básicas',
+      },
+    },
   })
   @ApiResponse({
     status: 201,
@@ -77,47 +78,56 @@ export class CoursesController {
         careerId: '507f1f77bcf86cd799439012',
         career: {
           name: 'Ingeniería Civil en Computación',
-          code: 'ICCI'
+          code: 'ICCI',
         },
         semester: '2025-1',
         credits: 6,
         teacherId: '507f1f77bcf86cd799439013',
         teacher: {
           nombreCompleto: 'Dr. Juan Pérez',
-          email: 'juan.perez@ucn.cl'
+          email: 'juan.perez@ucn.cl',
         },
         enrolledStudents: 0,
         capacity: 40,
         isActive: true,
-        createdAt: '2025-06-19T12:00:00.000Z'
-      }
-    }
+        createdAt: '2025-06-19T12:00:00.000Z',
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Datos de entrada inválidos - NRC duplicado o carrera no existe.' 
+  @ApiResponse({
+    status: 400,
+    description:
+      'Datos de entrada inválidos - NRC duplicado o carrera no existe.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores pueden crear cursos.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Solo coordinadores pueden crear cursos.',
   })
-  @ApiResponse({ 
-    status: 409, 
-    description: 'Conflicto - Ya existe un curso con ese código NRC en el semestre.' 
+  @ApiResponse({
+    status: 409,
+    description:
+      'Conflicto - Ya existe un curso con ese código NRC en el semestre.',
   })
   async create(@Body() createCourseDto: CreateCourseDto): Promise<Course> {
     return this.coursesService.create(createCourseDto);
   }
 
   @Get()
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE)
-  @ApiOperation({ 
+  @Roles(
+    UserRole.COORDINADOR,
+    UserRole.EDUCADORA_SOCIAL,
+    UserRole.JEFE_CARRERA,
+    UserRole.JEFE_DEPARTAMENTO,
+    UserRole.DOCENTE,
+  )
+  @ApiOperation({
     summary: 'Listar todos los cursos',
-    description: 'Obtiene la lista de cursos del sistema. Los docentes solo ven los cursos que imparten. Permite filtrar por semestre académico.'
+    description:
+      'Obtiene la lista de cursos del sistema. Los docentes solo ven los cursos que imparten. Permite filtrar por semestre académico.',
   })
   @ApiQuery({
     name: 'semester',
@@ -126,22 +136,22 @@ export class CoursesController {
     example: '2025-1',
     schema: {
       type: 'string',
-      pattern: '^\\d{4}-[12]$'
-    }
+      pattern: '^\\d{4}-[12]$',
+    },
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Lista de cursos obtenida exitosamente.', 
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de cursos obtenida exitosamente.',
     type: [CourseResponseDto],
-    isArray: true
+    isArray: true,
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Usuario no tiene los roles requeridos.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Usuario no tiene los roles requeridos.',
   })
   async findAll(@Query('semester') semester?: string): Promise<Course[]> {
     if (semester) {
@@ -154,12 +164,13 @@ export class CoursesController {
   @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.ESTUDIANTE)
   @ApiOperation({
     summary: 'Obtener cursos inscritos de un estudiante',
-    description: 'Lista todos los cursos en los que está inscrito un estudiante específico. Los estudiantes solo pueden ver sus propios cursos. Incluye información del docente y horarios.'
+    description:
+      'Lista todos los cursos en los que está inscrito un estudiante específico. Los estudiantes solo pueden ver sus propios cursos. Incluye información del docente y horarios.',
   })
-  @ApiParam({ 
-    name: 'studentId', 
+  @ApiParam({
+    name: 'studentId',
     description: 'ID del estudiante (ObjectId)',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiQuery({
     name: 'semester',
@@ -168,26 +179,27 @@ export class CoursesController {
     example: '2025-1',
     schema: {
       type: 'string',
-      pattern: '^\\d{4}-[12]$'
-    }
+      pattern: '^\\d{4}-[12]$',
+    },
   })
   @ApiResponse({
     status: 200,
     description: 'Lista de cursos del estudiante.',
     type: [CourseResponseDto],
-    isArray: true
+    isArray: true,
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Estudiante no encontrado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Estudiante no encontrado.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Los estudiantes solo pueden ver sus propios cursos.' 
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido - Los estudiantes solo pueden ver sus propios cursos.',
   })
   async findByStudent(
     @Param('studentId') studentId: string,
@@ -197,47 +209,60 @@ export class CoursesController {
   }
 
   @Get(':id')
-  @Roles(UserRole.COORDINADOR, UserRole.EDUCADORA_SOCIAL, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE)
-  @ApiOperation({ 
+  @Roles(
+    UserRole.COORDINADOR,
+    UserRole.EDUCADORA_SOCIAL,
+    UserRole.JEFE_CARRERA,
+    UserRole.JEFE_DEPARTAMENTO,
+    UserRole.DOCENTE,
+  )
+  @ApiOperation({
     summary: 'Obtener un curso específico por ID',
-    description: 'Retorna la información completa de un curso incluyendo docente asignado, carrera y cantidad de estudiantes inscritos.'
+    description:
+      'Retorna la información completa de un curso incluyendo docente asignado, carrera y cantidad de estudiantes inscritos.',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID del curso (ObjectId)',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Curso encontrado exitosamente.', 
-    type: CourseResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Curso encontrado exitosamente.',
+    type: CourseResponseDto,
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Curso no encontrado con el ID especificado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Curso no encontrado con el ID especificado.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Usuario no tiene los roles requeridos.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Usuario no tiene los roles requeridos.',
   })
   async findOne(@Param('id') id: string): Promise<Course> {
     return this.coursesService.findOne(id);
   }
 
   @Get(':courseId/students-with-adjustments')
-  @Roles(UserRole.COORDINADOR, UserRole.JEFE_CARRERA, UserRole.JEFE_DEPARTAMENTO, UserRole.DOCENTE)
+  @Roles(
+    UserRole.COORDINADOR,
+    UserRole.JEFE_CARRERA,
+    UserRole.JEFE_DEPARTAMENTO,
+    UserRole.DOCENTE,
+  )
   @ApiOperation({
     summary: 'Obtener estudiantes con ajustes razonables en un curso',
-    description: 'Lista todos los estudiantes que tienen ajustes activos en un curso específico. Incluye detalles de los ajustes para que el docente pueda aplicarlos. Los docentes solo pueden acceder si son profesores del curso.'
+    description:
+      'Lista todos los estudiantes que tienen ajustes activos en un curso específico. Incluye detalles de los ajustes para que el docente pueda aplicarlos. Los docentes solo pueden acceder si son profesores del curso.',
   })
-  @ApiParam({ 
-    name: 'courseId', 
+  @ApiParam({
+    name: 'courseId',
     description: 'ID del curso',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiResponse({
     status: 200,
@@ -245,32 +270,36 @@ export class CoursesController {
     type: [StudentWithAdjustmentsDto],
     isArray: true,
     schema: {
-      example: [{
-        studentId: '507f1f77bcf86cd799439012',
-        nombre: 'Juan Pérez',
-        rut: '12345678-9',
-        email: 'juan.perez@alumnos.ucn.cl',
-        adjustments: [{
-          type: 'tiempo_extra',
-          description: '50% de tiempo adicional en evaluaciones',
-          status: 'active',
-          expirationDate: '2025-12-31T00:00:00Z',
-          readByTeacher: true
-        }]
-      }]
-    }
+      example: [
+        {
+          studentId: '507f1f77bcf86cd799439012',
+          nombre: 'Juan Pérez',
+          rut: '12345678-9',
+          email: 'juan.perez@alumnos.ucn.cl',
+          adjustments: [
+            {
+              type: 'tiempo_extra',
+              description: '50% de tiempo adicional en evaluaciones',
+              status: 'active',
+              expirationDate: '2025-12-31T00:00:00Z',
+              readByTeacher: true,
+            },
+          ],
+        },
+      ],
+    },
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Curso no encontrado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Curso no encontrado.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Docente no es profesor de este curso.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Docente no es profesor de este curso.',
   })
   async getStudentsWithAdjustments(
     @Param('courseId') courseId: string,
@@ -280,14 +309,15 @@ export class CoursesController {
 
   @Patch(':id')
   @Roles(UserRole.COORDINADOR)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Actualizar un curso existente',
-    description: 'Actualiza parcialmente la información de un curso. Útil para cambiar docente, horario, capacidad, etc. Solo coordinadores pueden actualizar cursos.'
+    description:
+      'Actualiza parcialmente la información de un curso. Útil para cambiar docente, horario, capacidad, etc. Solo coordinadores pueden actualizar cursos.',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID del curso a actualizar',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiBody({
     type: UpdateCourseDto,
@@ -295,39 +325,39 @@ export class CoursesController {
     examples: {
       cambiar_docente: {
         value: {
-          teacherId: '507f1f77bcf86cd799439014'
+          teacherId: '507f1f77bcf86cd799439014',
         },
-        description: 'Asignar nuevo docente al curso'
+        description: 'Asignar nuevo docente al curso',
       },
       actualizar_horario: {
         value: {
           schedule: 'Ma-Ju 10:00-11:30',
-          capacity: 45
+          capacity: 45,
         },
-        description: 'Cambiar horario y aumentar capacidad'
-      }
-    }
+        description: 'Cambiar horario y aumentar capacidad',
+      },
+    },
   })
   @ApiResponse({
     status: 200,
     description: 'Curso actualizado exitosamente.',
     type: CourseResponseDto,
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Curso no encontrado con el ID especificado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Curso no encontrado con el ID especificado.',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Datos de entrada inválidos.' 
+  @ApiResponse({
+    status: 400,
+    description: 'Datos de entrada inválidos.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores pueden actualizar cursos.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Solo coordinadores pueden actualizar cursos.',
   })
   async update(
     @Param('id') id: string,
@@ -339,34 +369,36 @@ export class CoursesController {
   @Delete(':id')
   @Roles(UserRole.COORDINADOR)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Eliminar un curso',
-    description: 'Elimina permanentemente un curso del sistema. Esta acción es irreversible. El curso no debe tener estudiantes inscritos ni ajustes activos asociados.'
+    description:
+      'Elimina permanentemente un curso del sistema. Esta acción es irreversible. El curso no debe tener estudiantes inscritos ni ajustes activos asociados.',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID del curso a eliminar',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiResponse({ 
-    status: 204, 
-    description: 'Curso eliminado exitosamente. Sin contenido en la respuesta.' 
+  @ApiResponse({
+    status: 204,
+    description: 'Curso eliminado exitosamente. Sin contenido en la respuesta.',
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Curso no encontrado con el ID especificado.' 
+  @ApiResponse({
+    status: 404,
+    description: 'Curso no encontrado con el ID especificado.',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'No se puede eliminar - El curso tiene estudiantes inscritos o ajustes activos.' 
+  @ApiResponse({
+    status: 400,
+    description:
+      'No se puede eliminar - El curso tiene estudiantes inscritos o ajustes activos.',
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'No autorizado - Token JWT inválido o expirado.' 
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado - Token JWT inválido o expirado.',
   })
-  @ApiResponse({ 
-    status: 403, 
-    description: 'Prohibido - Solo coordinadores pueden eliminar cursos.' 
+  @ApiResponse({
+    status: 403,
+    description: 'Prohibido - Solo coordinadores pueden eliminar cursos.',
   })
   async remove(@Param('id') id: string): Promise<void> {
     return this.coursesService.remove(id);

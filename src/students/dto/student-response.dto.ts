@@ -39,10 +39,16 @@ export class StudentResponseDto {
   @ApiProperty()
   email: string;
 
-  @ApiProperty({ type: StudentUserDto, description: 'Cuenta de usuario asociada' })
+  @ApiProperty({
+    type: StudentUserDto,
+    description: 'Cuenta de usuario asociada',
+  })
   userId: StudentUserDto;
 
-  @ApiProperty({ type: StudentCareerDto, description: 'Carrera que cursa el estudiante' })
+  @ApiProperty({
+    type: StudentCareerDto,
+    description: 'Carrera que cursa el estudiante',
+  })
   carreraId: StudentCareerDto;
 
   @ApiProperty()
@@ -68,4 +74,4 @@ export class StudentResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
-} 
+}

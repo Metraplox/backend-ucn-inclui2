@@ -26,7 +26,8 @@ if (!fs.existsSync(uploadDir)) {
         destination: uploadDir,
         filename: (req, file, cb) => {
           // Generate a unique filename
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = path.extname(file.originalname);
           cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
         },

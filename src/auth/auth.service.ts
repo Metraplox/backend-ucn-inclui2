@@ -43,7 +43,11 @@ export class AuthService {
     return null;
   }
 
-  async validateGoogleUser(googleId: string, email: string, nombreCompleto: string): Promise<User | null> {
+  async validateGoogleUser(
+    googleId: string,
+    email: string,
+    nombreCompleto: string,
+  ): Promise<User | null> {
     // 1. Intentar encontrar al usuario por su Google ID.
     let user = await this.usersService.findByGoogleId(googleId);
     if (user) {
@@ -52,7 +56,7 @@ export class AuthService {
       if (nombreCompleto && user.nombreCompleto !== nombreCompleto) {
         // Podrías añadir lógica para no sobrescribir un nombre ya bien establecido.
         // Por ahora, actualizamos si es diferente.
-        user.nombreCompleto = nombreCompleto; 
+        user.nombreCompleto = nombreCompleto;
         await user.save();
       }
       return user;
@@ -67,8 +71,8 @@ export class AuthService {
         // El usuario existe pero no tiene un Google ID vinculado. Vincularlo.
         user.googleId = googleId;
         if (nombreCompleto && user.nombreCompleto !== nombreCompleto) {
-            // Actualizar nombre si es relevante (ej. si el actual es genérico o vacío)
-            user.nombreCompleto = nombreCompleto;
+          // Actualizar nombre si es relevante (ej. si el actual es genérico o vacío)
+          user.nombreCompleto = nombreCompleto;
         }
         await user.save();
         return user;
@@ -78,10 +82,12 @@ export class AuthService {
       } else {
         // ¡Conflicto! El email está registrado pero asociado a un Google ID DIFERENTE.
         // Esto podría indicar un intento de tomar una cuenta o un error.
-        console.error(`BACKEND (AuthService): Conflicto de GoogleID para el email ${email}. Registrado: ${user.googleId}, Intento: ${googleId}.`);
+        console.error(
+          `BACKEND (AuthService): Conflicto de GoogleID para el email ${email}. Registrado: ${user.googleId}, Intento: ${googleId}.`,
+        );
         // No se permite la vinculación. Se considera no autorizado.
         // El controlador lanzará UnauthorizedException.
-        return null; 
+        return null;
       }
     }
 
@@ -121,24 +127,33 @@ export class AuthService {
     });
   }
 
-  async login(user: Omit<User, 'password_hash' | 'googleId'> | UserPublicData | User) {
+  async login(
+    user: Omit<User, 'password_hash' | 'googleId'> | UserPublicData | User,
+  ) {
     // Convertir a objeto plano si es un documento Mongoose
-    const userObject = ('toObject' in user && typeof user.toObject === 'function')
-                       ? user.toObject()
-                       : user;
+    const userObject =
+      'toObject' in user && typeof user.toObject === 'function'
+        ? user.toObject()
+        : user;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash, googleId, ...userSafeData } = userObject;
 
     const userIdAsString = userSafeData._id
-      ? (typeof userSafeData._id === 'string' ? userSafeData._id : userSafeData._id.toString())
-      : ''; 
+      ? typeof userSafeData._id === 'string'
+        ? userSafeData._id
+        : userSafeData._id.toString()
+      : '';
 
     if (!userIdAsString) {
       throw new InternalServerErrorException('User ID not found after login');
     }
 
-    const tokens = await this.getTokens(userIdAsString, userSafeData.email, userSafeData.roles);
+    const tokens = await this.getTokens(
+      userIdAsString,
+      userSafeData.email,
+      userSafeData.roles,
+    );
     await this.updateRefreshToken(userIdAsString, tokens.refreshToken);
 
     return {
@@ -173,7 +188,9 @@ export class AuthService {
     return tokens;
   }
 
-  async registerTeacher(teacherRegisterDto: TeacherRegisterDto): Promise<UserPublicData> {
+  async registerTeacher(
+    teacherRegisterDto: TeacherRegisterDto,
+  ): Promise<UserPublicData> {
     // La validación del formato del email ya la hizo el DTO con class-validator.
     // Aquí podríamos añadir lógica de negocio extra si fuese necesario.
 
@@ -200,7 +217,10 @@ export class AuthService {
     }
   }
 
-  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<boolean> {
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<boolean> {
     const user = await this.usersService.findById(userId); // Obtiene el documento completo
 
     const isPasswordMatching = await bcrypt.compare(
@@ -213,12 +233,15 @@ export class AuthService {
     }
 
     // El servicio de update ya maneja el hasheo
-    await this.usersService.update(userId, { password: changePasswordDto.newPassword });
-    
+    await this.usersService.update(userId, {
+      password: changePasswordDto.newPassword,
+    });
+
     // Enviar notificación de seguridad
     this.notificationsGateway.sendNotification(userId, {
       title: 'Alerta de Seguridad',
-      message: 'Tu contraseña ha sido cambiada exitosamente. Si no reconoces esta acción, por favor contacta a soporte.',
+      message:
+        'Tu contraseña ha sido cambiada exitosamente. Si no reconoces esta acción, por favor contacta a soporte.',
       type: 'SECURITY_ALERT',
     });
 

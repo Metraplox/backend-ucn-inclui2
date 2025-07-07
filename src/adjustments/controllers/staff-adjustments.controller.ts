@@ -47,23 +47,24 @@ export class StaffAdjustmentsController {
   @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({
     summary: 'Obtener solicitudes de ayuda de docentes',
-    description: 'Lista todas las solicitudes de ayuda enviadas por docentes para ajustes específicos. Permite filtrado por semestre y estado de la solicitud.'
+    description:
+      'Lista todas las solicitudes de ayuda enviadas por docentes para ajustes específicos. Permite filtrado por semestre y estado de la solicitud.',
   })
   @ApiQuery({
     name: 'semester',
     required: false,
     description: 'Semestre académico en formato YYYY-P',
-    example: '2025-1'
+    example: '2025-1',
   })
   @ApiQuery({
     name: 'status',
     required: false,
     description: 'Estado de la solicitud de ayuda',
     enum: ['pendiente', 'en_proceso', 'resuelto'],
-    example: 'pendiente'
+    example: 'pendiente',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Lista de solicitudes de ayuda con información detallada',
     example: [
       {
@@ -76,16 +77,20 @@ export class StaffAdjustmentsController {
         adjustmentType: 'Tiempo adicional',
         helpRequest: {
           userId: '507f1f77bcf86cd799439013',
-          message: 'Necesito orientación sobre cómo implementar tiempo adicional en evaluaciones orales',
+          message:
+            'Necesito orientación sobre cómo implementar tiempo adicional en evaluaciones orales',
           status: 'pendiente',
-          date: '2025-01-15T10:30:00.000Z'
+          date: '2025-01-15T10:30:00.000Z',
         },
-        semester: '2025-1'
-      }
-    ]
+        semester: '2025-1',
+      },
+    ],
   })
   @ApiResponse({ status: 401, description: 'Token de autenticación inválido' })
-  @ApiResponse({ status: 403, description: 'Sin permisos de staff DIDDEC o coordinador' })
+  @ApiResponse({
+    status: 403,
+    description: 'Sin permisos de staff DIDDEC o coordinador',
+  })
   async getHelpRequests(
     @Query('semester') semester: string = '2025-1',
     @Query('status') status: string = 'pendiente',
@@ -136,20 +141,21 @@ export class StaffAdjustmentsController {
   @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
   @ApiOperation({
     summary: 'Detalle de solicitud de ayuda específica',
-    description: 'Obtiene información completa de una solicitud de ayuda específica incluyendo contexto del ajuste y del estudiante.'
+    description:
+      'Obtiene información completa de una solicitud de ayuda específica incluyendo contexto del ajuste y del estudiante.',
   })
-  @ApiParam({ 
-    name: 'adjustmentId', 
+  @ApiParam({
+    name: 'adjustmentId',
     description: 'ObjectId del ajuste razonable',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiParam({ 
-    name: 'adjustmentIndex', 
+  @ApiParam({
+    name: 'adjustmentIndex',
     description: 'Índice del ajuste específico en el array de ajustes actuales',
-    example: '0'
+    example: '0',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Detalle completo de la solicitud de ayuda',
     example: {
       adjustmentId: '507f1f77bcf86cd799439011',
@@ -159,17 +165,19 @@ export class StaffAdjustmentsController {
       courseNrc: '30001',
       courseName: 'Dr. Juan Pérez',
       adjustmentType: 'Tiempo adicional',
-      adjustmentDetails: 'Estudiante requiere 50% tiempo adicional en evaluaciones debido a dislexia',
+      adjustmentDetails:
+        'Estudiante requiere 50% tiempo adicional en evaluaciones debido a dislexia',
       helpRequests: [
         {
           userId: '507f1f77bcf86cd799439013',
-          message: 'Necesito orientación sobre cómo implementar tiempo adicional en evaluaciones orales',
+          message:
+            'Necesito orientación sobre cómo implementar tiempo adicional en evaluaciones orales',
           status: 'pendiente',
-          date: '2025-01-15T10:30:00.000Z'
-        }
+          date: '2025-01-15T10:30:00.000Z',
+        },
       ],
-      semester: '2025-1'
-    }
+      semester: '2025-1',
+    },
   })
   @ApiResponse({ status: 404, description: 'Ajuste o índice no encontrado' })
   async getHelpRequestDetail(
@@ -206,30 +214,32 @@ export class StaffAdjustmentsController {
 
   @Patch('help-requests/:adjustmentId/:adjustmentIndex/status')
   @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Actualizar estado de solicitud de ayuda',
-    description: 'Actualiza el estado de una solicitud de ayuda específica y envía notificación al docente solicitante.'
+    description:
+      'Actualiza el estado de una solicitud de ayuda específica y envía notificación al docente solicitante.',
   })
-  @ApiParam({ 
-    name: 'adjustmentId', 
+  @ApiParam({
+    name: 'adjustmentId',
     description: 'ObjectId del ajuste razonable',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiParam({ 
-    name: 'adjustmentIndex', 
+  @ApiParam({
+    name: 'adjustmentIndex',
     description: 'Índice del ajuste específico',
-    example: '0'
+    example: '0',
   })
   @ApiBody({
     description: 'Nuevos datos de estado de la solicitud',
     examples: {
-      'en_proceso': {
+      en_proceso: {
         value: {
           status: 'en_proceso',
-          response: 'Hemos recibido tu consulta y te contactaremos en 24 horas con orientación específica'
-        }
-      }
-    }
+          response:
+            'Hemos recibido tu consulta y te contactaremos en 24 horas con orientación específica',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -244,12 +254,13 @@ export class StaffAdjustmentsController {
               status: 'en_proceso',
               responseDate: '2025-01-15T14:30:00.000Z',
               responseBy: '507f1f77bcf86cd799439020',
-              response: 'Hemos recibido tu consulta y te contactaremos en 24 horas'
-            }
-          ]
-        }
-      ]
-    }
+              response:
+                'Hemos recibido tu consulta y te contactaremos en 24 horas',
+            },
+          ],
+        },
+      ],
+    },
   })
   @ApiResponse({ status: 404, description: 'Ajuste o índice no encontrado' })
   async updateHelpRequestStatus(
@@ -305,40 +316,42 @@ export class StaffAdjustmentsController {
       'Respuesta a solicitud de ayuda',
       `Tu solicitud de ayuda para el ajuste en ${currAdj.courseNrc} ha sido ${updateDto.status}`,
       NotificationType.SYSTEM_ALERT,
-      adjustment.semester || '2025-1'
+      adjustment.semester || '2025-1',
     );
-    
+
     return updatedAdjustment;
   }
 
   @Post(':id/:index/approve')
   @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Aprobar ajuste razonable',
-    description: 'Aprueba un ajuste específico dentro del array de ajustes actuales de un estudiante. Envía notificación automática.'
+    description:
+      'Aprueba un ajuste específico dentro del array de ajustes actuales de un estudiante. Envía notificación automática.',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ObjectId del documento de ajustes del estudiante',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiParam({ 
-    name: 'index', 
+  @ApiParam({
+    name: 'index',
     description: 'Índice del ajuste específico en el array currentAdjustments',
-    example: '0'
+    example: '0',
   })
   @ApiBody({
     description: 'Comentarios opcionales para la aprobación',
     examples: {
-      'approval': {
+      approval: {
         value: {
-          comments: 'Ajuste aprobado. Se notificará al docente para implementación inmediata.'
-        }
-      }
-    }
+          comments:
+            'Ajuste aprobado. Se notificará al docente para implementación inmediata.',
+        },
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Ajuste aprobado exitosamente',
     example: {
       _id: '507f1f77bcf86cd799439011',
@@ -348,13 +361,20 @@ export class StaffAdjustmentsController {
           estado: 'approved',
           approvedBy: '507f1f77bcf86cd799439020',
           approvedAt: '2025-01-15T14:30:00.000Z',
-          comments: 'Ajuste aprobado. Se notificará al docente para implementación inmediata.'
-        }
-      ]
-    }
+          comments:
+            'Ajuste aprobado. Se notificará al docente para implementación inmediata.',
+        },
+      ],
+    },
   })
-  @ApiResponse({ status: 400, description: 'Índice inválido o transición de estado no permitida' })
-  @ApiResponse({ status: 404, description: 'Documento de ajustes no encontrado' })
+  @ApiResponse({
+    status: 400,
+    description: 'Índice inválido o transición de estado no permitida',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Documento de ajustes no encontrado',
+  })
   async approveAdjustment(
     @Param('id') id: string,
     @Param('index') index: string,
@@ -378,32 +398,34 @@ export class StaffAdjustmentsController {
 
   @Post(':id/:index/reject')
   @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Rechazar ajuste razonable',
-    description: 'Rechaza un ajuste específico y envía notificación al estudiante con los motivos del rechazo.'
+    description:
+      'Rechaza un ajuste específico y envía notificación al estudiante con los motivos del rechazo.',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ObjectId del documento de ajustes del estudiante',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiParam({ 
-    name: 'index', 
+  @ApiParam({
+    name: 'index',
     description: 'Índice del ajuste específico en el array currentAdjustments',
-    example: '0'
+    example: '0',
   })
   @ApiBody({
     description: 'Comentarios obligatorios explicando el motivo del rechazo',
     examples: {
-      'rejection': {
+      rejection: {
         value: {
-          comments: 'Ajuste rechazado: La documentación médica presentada no es suficiente para justificar este tipo de ajuste.'
-        }
-      }
-    }
+          comments:
+            'Ajuste rechazado: La documentación médica presentada no es suficiente para justificar este tipo de ajuste.',
+        },
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Ajuste rechazado exitosamente',
     example: {
       _id: '507f1f77bcf86cd799439011',
@@ -413,13 +435,20 @@ export class StaffAdjustmentsController {
           estado: 'rejected',
           rejectedBy: '507f1f77bcf86cd799439020',
           rejectedAt: '2025-01-15T14:30:00.000Z',
-          comments: 'Ajuste rechazado: La documentación médica presentada no es suficiente'
-        }
-      ]
-    }
+          comments:
+            'Ajuste rechazado: La documentación médica presentada no es suficiente',
+        },
+      ],
+    },
   })
-  @ApiResponse({ status: 400, description: 'Índice inválido o transición de estado no permitida' })
-  @ApiResponse({ status: 404, description: 'Documento de ajustes no encontrado' })
+  @ApiResponse({
+    status: 400,
+    description: 'Índice inválido o transición de estado no permitida',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Documento de ajustes no encontrado',
+  })
   async rejectAdjustment(
     @Param('id') id: string,
     @Param('index') index: string,
@@ -460,18 +489,19 @@ export class StaffAdjustmentsController {
 
   @Get('pending')
   @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obtener ajustes pendientes de aprobación',
-    description: 'Lista todos los ajustes que están en estado activo y requieren revisión por parte del staff DIDDEC.'
+    description:
+      'Lista todos los ajustes que están en estado activo y requieren revisión por parte del staff DIDDEC.',
   })
-  @ApiQuery({ 
-    name: 'semester', 
-    required: false, 
+  @ApiQuery({
+    name: 'semester',
+    required: false,
     description: 'Semestre académico en formato YYYY-P',
-    example: '2025-1'
+    example: '2025-1',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Lista de ajustes pendientes de aprobación',
     example: [
       {
@@ -484,16 +514,20 @@ export class StaffAdjustmentsController {
             estado: 'active',
             courseNrc: '30001',
             profesor: 'Dr. Juan Pérez',
-            comentarios: 'Estudiante requiere 50% tiempo adicional en evaluaciones',
-            fechaCreacion: '2025-01-15T10:00:00.000Z'
-          }
+            comentarios:
+              'Estudiante requiere 50% tiempo adicional en evaluaciones',
+            fechaCreacion: '2025-01-15T10:00:00.000Z',
+          },
         ],
-        semester: '2025-1'
-      }
-    ]
+        semester: '2025-1',
+      },
+    ],
   })
   @ApiResponse({ status: 401, description: 'Token de autenticación inválido' })
-  @ApiResponse({ status: 403, description: 'Sin permisos de staff DIDDEC o coordinador' })
+  @ApiResponse({
+    status: 403,
+    description: 'Sin permisos de staff DIDDEC o coordinador',
+  })
   async getPendingAdjustments(
     @Query('semester') semester: string = '2025-1',
   ): Promise<any[]> {
@@ -503,12 +537,12 @@ export class StaffAdjustmentsController {
     });
 
     // Formatear para incluir solo información relevante
-    return adjustments.map(adjustment => ({
+    return adjustments.map((adjustment) => ({
       _id: adjustment._id,
       studentRut: adjustment.studentRut,
       studentId: adjustment.studentId,
       currentAdjustments: adjustment.currentAdjustments.filter(
-        adj => adj.estado === AdjustmentStatus.ACTIVE
+        (adj) => adj.estado === AdjustmentStatus.ACTIVE,
       ),
       semester: adjustment.semester,
     }));
@@ -516,18 +550,19 @@ export class StaffAdjustmentsController {
 
   @Get('read-statistics')
   @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Estadísticas de lectura de ajustes por docentes',
-    description: 'Proporciona métricas sobre qué porcentaje de ajustes han sido leídos por los docentes correspondientes.'
+    description:
+      'Proporciona métricas sobre qué porcentaje de ajustes han sido leídos por los docentes correspondientes.',
   })
   @ApiQuery({
     name: 'semester',
     required: false,
     description: 'Semestre académico en formato YYYY-P',
-    example: '2025-1'
+    example: '2025-1',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Estadísticas detalladas de lectura de ajustes',
     example: {
       semester: '2025-1',
@@ -537,14 +572,14 @@ export class StaffAdjustmentsController {
       byTeacher: {
         '507f1f77bcf86cd799439013': {
           total: 12,
-          read: 8
+          read: 8,
         },
         '507f1f77bcf86cd799439014': {
           total: 15,
-          read: 15
-        }
-      }
-    }
+          read: 15,
+        },
+      },
+    },
   })
   async getReadStatistics(
     @Query('semester') semester: string = '2025-1',
@@ -594,15 +629,16 @@ export class StaffAdjustmentsController {
 
   @Get('unread-by-teacher')
   @Roles(UserRole.DIDDEC_STAFF, UserRole.COORDINADOR)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Ajustes no leídos agrupados por docente',
-    description: 'Lista ajustes que no han sido marcados como leídos, agrupados por curso/docente para facilitar seguimiento.'
+    description:
+      'Lista ajustes que no han sido marcados como leídos, agrupados por curso/docente para facilitar seguimiento.',
   })
   @ApiQuery({
     name: 'semester',
     required: false,
     description: 'Semestre académico en formato YYYY-P',
-    example: '2025-1'
+    example: '2025-1',
   })
   @ApiResponse({
     status: 200,
@@ -615,8 +651,8 @@ export class StaffAdjustmentsController {
           studentRut: '20.123.456-7',
           adjustmentType: 'Tiempo adicional',
           courseName: 'Dr. Juan Pérez',
-          createdAt: '2025-01-15T10:00:00.000Z'
-        }
+          createdAt: '2025-01-15T10:00:00.000Z',
+        },
       ],
       '30002': [
         {
@@ -625,10 +661,10 @@ export class StaffAdjustmentsController {
           studentRut: '19.987.654-3',
           adjustmentType: 'Evaluación oral',
           courseName: 'Dra. María González',
-          createdAt: '2025-01-14T15:30:00.000Z'
-        }
-      ]
-    }
+          createdAt: '2025-01-14T15:30:00.000Z',
+        },
+      ],
+    },
   })
   async getUnreadByTeacher(
     @Query('semester') semester: string = '2025-1',

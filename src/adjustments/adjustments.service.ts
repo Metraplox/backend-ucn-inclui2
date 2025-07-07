@@ -35,7 +35,7 @@ export class AdjustmentsService {
     private readonly adjustmentNotificationsService: AdjustmentNotificationsService,
     @InjectModel(DocumentEntity.name)
     private documentModel: Model<DocumentDocument>,
-    
+
     // ✅ Inyección de servicios especializados (composición)
     private readonly adjustmentCrudService: AdjustmentCrudService,
     private readonly adjustmentQueryService: AdjustmentQueryService,
@@ -81,11 +81,17 @@ export class AdjustmentsService {
     return this.adjustmentQueryService.findByCourseId(courseId);
   }
 
-  async findByCourseNrc(courseNrc: string, semester?: string): Promise<Adjustment[]> {
+  async findByCourseNrc(
+    courseNrc: string,
+    semester?: string,
+  ): Promise<Adjustment[]> {
     return this.adjustmentQueryService.findByCourseNrc(courseNrc, semester);
   }
 
-  async findByDepartment(departmentId: string, semester: string): Promise<Adjustment[]> {
+  async findByDepartment(
+    departmentId: string,
+    semester: string,
+  ): Promise<Adjustment[]> {
     return this.adjustmentQueryService.findByDepartment(departmentId, semester);
   }
 
@@ -143,8 +149,14 @@ export class AdjustmentsService {
     return this.adjustmentStatsService.countPendingAdjustments(semester);
   }
 
-  async countAdjustmentsByDepartment(departmentName: string, semester: string): Promise<number> {
-    return this.adjustmentStatsService.countAdjustmentsByDepartment(departmentName, semester);
+  async countAdjustmentsByDepartment(
+    departmentName: string,
+    semester: string,
+  ): Promise<number> {
+    return this.adjustmentStatsService.countAdjustmentsByDepartment(
+      departmentName,
+      semester,
+    );
   }
 
   async countAcknowledgedAdjustmentsByDepartment(
@@ -180,10 +192,13 @@ export class AdjustmentsService {
       const result = await this.adjustmentModel
         .findOneAndUpdate(filter, update, { ...options, lean: true })
         .exec();
-      
+
       return result as unknown as Adjustment | null;
     } catch (error) {
-      this.logger.error(`Error al actualizar ajuste: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al actualizar ajuste: ${error.message}`,
+        error.stack,
+      );
       return null;
     }
   }
@@ -201,11 +216,11 @@ export class AdjustmentsService {
         .findByIdAndUpdate(id, update, { new: true, lean: true })
         .lean<Adjustment>()
         .exec();
-      
+
       if (!updatedDoc) {
         return null;
       }
-      
+
       const adjustment: Adjustment = {
         ...updatedDoc,
         _id: updatedDoc._id,
@@ -213,10 +228,13 @@ export class AdjustmentsService {
         currentAdjustments: updatedDoc.currentAdjustments || [],
         history: updatedDoc.history || [],
       };
-      
+
       return adjustment;
     } catch (error) {
-      this.logger.error(`Error al actualizar ajuste ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al actualizar ajuste ${id}: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('No se pudo actualizar el ajuste');
     }
   }
@@ -238,39 +256,49 @@ export class AdjustmentsService {
 
     const document = await this.documentModel.findById(documentId).exec();
     if (!document) {
-      throw new NotFoundException(`Documento con ID "${documentId}" no encontrado`);
+      throw new NotFoundException(
+        `Documento con ID "${documentId}" no encontrado`,
+      );
     }
 
     const adjustment = await this.adjustmentModel.findById(adjustmentId).exec();
     if (!adjustment) {
-      throw new NotFoundException(`Ajuste con ID "${adjustmentId}" no encontrado`);
+      throw new NotFoundException(
+        `Ajuste con ID "${adjustmentId}" no encontrado`,
+      );
     }
 
     // Asociar documento al primer ajuste actual (simplificación)
     if (adjustment.currentAdjustments.length > 0) {
       const currentAdjustment = adjustment.currentAdjustments[0];
-      
+
       if (!currentAdjustment.documentosAsociados) {
         currentAdjustment.documentosAsociados = [];
       }
 
       const documentObjectId = new Types.ObjectId(documentId);
-      const isAlreadyAssociated = currentAdjustment.documentosAsociados.some(doc =>
-        doc.equals(documentObjectId)
+      const isAlreadyAssociated = currentAdjustment.documentosAsociados.some(
+        (doc) => doc.equals(documentObjectId),
       );
 
       if (isAlreadyAssociated) {
-        throw new BadRequestException('El documento ya está asociado a este ajuste');
+        throw new BadRequestException(
+          'El documento ya está asociado a este ajuste',
+        );
       }
 
       currentAdjustment.documentosAsociados.push(documentObjectId);
     } else {
-      throw new BadRequestException('No hay ajustes actuales para asociar el documento');
+      throw new BadRequestException(
+        'No hay ajustes actuales para asociar el documento',
+      );
     }
 
     const savedAdjustment = await adjustment.save();
 
-    this.logger.log(`Documento ${documentId} asociado al ajuste ${adjustmentId}`);
+    this.logger.log(
+      `Documento ${documentId} asociado al ajuste ${adjustmentId}`,
+    );
 
     return savedAdjustment;
   }
@@ -284,7 +312,7 @@ export class AdjustmentsService {
     semester?: string,
   ): Promise<any[]> {
     const query: any = {};
-    
+
     if (courseId) {
       query.courseId = courseId;
     }
@@ -330,4 +358,4 @@ export class AdjustmentsService {
   ): Promise<any[]> {
     return this.getAdjustmentReadStatus(undefined, courseNrc, semester);
   }
-} 
+}

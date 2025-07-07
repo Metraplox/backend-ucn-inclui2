@@ -12,23 +12,23 @@ export enum NotificationType {
   ADJUSTMENT_APPROVAL_NEEDED = 'ADJUSTMENT_APPROVAL_NEEDED',
   ADJUSTMENT_APPROVED = 'ADJUSTMENT_APPROVED',
   ADJUSTMENT_REJECTED = 'ADJUSTMENT_REJECTED',
-  
+
   // Estudiantes
   NEW_STUDENT = 'NEW_STUDENT',
   STUDENT_UPDATE = 'STUDENT_UPDATE',
-  
+
   // Docentes
   TEACHER_ASSIGNMENT = 'TEACHER_ASSIGNMENT',
   TEACHER_ACKNOWLEDGMENT_NEEDED = 'TEACHER_ACKNOWLEDGMENT_NEEDED',
   TEACHER_ACKNOWLEDGMENT_RECEIVED = 'TEACHER_ACKNOWLEDGMENT_RECEIVED',
-  
+
   // Recursos
   NEW_RESOURCE_AVAILABLE = 'NEW_RESOURCE_AVAILABLE',
-  
+
   // Sistema
   REMINDER = 'REMINDER',
   SYSTEM_ALERT = 'SYSTEM_ALERT',
-  
+
   // Solicitudes de ayuda
   HELP_REQUEST = 'HELP_REQUEST',
   HELP_REQUEST_RESPONSE = 'HELP_REQUEST_RESPONSE',
@@ -46,10 +46,10 @@ export enum NotificationPriority {
 
 export type NotificationDocument = Notification & Document;
 
-@Schema({ 
+@Schema({
   timestamps: true,
   toJSON: { virtuals: true },
-  toObject: { virtuals: true } 
+  toObject: { virtuals: true },
 })
 export class Notification {
   @ApiProperty({
@@ -74,7 +74,8 @@ export class Notification {
 
   @ApiProperty({
     description: 'Mensaje detallado de la notificación',
-    example: 'Se ha actualizado un ajuste para el estudiante Juan Pérez en el curso MAT101-1',
+    example:
+      'Se ha actualizado un ajuste para el estudiante Juan Pérez en el curso MAT101-1',
   })
   @Prop({ required: true, type: String })
   message: string;
@@ -84,11 +85,11 @@ export class Notification {
     enum: NotificationType,
     example: NotificationType.ADJUSTMENT_UPDATED,
   })
-  @Prop({ 
-    required: true, 
-    type: String, 
+  @Prop({
+    required: true,
+    type: String,
     enum: Object.values(NotificationType),
-    index: true 
+    index: true,
   })
   type: NotificationType;
 
@@ -96,82 +97,82 @@ export class Notification {
     description: 'Semestre académico relacionado (formato YYYY-P)',
     example: '2025-1',
   })
-  @Prop({ 
-    required: true, 
-    type: String, 
+  @Prop({
+    required: true,
+    type: String,
     index: true,
-    match: /^\d{4}-[1-2]$/ 
+    match: /^\d{4}-[1-2]$/,
   })
   semester: string;
-  
+
   @ApiProperty({
     description: 'Indica si la notificación ha sido leída',
     example: false,
-    default: false
-  })
-  @Prop({ 
-    type: Boolean, 
     default: false,
-    index: true 
+  })
+  @Prop({
+    type: Boolean,
+    default: false,
+    index: true,
   })
   isRead: boolean;
-  
+
   @ApiProperty({
     description: 'Prioridad de la notificación',
     enum: NotificationPriority,
     example: NotificationPriority.MEDIUM,
-    default: NotificationPriority.MEDIUM
+    default: NotificationPriority.MEDIUM,
   })
-  @Prop({ 
-    type: String, 
+  @Prop({
+    type: String,
     enum: Object.values(NotificationPriority),
     default: NotificationPriority.MEDIUM,
-    index: true 
+    index: true,
   })
   priority: NotificationPriority;
-  
+
   @ApiPropertyOptional({
     description: 'ID del estudiante relacionado (opcional)',
     example: '605c72ef9167f86c2cabc456',
   })
   @Prop({ type: Types.ObjectId, ref: 'Student', index: true })
   studentId?: Types.ObjectId;
-  
+
   @ApiPropertyOptional({
     description: 'ID del ajuste relacionado (opcional)',
     example: '605c72ef9167f86c2cabc789',
   })
   @Prop({ type: Types.ObjectId, ref: 'Adjustment', index: true })
   adjustmentId?: Types.ObjectId;
-  
+
   @ApiPropertyOptional({
     description: 'ID del curso relacionado (opcional)',
     example: '605c72ef9167f86c2cabc012',
   })
   @Prop({ type: Types.ObjectId, ref: 'Course', index: true })
   courseId?: Types.ObjectId;
-  
+
   @ApiPropertyOptional({
     description: 'ID del recurso relacionado (opcional)',
     example: '605c72ef9167f86c2cabc345',
   })
   @Prop({ type: Types.ObjectId, ref: 'Resource', index: true })
   resourceId?: Types.ObjectId;
-  
+
   @ApiPropertyOptional({
     description: 'Metadatos adicionales en formato JSON',
     example: { actionUrl: '/adjustments/123', relatedEntity: 'adjustment' },
   })
   @Prop({ type: Object })
   metadata?: Record<string, any>;
-  
+
   @ApiProperty({
     description: 'Fecha de expiración de la notificación',
     example: '2025-12-31T23:59:59.999Z',
   })
   @Prop({ type: Date, index: true })
   expiresAt?: Date;
-  
+
   // Campos virtuales para relaciones
   @ApiProperty({
     description: 'Usuario destinatario (virtual)',
@@ -184,7 +185,7 @@ export class Notification {
     justOne: true,
   })
   user?: Record<string, any>;
-  
+
   @ApiProperty({
     description: 'Estudiante relacionado (virtual)',
   })
@@ -196,7 +197,7 @@ export class Notification {
     justOne: true,
   })
   student?: Record<string, any>;
-  
+
   @ApiProperty({
     description: 'Ajuste relacionado (virtual)',
   })
@@ -208,7 +209,7 @@ export class Notification {
     justOne: true,
   })
   adjustment?: Record<string, any>;
-  
+
   @ApiProperty({
     description: 'Curso relacionado (virtual)',
   })
@@ -220,7 +221,7 @@ export class Notification {
     justOne: true,
   })
   course?: Record<string, any>;
-  
+
   @ApiProperty({
     description: 'Recurso relacionado (virtual)',
   })

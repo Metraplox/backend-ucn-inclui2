@@ -28,7 +28,8 @@ export class Resource {
 
   @ApiProperty({
     description: 'Resource description',
-    example: 'This guide provides recommendations for students with visual impairment',
+    example:
+      'This guide provides recommendations for students with visual impairment',
   })
   @Prop({ required: true, type: String })
   description: string;
@@ -73,7 +74,10 @@ export class Resource {
     description: 'Associated adjustment type IDs',
     type: [String],
   })
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'AdjustmentType' }], default: [] })
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'AdjustmentType' }],
+    default: [],
+  })
   adjustmentTypeIds: Types.ObjectId[];
 
   @ApiProperty({

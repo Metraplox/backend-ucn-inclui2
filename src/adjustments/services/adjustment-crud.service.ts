@@ -84,10 +84,13 @@ export class AdjustmentCrudService {
       const result = await this.adjustmentModel
         .findOneAndUpdate(filter, update, { ...options, lean: true })
         .exec();
-      
+
       return result as unknown as Adjustment | null;
     } catch (error) {
-      this.logger.error(`Error al actualizar ajuste: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al actualizar ajuste: ${error.message}`,
+        error.stack,
+      );
       return null;
     }
   }
@@ -105,7 +108,7 @@ export class AdjustmentCrudService {
         .findByIdAndUpdate(id, update, { new: true, lean: true })
         .lean<Adjustment>()
         .exec();
-      
+
       if (!updatedDoc) {
         return null;
       }
@@ -117,10 +120,13 @@ export class AdjustmentCrudService {
         currentAdjustments: updatedDoc.currentAdjustments || [],
         history: updatedDoc.history || [],
       };
-      
+
       return adjustment;
     } catch (error) {
-      this.logger.error(`Error al actualizar ajuste ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al actualizar ajuste ${id}: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('No se pudo actualizar el ajuste');
     }
   }
@@ -136,4 +142,4 @@ export class AdjustmentCrudService {
     const result = await this.adjustmentModel.deleteOne({ _id: id }).exec();
     return result;
   }
-} 
+}

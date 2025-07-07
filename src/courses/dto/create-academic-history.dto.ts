@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsMongoId, IsEnum, IsOptional, IsArray, Matches } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsMongoId,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  Matches,
+} from 'class-validator';
 
 export class CreateAcademicHistoryDto {
   @ApiProperty({
@@ -36,7 +44,10 @@ export class CreateAcademicHistoryDto {
     type: [String],
   })
   @IsArray({ message: 'Los ajustes deben ser un array de IDs' })
-  @IsMongoId({ each: true, message: 'Cada ID de ajuste debe ser un MongoID válido' })
+  @IsMongoId({
+    each: true,
+    message: 'Cada ID de ajuste debe ser un MongoID válido',
+  })
   @IsOptional()
   readonly adjustmentIds?: string[];
 
@@ -46,7 +57,8 @@ export class CreateAcademicHistoryDto {
     enum: ['En curso', 'Aprobado', 'Reprobado', 'Abandono'],
   })
   @IsEnum(['En curso', 'Aprobado', 'Reprobado', 'Abandono'], {
-    message: 'El estado debe ser uno de: En curso, Aprobado, Reprobado, Abandono',
+    message:
+      'El estado debe ser uno de: En curso, Aprobado, Reprobado, Abandono',
   })
   @IsNotEmpty({ message: 'El estado no puede estar vacío' })
   readonly status: string;

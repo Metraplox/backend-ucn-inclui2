@@ -2,7 +2,9 @@ import { PartialType } from '@nestjs/mapped-types';
 import { CreateAcademicHistoryDto } from './create-academic-history.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateAcademicHistoryDto extends PartialType(CreateAcademicHistoryDto) {
+export class UpdateAcademicHistoryDto extends PartialType(
+  CreateAcademicHistoryDto,
+) {
   @ApiProperty({
     description: 'Estado del curso actualizado (opcional)',
     example: 'Aprobado',

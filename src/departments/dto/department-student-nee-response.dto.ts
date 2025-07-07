@@ -40,7 +40,10 @@ export class DepartmentStudentsNeeResponseDto {
   @ApiProperty({ description: 'Total de estudiantes con NEE' })
   totalStudents: number;
 
-  @ApiProperty({ description: 'Lista de estudiantes con NEE', type: [StudentNeeResponseDto] })
+  @ApiProperty({
+    description: 'Lista de estudiantes con NEE',
+    type: [StudentNeeResponseDto],
+  })
   students: StudentNeeResponseDto[];
 
   @ApiProperty({ description: 'Fecha de generación del reporte' })

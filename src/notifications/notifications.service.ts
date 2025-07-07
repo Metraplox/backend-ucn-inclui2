@@ -17,7 +17,12 @@ export class NotificationsService {
     return this.notificationRepository.create(createNotificationDto);
   }
 
-  async findAll(userId: string, semester?: string, page = 1, limit = 20): Promise<Notification[]> {
+  async findAll(
+    userId: string,
+    semester?: string,
+    page = 1,
+    limit = 20,
+  ): Promise<Notification[]> {
     if (!Types.ObjectId.isValid(userId)) {
       throw new NotFoundException(`ID de usuario inválido: ${userId}`);
     }
@@ -115,7 +120,7 @@ export class NotificationsService {
       semester,
       isRead: false,
     };
-    
+
     // Solo añadimos relatedTo si está definido
     if (relatedTo) {
       notificationDto.relatedTo = relatedTo;

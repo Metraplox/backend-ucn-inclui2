@@ -23,7 +23,7 @@ export class Course {
     example: 'MAT101-1',
     description: 'Código NRC del curso',
   })
-  @Prop({ required: true, type: String, unique: true, index: true })
+  @Prop({ required: true, type: String, unique: true })
   nrc: string;
 
   @ApiProperty({
@@ -46,7 +46,7 @@ export class Course {
   })
   @Prop({ type: Types.ObjectId, ref: 'User' })
   teacherId: Types.ObjectId;
-  
+
   @ApiProperty({
     example: 'Departamento de Matemáticas',
     description: 'Departamento académico al que pertenece el curso',

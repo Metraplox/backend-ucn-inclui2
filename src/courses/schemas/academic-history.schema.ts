@@ -35,7 +35,7 @@ export class AcademicHistory {
 
   @ApiProperty({
     description: 'Ajustes aplicados en este curso',
-    example: ['Tiempo adicional', 'Material adaptado']
+    example: ['Tiempo adicional', 'Material adaptado'],
   })
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Adjustment' }], default: [] })
   adjustmentIds: Types.ObjectId[];
@@ -43,15 +43,19 @@ export class AcademicHistory {
   @ApiProperty({
     description: 'Estado del curso',
     example: 'En curso',
-    enum: ['En curso', 'Aprobado', 'Reprobado', 'Abandono']
+    enum: ['En curso', 'Aprobado', 'Reprobado', 'Abandono'],
   })
-  @Prop({ required: true, enum: ['En curso', 'Aprobado', 'Reprobado', 'Abandono'], default: 'En curso' })
+  @Prop({
+    required: true,
+    enum: ['En curso', 'Aprobado', 'Reprobado', 'Abandono'],
+    default: 'En curso',
+  })
   status: string;
 
   @ApiProperty({
     description: 'Notas o comentarios sobre la implementación de ajustes',
     example: 'El estudiante requirió apoyo adicional durante las evaluaciones',
-    required: false
+    required: false,
   })
   @Prop({ required: false })
   notes: string;
@@ -71,7 +75,8 @@ export class AcademicHistory {
   declare updatedAt: Date;
 }
 
-export const AcademicHistorySchema = SchemaFactory.createForClass(AcademicHistory);
+export const AcademicHistorySchema =
+  SchemaFactory.createForClass(AcademicHistory);
 
 // Índices para optimizar consultas
 AcademicHistorySchema.index({ studentId: 1, semester: 1 });

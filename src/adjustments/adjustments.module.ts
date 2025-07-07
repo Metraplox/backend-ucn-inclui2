@@ -36,7 +36,7 @@ import { AdjustmentStatsService } from './services/adjustment-stats.service';
     // Servicios principales existentes
     AdjustmentsService,
     AdjustmentsServiceExtension,
-    
+
     // Servicios especializados refactorizados ✅
     AdjustmentCrudService,
     AdjustmentQueryService,
@@ -47,7 +47,7 @@ import { AdjustmentStatsService } from './services/adjustment-stats.service';
     // Servicios principales
     AdjustmentsService,
     AdjustmentsServiceExtension,
-    
+
     // Servicios especializados para uso en otros módulos
     AdjustmentCrudService,
     AdjustmentQueryService,

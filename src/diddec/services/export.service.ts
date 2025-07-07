@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ExportFormat, ExportReportDto, ReportType } from '../dto/export-report.dto';
+import {
+  ExportFormat,
+  ExportReportDto,
+  ReportType,
+} from '../dto/export-report.dto';
 import { DiddecService } from '../diddec.service';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -27,7 +31,7 @@ export class ExportService {
   }> {
     const { semester, reportType, format } = exportReportDto;
     let data: any;
-    let filename = `reporte_${reportType}_${semester}_${uuidv4()}`;
+    const filename = `reporte_${reportType}_${semester}_${uuidv4()}`;
 
     // Get data based on report type
     switch (reportType) {
@@ -42,10 +46,14 @@ export class ExportService {
         data = reportData.adjustmentsByType;
         break;
       case ReportType.ADJUSTMENT_COMPLIANCE:
-        data = await this.diddecService.getAdjustmentComplianceByDepartment(semester);
+        data =
+          await this.diddecService.getAdjustmentComplianceByDepartment(
+            semester,
+          );
         break;
       case ReportType.STUDENTS_BY_CAREER:
-        const semesterReport = await this.diddecService.getSemesterReport(semester);
+        const semesterReport =
+          await this.diddecService.getSemesterReport(semester);
         data = semesterReport.studentsByCareer;
         break;
       case ReportType.COURSES_WITH_NEE:
@@ -93,41 +101,45 @@ export class ExportService {
 
       case ReportType.STUDENTS_WITH_NEE:
         csvContent = 'ID,Rut,Nombre,Apellido,Email,Carrera,Semestre\n';
-        data.forEach(student => {
+        data.forEach((student) => {
           csvContent += `${student._id},${student.rut},${student.firstName},${student.lastName},${student.email},${student.carreraId?.name || 'N/A'},${student.semester}\n`;
         });
         break;
 
       case ReportType.ADJUSTMENTS_BY_TYPE:
         csvContent = 'Tipo de Ajuste,Cantidad\n';
-        data.forEach(item => {
+        data.forEach((item) => {
           csvContent += `${item.type},${item.count}\n`;
         });
         break;
 
       case ReportType.ADJUSTMENT_COMPLIANCE:
-        csvContent = 'Departamento,Total Ajustes,Ajustes Reconocidos,Tasa de Cumplimiento\n';
-        data.forEach(item => {
+        csvContent =
+          'Departamento,Total Ajustes,Ajustes Reconocidos,Tasa de Cumplimiento\n';
+        data.forEach((item) => {
           csvContent += `${item.department},${item.totalAdjustments},${item.acknowledgedAdjustments},${item.complianceRate}%\n`;
         });
         break;
 
       case ReportType.STUDENTS_BY_CAREER:
         csvContent = 'Carrera,Departamento,Cantidad de Estudiantes con NEE\n';
-        data.forEach(item => {
+        data.forEach((item) => {
           csvContent += `${item.careerName},${item.department},${item.studentCount}\n`;
         });
         break;
 
       case ReportType.COURSES_WITH_NEE:
-        csvContent = 'Curso,Código,NRC,Semestre,Estudiantes con NEE,Total Estudiantes\n';
-        data.forEach(course => {
+        csvContent =
+          'Curso,Código,NRC,Semestre,Estudiantes con NEE,Total Estudiantes\n';
+        data.forEach((course) => {
           csvContent += `${course.name},${course.code},${course.nrc},${course.semester},${course.studentsWithNEECount},${course.totalStudents}\n`;
         });
         break;
 
       default:
-        throw new Error(`Report type ${reportType} not supported for CSV export`);
+        throw new Error(
+          `Report type ${reportType} not supported for CSV export`,
+        );
     }
 
     // Write to file

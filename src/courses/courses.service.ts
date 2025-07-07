@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from './schemas/course.schema';
@@ -13,14 +18,19 @@ export class CoursesService {
    * Busca cursos por departamento y semestre
    * Implementa lógica real para consultar en base de datos
    */
-  async findByDepartment(departmentId: string, semester: string): Promise<Course[]> {
+  async findByDepartment(
+    departmentId: string,
+    semester: string,
+  ): Promise<Course[]> {
     if (!Types.ObjectId.isValid(departmentId)) {
       throw new BadRequestException('ID de departamento inválido');
     }
-    return this.courseModel.find({ 
-      departmentId: new Types.ObjectId(departmentId), 
-      semestre: semester 
-    }).exec();
+    return this.courseModel
+      .find({
+        departmentId: new Types.ObjectId(departmentId),
+        semestre: semester,
+      })
+      .exec();
   }
 
   private readonly logger = new Logger(CoursesService.name);
@@ -42,13 +52,17 @@ export class CoursesService {
   async findBySemester(semester: string): Promise<Course[]> {
     return this.courseModel.find({ semestre: semester }).exec();
   }
-  
-  async findCoursesByTeacher(teacherId: string, semester: string): Promise<Course[]> {
-    
-    return this.courseModel.find({
-      teacherId: teacherId,
-      semestre: semester
-    }).exec();
+
+  async findCoursesByTeacher(
+    teacherId: string,
+    semester: string,
+  ): Promise<Course[]> {
+    return this.courseModel
+      .find({
+        teacherId: teacherId,
+        semestre: semester,
+      })
+      .exec();
   }
 
   async findOne(id: string): Promise<Course> {
@@ -114,7 +128,6 @@ export class CoursesService {
         'currentAdjustments.estado': 'activo',
       })
       .exec();
-    
 
     // Obtener los IDs de estudiantes únicos de los ajustes
     const studentIds = [
@@ -127,7 +140,7 @@ export class CoursesService {
         _id: { $in: studentIds },
       })
       .exec();
-  
+
     // Crear un mapa para asociar estudiantes con sus ajustes
     const result = students.map((student) => {
       const studentAdjustments = adjustments
@@ -160,7 +173,9 @@ export class CoursesService {
    */
   async countCourses(semester: string): Promise<number> {
     try {
-      return await this.courseModel.countDocuments({ semestre: semester }).exec();
+      return await this.courseModel
+        .countDocuments({ semestre: semester })
+        .exec();
     } catch (error) {
       this.logger.error(`Error al contar cursos: ${error.message}`);
       return 0;
@@ -170,14 +185,18 @@ export class CoursesService {
   /**
    * Obtiene los departamentos académicos para un semestre específico
    */
-  async getDepartments(semester: string): Promise<{ name: string; count: number }[]> {
+  async getDepartments(
+    semester: string,
+  ): Promise<{ name: string; count: number }[]> {
     try {
-      const result = await this.courseModel.aggregate([
-        { $match: { semestre: semester } },
-        { $group: { _id: "$departamento", count: { $sum: 1 } } },
-        { $project: { _id: 0, name: "$_id", count: 1 } },
-        { $sort: { count: -1 } }
-      ]).exec();
+      const result = await this.courseModel
+        .aggregate([
+          { $match: { semestre: semester } },
+          { $group: { _id: '$departamento', count: { $sum: 1 } } },
+          { $project: { _id: 0, name: '$_id', count: 1 } },
+          { $sort: { count: -1 } },
+        ])
+        .exec();
 
       return result;
     } catch (error) {
@@ -189,7 +208,10 @@ export class CoursesService {
   /**
    * Obtiene los cursos con mayor cantidad de estudiantes con NEE
    */
-  async getTopCoursesWithNEE(semester: string, limit: number = 10): Promise<CourseWithNEE[]> {
+  async getTopCoursesWithNEE(
+    semester: string,
+    limit: number = 10,
+  ): Promise<CourseWithNEE[]> {
     try {
       // Primero encontramos los ajustes activos en el semestre actual
       const adjustments = await this.adjustmentModel
@@ -202,13 +224,19 @@ export class CoursesService {
 
       // Creamos un mapa para contar estudiantes con NEE por curso
       const courseStudentCount = new Map<string, Set<string>>();
-      const courseDetails = new Map<string, Omit<CourseWithNEE, 'studentsWithNEECount'>>();
+      const courseDetails = new Map<
+        string,
+        Omit<CourseWithNEE, 'studentsWithNEECount'>
+      >();
 
       // Obtenemos todos los NRCs únicos primero para optimizar la consulta
       const uniqueNrcs = new Set<string>();
       for (const adjustment of adjustments) {
         for (const currentAdj of adjustment.currentAdjustments) {
-          if (currentAdj.semester === semester && currentAdj.estado === 'activo') {
+          if (
+            currentAdj.semester === semester &&
+            currentAdj.estado === 'activo'
+          ) {
             uniqueNrcs.add(currentAdj.courseNrc);
           }
         }
@@ -216,40 +244,48 @@ export class CoursesService {
 
       // Obtenemos todos los cursos necesarios en una sola consulta
       const courses = await this.courseModel
-        .find({ 
+        .find({
           nrc: { $in: Array.from(uniqueNrcs) },
-          semestre: semester 
+          semestre: semester,
         })
         .lean()
         .exec();
 
       // Creamos un mapa de cursos por NRC para acceso rápido
-      const coursesByNrc = new Map(courses.map(course => [course.nrc, {
-        ...course,
-        _id: course._id.toString() // Convertir ObjectId a string
-      }]));
+      const coursesByNrc = new Map(
+        courses.map((course) => [
+          course.nrc,
+          {
+            ...course,
+            _id: course._id.toString(), // Convertir ObjectId a string
+          },
+        ]),
+      );
 
       // Procesamos los ajustes
       for (const adjustment of adjustments) {
         for (const currentAdj of adjustment.currentAdjustments) {
-          if (currentAdj.semester === semester && currentAdj.estado === 'activo') {
+          if (
+            currentAdj.semester === semester &&
+            currentAdj.estado === 'activo'
+          ) {
             const nrc = currentAdj.courseNrc;
             const course = coursesByNrc.get(nrc);
-            
+
             if (!course) continue;
-            
+
             if (!courseStudentCount.has(nrc)) {
               courseStudentCount.set(nrc, new Set());
-              
+
               courseDetails.set(nrc, {
                 courseId: course._id,
                 name: course.nombre,
                 nrc: course.nrc,
                 code: course.code,
-                department: course.departamento
+                department: course.departamento,
               });
             }
-            
+
             // Registramos que este estudiante tiene NEE en este curso
             courseStudentCount.get(nrc)?.add(adjustment.studentId.toString());
           }
@@ -260,7 +296,7 @@ export class CoursesService {
       const result = Array.from(courseStudentCount.entries())
         .map(([nrc, students]) => ({
           ...courseDetails.get(nrc)!,
-          studentsWithNEECount: students.size
+          studentsWithNEECount: students.size,
         }))
         .filter((item): item is CourseWithNEE => !!item.name) // Filtramos items inválidos
         .sort((a, b) => b.studentsWithNEECount - a.studentsWithNEECount)
@@ -270,7 +306,7 @@ export class CoursesService {
     } catch (error) {
       this.logger.error(
         `Error al obtener cursos con mayor cantidad de NEE: ${error.message}`,
-        error.stack
+        error.stack,
       );
       return [];
     }
@@ -288,4 +324,3 @@ export interface CourseWithNEE {
   department: string;
   studentsWithNEECount: number;
 }
-

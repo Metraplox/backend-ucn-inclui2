@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 class AdjustmentInfoDto {
-  @ApiProperty({ description: 'ID del ajuste específico en el contexto del curso' })
+  @ApiProperty({
+    description: 'ID del ajuste específico en el contexto del curso',
+  })
   _id: string;
 
   @ApiProperty({ description: 'Tipo o categoría del ajuste' })
@@ -32,4 +34,4 @@ export class StudentWithAdjustmentsDto {
     description: 'Lista de ajustes que tiene el estudiante en este curso',
   })
   ajustes: AdjustmentInfoDto[];
-} 
+}

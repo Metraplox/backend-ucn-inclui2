@@ -4,7 +4,9 @@ export class HawaiiEnrollmentDto {
   @ApiProperty({ description: 'NRC del curso inscrito' })
   nrc: string;
 
-  @ApiProperty({ description: 'RUT del estudiante (incluye dígito verificador)' })
+  @ApiProperty({
+    description: 'RUT del estudiante (incluye dígito verificador)',
+  })
   rut: string;
 
   /**

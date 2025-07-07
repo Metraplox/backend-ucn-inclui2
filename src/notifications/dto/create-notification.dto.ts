@@ -12,9 +12,12 @@ import {
   IsArray,
   ArrayMinSize,
   ArrayMaxSize,
-  IsDateString
+  IsDateString,
 } from 'class-validator';
-import { NotificationType, NotificationPriority } from '../schemas/notification.schema';
+import {
+  NotificationType,
+  NotificationPriority,
+} from '../schemas/notification.schema';
 
 export class RelatedToDto {
   @ApiProperty({
@@ -51,17 +54,22 @@ export class CreateNotificationDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[^<>]*$/, { message: 'El título no puede contener caracteres HTML' })
+  @Matches(/^[^<>]*$/, {
+    message: 'El título no puede contener caracteres HTML',
+  })
   title: string;
 
   @ApiProperty({
     description: 'Mensaje detallado de la notificación',
-    example: 'Se ha actualizado un ajuste para el estudiante Juan Pérez en el curso MAT101-1',
+    example:
+      'Se ha actualizado un ajuste para el estudiante Juan Pérez en el curso MAT101-1',
     maxLength: 2000,
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[^<>]*$/, { message: 'El mensaje no puede contener caracteres HTML' })
+  @Matches(/^[^<>]*$/, {
+    message: 'El mensaje no puede contener caracteres HTML',
+  })
   message: string;
 
   @ApiProperty({
@@ -129,15 +137,17 @@ export class CreateNotificationDto {
 
   @ApiPropertyOptional({
     description: 'Metadatos adicionales en formato JSON',
-    example: { 
-      actionUrl: '/adjustments/123', 
+    example: {
+      actionUrl: '/adjustments/123',
       relatedEntity: 'adjustment',
-      customData: { /* datos personalizados */ }
+      customData: {
+        /* datos personalizados */
+      },
     },
   })
   @IsObject()
   @IsOptional()
-  @ValidateIf(o => o.metadata !== undefined)
+  @ValidateIf((o) => o.metadata !== undefined)
   metadata?: Record<string, any>;
 
   @ApiPropertyOptional({
@@ -146,7 +156,7 @@ export class CreateNotificationDto {
   })
   @IsDateString()
   @IsOptional()
-  @ValidateIf(o => o.expiresAt !== undefined)
+  @ValidateIf((o) => o.expiresAt !== undefined)
   expiresAt?: string;
 
   @ApiPropertyOptional({
@@ -179,7 +189,9 @@ export class CreateMultipleNotificationsDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[^<>]*$/, { message: 'El título no puede contener caracteres HTML' })
+  @Matches(/^[^<>]*$/, {
+    message: 'El título no puede contener caracteres HTML',
+  })
   title: string;
 
   @ApiProperty({
@@ -189,7 +201,9 @@ export class CreateMultipleNotificationsDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[^<>]*$/, { message: 'El mensaje no puede contener caracteres HTML' })
+  @Matches(/^[^<>]*$/, {
+    message: 'El mensaje no puede contener caracteres HTML',
+  })
   message: string;
 
   @ApiProperty({
@@ -257,15 +271,17 @@ export class CreateMultipleNotificationsDto {
 
   @ApiPropertyOptional({
     description: 'Metadatos adicionales en formato JSON',
-    example: { 
-      actionUrl: '/resources/123', 
+    example: {
+      actionUrl: '/resources/123',
       relatedEntity: 'resource',
-      customData: { /* datos personalizados */ }
+      customData: {
+        /* datos personalizados */
+      },
     },
   })
   @IsObject()
   @IsOptional()
-  @ValidateIf(o => o.metadata !== undefined)
+  @ValidateIf((o) => o.metadata !== undefined)
   metadata?: Record<string, any>;
 
   @ApiPropertyOptional({
@@ -274,6 +290,6 @@ export class CreateMultipleNotificationsDto {
   })
   @IsDateString()
   @IsOptional()
-  @ValidateIf(o => o.expiresAt !== undefined)
+  @ValidateIf((o) => o.expiresAt !== undefined)
   expiresAt?: string;
 }

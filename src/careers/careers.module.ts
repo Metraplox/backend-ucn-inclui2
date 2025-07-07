@@ -6,8 +6,6 @@ import { CareersController } from './controllers/careers.controller';
 import { CareerStudentsController } from './controllers/career-students.controller';
 import { Career, CareerSchema } from './schemas/career.schema';
 
-
-
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Career.name, schema: CareerSchema }]),

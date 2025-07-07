@@ -58,7 +58,9 @@ describe('NotificationsService', () => {
 
     await service.markAllAsRead(userId);
 
-    expect(mockNotificationRepository.markAllAsRead).toHaveBeenCalledWith(userId);
+    expect(mockNotificationRepository.markAllAsRead).toHaveBeenCalledWith(
+      userId,
+    );
   });
 
   it('debería retornar contador de no leídas', async () => {
@@ -68,7 +70,9 @@ describe('NotificationsService', () => {
     const count = await service.getUnreadCount(userId);
 
     expect(count).toBe(5);
-    expect(mockNotificationRepository.getUnreadCount).toHaveBeenCalledWith(userId);
+    expect(mockNotificationRepository.getUnreadCount).toHaveBeenCalledWith(
+      userId,
+    );
   });
 
   it('debería ejecutar cleanupOldNotifications', async () => {
@@ -78,4 +82,4 @@ describe('NotificationsService', () => {
 
     expect(mockNotificationRepository.deleteOlderThan).toHaveBeenCalledWith(60);
   });
-}); 
+});
