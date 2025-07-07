@@ -25,9 +25,22 @@ Todos los usuarios pueden loguearse correctamente con password `password123`:
 3. **Usuarios en base de datos**: Creados con hashes correctos
 4. **CORS**: Configurado correctamente para desarrollo
 
-### ⚠️ **PROBLEMAS PENDIENTES**
+### ⚠️ **PROBLEMAS SOLUCIONADOS**
 
-#### 🚨 **Error 401 en endpoints protegidos**
+#### ✅ **Dashboard no disponible para rol - SOLUCIONADO**
+**Problema**: El sistema mostraba "Dashboard no disponible para este rol" después del login exitoso.
+
+**Causa**: Mismatch entre roles en base de datos vs. roles esperados en frontend:
+- Base de datos: `COORDINADOR`, `EDUCADORA_SOCIAL`, `DIDDEC_STAFF`, etc.
+- Frontend esperaba: `INCLUYE`, `DIDDEC`, etc.
+
+**Solución**: Corregido mapeo de roles en `home_screen.dart`:
+- `COORDINADOR` → `IncluyeDashboard`
+- `EDUCADORA_SOCIAL` → `IncluyeDashboard`  
+- `DIDDEC_STAFF` → `DiddecDashboard`
+- `JEFE_DEPARTAMENTO` → `JefaturaDashboard`
+
+#### 🚨 **Error 401 en endpoints protegidos - PENDIENTE**
 ```
 Error fetching notifications: DioException [bad response]: 401
 ```
@@ -52,8 +65,9 @@ Error fetching notifications: DioException [bad response]: 401
 | Base de datos | ✅ Funcionando | MongoDB con usuarios |
 | Frontend Flutter | ✅ Funcionando | Web Chrome |
 | Login | ✅ Funcionando | Todos los roles |
-| Navegación post-login | ⚠️ En verificación | Error 401 pendiente |
-| Endpoints protegidos | ❌ Error 401 | Token no enviado |
+| Navegación post-login | ✅ Funcionando | Dashboards corregidos |
+| Mapeo de roles | ✅ Funcionando | Roles sincronizados |
+| Endpoints protegidos | ⚠️ Error 401 | Token no enviado |
 
 ### 🎯 **OBJETIVO COMPLETADO**
 
@@ -71,6 +85,7 @@ Error fetching notifications: DioException [bad response]: 401
 - `services/auth_service.dart`: Navegación correcta de respuesta anidada
 - `services/api_service.dart`: Integrado con StorageService para tokens
 - `features/authentication/repositories/auth_repository.dart`: Simplificado y optimizado
+- `screens/home_screen.dart`: Corregido mapeo de roles para dashboards
 
 ### 🚀 **RESUMEN EJECUTIVO**
 
