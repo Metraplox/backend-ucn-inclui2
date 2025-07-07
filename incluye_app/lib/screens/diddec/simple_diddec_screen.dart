@@ -30,19 +30,25 @@ class _SimpleDiddecScreenState extends State<SimpleDiddecScreen> {
     });
 
     try {
-      final results = await Future.wait([
-        DiddecService.getGeneralStatistics(_currentSemester),
-        DiddecService.getAllStudentsWithNEE(_currentSemester),
-        DiddecService.getAvailableResources(),
-      ]);
+      print('Cargando datos del dashboard simple para semestre: $_currentSemester');
+      
+      final statistics = await DiddecService.getGeneralStatistics(_currentSemester);
+      print('Estadísticas cargadas: $statistics');
+      
+      final studentsNEE = await DiddecService.getAllStudentsWithNEE(_currentSemester);
+      print('Estudiantes NEE cargados: ${studentsNEE.length}');
+      
+      final resources = await DiddecService.getAvailableResources();
+      print('Recursos cargados: ${resources.length}');
 
       setState(() {
-        _statistics = results[0] as Map<String, dynamic>;
-        _studentsNEE = results[1] as List<dynamic>;
-        _resources = results[2] as List<dynamic>;
+        _statistics = statistics;
+        _studentsNEE = studentsNEE;
+        _resources = resources;
         _isLoading = false;
       });
     } catch (e) {
+      print('Error al cargar datos del dashboard simple: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -693,7 +699,7 @@ class _ResourcesDialogState extends State<_ResourcesDialog> {
         final file = result.files.first;
         
         if (mounted) {
-          _showResourceMetadataDialog(file);
+          _showResourceMetadataDialog(file, _currentSemester);
         }
       }
     } catch (e) {
@@ -706,7 +712,7 @@ class _ResourcesDialogState extends State<_ResourcesDialog> {
     }
   }
 
-  void _showResourceMetadataDialog(PlatformFile file) {
+  void _showResourceMetadataDialog(PlatformFile file, String currentSemester) {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     String category = 'GUIA';
@@ -754,7 +760,8 @@ class _ResourcesDialogState extends State<_ResourcesDialog> {
                   await DiddecService.uploadResource(
                     title: titleController.text,
                     description: descriptionController.text,
-                    category: category,
+                    resourceType: category,
+                    semester: currentSemester,
                     fileBytes: file.bytes!,
                     fileName: file.name,
                   );

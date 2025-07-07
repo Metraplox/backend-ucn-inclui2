@@ -31,7 +31,7 @@ class AppConfig {
       case Environment.development:
         // Para desarrollo local, intentamos diferentes URLs comunes
         // Esto facilita la conexión con diferentes configuraciones de backend
-        return 'http://localhost:3000';
+        return 'http://localhost:3002';
       case Environment.testing:
         return 'http://test-api.inclui2.ucn.cl';
       case Environment.production:
