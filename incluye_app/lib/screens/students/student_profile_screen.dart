@@ -48,7 +48,7 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
 
   // Usar Map<String, dynamic> para los datos de ejemplo hasta que tengas modelos tipados
   List<Course> _studentCourses = [];
-  List<StudentAdjustment> _studentAdjustments = [];
+  final List<StudentAdjustment> _studentAdjustments = [];
   List<Adjustment> _studentCurrentAdjustments = [];
   Map<String, String> _categoryNamesMap = {};
 
@@ -209,8 +209,8 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
     final now = DateTime.now();
     final actualYear = now.year;
     for (int year = actualYear - 1; year <= actualYear + 1; year++) {
-      periods.add('${year}-1');
-      periods.add('${year}-2');
+      periods.add('$year-1');
+      periods.add('$year-2');
     }
     setState(() {
       periodos = periods;
@@ -227,8 +227,9 @@ class StudentProfileScreenState extends State<StudentProfileScreen> {
   }
 
   String _formatDateString(String? rawIsoDateString) {
-    if (rawIsoDateString == null || rawIsoDateString.isEmpty)
+    if (rawIsoDateString == null || rawIsoDateString.isEmpty) {
       return 'No disponible';
+    }
     try {
       final date = DateTime.parse(rawIsoDateString);
       return DateFormat('dd/MM/yyyy').format(date);

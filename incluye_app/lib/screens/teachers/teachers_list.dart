@@ -149,7 +149,7 @@ class _TeachersListScreenState extends State<TeachersListScreen> {
                     filled: true,
                     fillColor: Theme.of(
                       context,
-                    ).colorScheme.surfaceVariant.withOpacity(0.5),
+                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
                     suffixIcon:
                         _searchController.text.isNotEmpty
                             ? IconButton(

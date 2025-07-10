@@ -30,13 +30,13 @@ class _StudentAdjustmentSubjectScreenState
     extends State<StudentAdjustmentSubjectScreen> {
   bool _isLoading = false;
   bool _checkLoading = false;
-  Map<String, bool> _adjustmentChecked = {};
+  final Map<String, bool> _adjustmentChecked = {};
   Student? student;
   String? _currentUserId;
 
-  List<Adjustment> _adjustments = [];
+  final List<Adjustment> _adjustments = [];
   String? studentAdjustmentId;
-  List<Map<String, dynamic>> _adjustmentsWithIds = [];
+  final List<Map<String, dynamic>> _adjustmentsWithIds = [];
   @override
   void initState() {
     super.initState();
@@ -80,21 +80,19 @@ class _StudentAdjustmentSubjectScreenState
         (sa) => sa.studentId == widget.studentId,
       );
       for (var sa in selectedStudentAdjustment) {
-        if (sa.currentAdjustments != null) {
-          for (var i = 0; i < sa.currentAdjustments!.length; i++) {
-            var adj = sa.currentAdjustments![i];
-            _adjustmentsWithIds.add({
-              "adjustment": adj,
-              "saId": sa.id,
-              "adjustmentIndex": i, // <-- guarda el índice aquí
-            });
+        for (var i = 0; i < sa.currentAdjustments!.length; i++) {
+          var adj = sa.currentAdjustments![i];
+          _adjustmentsWithIds.add({
+            "adjustment": adj,
+            "saId": sa.id,
+            "adjustmentIndex": i, // <-- guarda el índice aquí
+          });
 
-            final yaLeido =
-                adj.readBy?.any((r) => r['userId'] == _currentUserId) ?? false;
-            _adjustmentChecked[sa.id] = yaLeido;
-          }
+          final yaLeido =
+              adj.readBy?.any((r) => r['userId'] == _currentUserId) ?? false;
+          _adjustmentChecked[sa.id] = yaLeido;
         }
-      }
+            }
       setState(() {
         student = selectedStudent;
         _isLoading = false;
@@ -141,7 +139,7 @@ class _StudentAdjustmentSubjectScreenState
   @override
   @override
   Widget build(BuildContext context) {
-    if (student == null || _adjustments == null) {
+    if (student == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
@@ -150,7 +148,7 @@ class _StudentAdjustmentSubjectScreenState
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child:
-            _adjustmentsWithIds!.isEmpty
+            _adjustmentsWithIds.isEmpty
                 ? Center(child: Text('No hay ajustes para este estudiante.'))
                 : ListView.builder(
                   itemCount: _adjustmentsWithIds.length,

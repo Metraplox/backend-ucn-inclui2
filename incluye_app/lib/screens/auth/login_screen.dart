@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
               'Credenciales inválidas. Por favor, intente nuevamente.';
         });
       }
-    } catch (e, s) {
+    } catch (e) {
       //print('LOGIN_SCREEN (_handleLogin): Excepción en _handleLogin: $e');
       //print('LOGIN_SCREEN (_handleLogin): Stacktrace: $s');
       if (!mounted) return;
@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
               'Tu cuenta de Google no está registrada en el sistema o no ha sido vinculada. Contacta al administrador.';
         });
       }
-    } catch (e, s) {
+    } catch (e) {
       //print('LOGIN_SCREEN (_handleGoogleSignIn): Excepción en _handleGoogleSignIn (después de llamar a AuthService): $e');
       //print('LOGIN_SCREEN (_handleGoogleSignIn): Stacktrace: $s');
       if (!mounted) return; // Verificar si el widget sigue montado

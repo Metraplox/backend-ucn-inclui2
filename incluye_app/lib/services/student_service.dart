@@ -6,6 +6,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:incluye_app/models/user_model.dart';
 import 'package:incluye_app/models/student_model.dart';
 import 'api_service.dart';
+import 'api_response_normalizer.dart';
 
 class StudentService {
   // ---------------------- PERFIL DE ESTUDIANTE (ACTUAL) ----------------------
@@ -17,15 +18,15 @@ class StudentService {
 
       if (response.statusCode == 200) {
         final responseBody = response.data;
-        if (responseBody is Map &&
-            responseBody.containsKey('data') &&
-            responseBody['data'] is Map) {
-          final studentData =
-              responseBody['data']['data'] as Map<String, dynamic>;
-          //print("StudentService: Perfil de estudiante obtenido y desanidado exitosamente.");
-          return Student.fromJson(studentData);
+        
+        // 🔧 FIX: Usar normalizador para manejar estructura anidada
+        final normalizedData = ApiResponseNormalizer.extractData(responseBody);
+        
+        if (normalizedData != null) {
+          //print("StudentService: Perfil de estudiante obtenido exitosamente.");
+          return Student.fromJson(normalizedData);
         } else {
-          //print("StudentService: Error - La respuesta de /students/profile no tiene la estructura esperada (falta 'data' anidado). Data: $responseBody");
+          //print("StudentService: Error - No se pudo normalizar la respuesta. Data: $responseBody");
           return null;
         }
       } else if (response.statusCode == 404) {
@@ -39,7 +40,7 @@ class StudentService {
       //print('StudentService: DioException al obtener perfil de estudiante: ${e.message}');
       ApiService.handleApiError('getStudentProfile DioException', e);
       return null;
-    } catch (e, s) {
+    } catch (e) {
       //print('StudentService: Excepción general al obtener perfil de estudiante: $e');
       //print('StudentService: Stacktrace: $s');
       return null;
@@ -105,8 +106,8 @@ class StudentService {
     // o comparar con las variantes de nombre de rol.
     return roles.any(
       (r) =>
-          r.toLowerCase() == 'DIDDEC_STAFF' ||
-          r.toLowerCase() == 'diddec_staff',
+          r.toLowerCase() == 'diddec_staff' ||
+          r == 'DIDDEC_STAFF',
     );
   }
 
@@ -316,7 +317,7 @@ class StudentService {
   static Future<List<Student>> getStudentByCareer(String idCareer) async {
     try {
       final response = await ApiService.dio.get(
-        '/careers/${idCareer}/students',
+        '/careers/$idCareer/students',
       );
       if (response.statusCode == 200) {
         final responseBody = response.data;

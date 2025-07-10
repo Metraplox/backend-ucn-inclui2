@@ -45,7 +45,7 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen>
     print(actualSemester);
   }
 
-  List<StudentAdjustment> _studentAdjustments = [];
+  final List<StudentAdjustment> _studentAdjustments = [];
   List<Adjustment> _currentAdjustments = [];
   List<Adjustment> adjustmentHistory = [];
   List<Map<String, dynamic>> availableCategories = [];
@@ -476,7 +476,7 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen>
     print("IDSTUDENT-${widget.studentId}");
     print("APROBADOPOR- ${adjustment.aprobadoPor}");
     // Validaciones previas
-    if (adjustment.id == null || adjustment.aprobadoPor == null) {
+    if (adjustment.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -494,7 +494,7 @@ class StudentAdjustmentsScreenState extends State<StudentAdjustmentsScreen>
         actualSemester,
         newDesc,
         widget.studentId,
-        adjustment.aprobadoPor!,
+        adjustment.aprobadoPor,
         widget.studentName,
       );
 

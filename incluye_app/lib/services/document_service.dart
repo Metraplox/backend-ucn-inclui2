@@ -25,16 +25,18 @@ class DocumentService {
 
       if (kIsWeb) {
         // Web o escritorio
-        if (pickedFile.bytes == null)
+        if (pickedFile.bytes == null) {
           throw Exception('Bytes nulos en plataforma Web/PC');
+        }
         multipartFile = MultipartFile.fromBytes(
           pickedFile.bytes!,
           filename: pickedFile.name,
         );
       } else {
         // Android / iOS
-        if (pickedFile.path == null)
+        if (pickedFile.path == null) {
           throw Exception('Ruta nula en Android/iOS');
+        }
         multipartFile = await MultipartFile.fromFile(
           pickedFile.path!,
           filename: pickedFile.name,

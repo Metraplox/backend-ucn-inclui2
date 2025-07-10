@@ -23,6 +23,7 @@ import 'package:incluye_app/models/user_model.dart'; // IMPORTANTE: Para el tipo
 import 'package:incluye_app/screens/students/student_list_screen.dart';
 import 'package:incluye_app/screens/documents/document_consent_screen.dart';
 import 'package:incluye_app/screens/diddec/diddec_dashboard_screen.dart';
+import 'package:incluye_app/screens/diddec/diddec_test_screen.dart';
 
 import '../services/course_service.dart';
 
@@ -258,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadCourses() async {
     String? nombreCompleto = await AuthService.getUserName();
 
-    if (mounted) {
+    if (mounted && nombreCompleto != null) {
       // Usamos nombreCompleto que ahora es el campo principal en User
       final coursesData = await CourseService.getTeacherCourses(nombreCompleto);
       if (mounted) {
@@ -644,7 +645,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 12),
           _buildAlertCard(
             'Notificaciones',
-            '${_pendingAlerts} notificaciones sin abrir.',
+            '$_pendingAlerts notificaciones sin abrir.',
             Icons.notifications,
             const Color.fromARGB(255, 221, 12, 12),
             onTap: () {
@@ -696,8 +697,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         _students.length,
                                       ), // Asegurar que no exceda
                                   itemBuilder: (context, index) {
-                                    if (_students.isEmpty)
+                                    if (_students.isEmpty) {
                                       return const SizedBox.shrink(); // No debería llegar aquí si se maneja arriba
+                                    }
                                     final student =
                                         _students[index %
                                             _students
@@ -794,6 +796,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const DiddecDashboardScreen(),
+                ),
+              );
+            },
+          ),
+          _buildFeatureCard(
+            'TEST DIDDEC',
+            'Prueba de conectividad DIDDEC',
+            Icons.bug_report,
+            Colors.orange,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DiddecTestScreen(),
                 ),
               );
             },

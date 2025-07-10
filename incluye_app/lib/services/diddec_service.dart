@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:incluye_app/config/app_config.dart';
 import 'package:incluye_app/services/auth_service.dart';
+import 'package:incluye_app/services/api_response_normalizer.dart';
 
 class DiddecService {
   static Future<Map<String, dynamic>> getGeneralStatistics(
@@ -191,7 +192,18 @@ class DiddecService {
       );
 
       if (response.statusCode == 201) {
-        return jsonDecode(response.body);
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        
+        // 🔧 FIX: Normalizar respuesta para manejar estructura anidada
+        final normalizedData = ApiResponseNormalizer.extractData(responseData);
+        
+        // Debug en desarrollo
+        if (normalizedData != responseData['data']) {
+          print('🔧 DIDDEC: Estructura anidada detectada y normalizada');
+          ApiResponseNormalizer.debugResponseStructure(responseData, '/diddec/reports/export');
+        }
+        
+        return normalizedData ?? responseData;
       } else {
         throw Exception('Error al generar reporte: ${response.statusCode}');
       }
@@ -252,7 +264,7 @@ class DiddecService {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('${AppConfig.apiBaseUrl}/diddec/resources/upload'),
+        Uri.parse('${AppConfig.apiBaseUrl}/diddec/resources'),
       );
 
       request.headers['Authorization'] = 'Bearer $token';

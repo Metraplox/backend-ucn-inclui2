@@ -279,7 +279,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                             filled: true,
                             fillColor: Theme.of(context)
                                 .colorScheme
-                                .surfaceVariant
+                                .surfaceContainerHighest
                                 .withOpacity(0.5), // Color sutil
                             suffixIcon:
                                 _searchController.text.isNotEmpty

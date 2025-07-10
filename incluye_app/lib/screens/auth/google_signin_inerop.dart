@@ -1,5 +1,5 @@
 @JS('google.accounts.id')
-library google_signin;
+library;
 
 import 'package:js/js.dart';
 

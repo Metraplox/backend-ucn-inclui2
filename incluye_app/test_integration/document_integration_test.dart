@@ -244,11 +244,11 @@ class DocumentIntegrationTest {
       print('🔗 Frontend y Backend comunicándose correctamente.');
     } else if (passed >= failed) {
       print('\n✅ Integración mayormente exitosa');
-      print('⚠️ Hay ${failed} prueba(s) que pueden requerir atención menor.');
+      print('⚠️ Hay $failed prueba(s) que pueden requerir atención menor.');
       print('🔧 El sistema es funcional pero puede optimizarse.');
     } else {
       print('\n⚠️ Problemas de integración detectados');
-      print('🔧 ${failed} prueba(s) requieren atención inmediata.');
+      print('🔧 $failed prueba(s) requieren atención inmediata.');
       print('📋 Revisar configuración de red y endpoints.');
     }
     

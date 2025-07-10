@@ -259,12 +259,12 @@ class StandaloneDocumentTest {
       print('\n✅ ESTADO: LISTO PARA FRONTEND');
     } else if (passed >= failed) {
       print('\n✅ Integración mayormente exitosa');
-      print('⚠️ Hay ${failed} prueba(s) que pueden requerir atención.');
+      print('⚠️ Hay $failed prueba(s) que pueden requerir atención.');
       print('🔧 El sistema es funcional pero puede optimizarse.');
       print('\n⚠️ ESTADO: FUNCIONAL CON OBSERVACIONES');
     } else {
       print('\n⚠️ Problemas de integración detectados');
-      print('🔧 ${failed} prueba(s) requieren atención inmediata.');
+      print('🔧 $failed prueba(s) requieren atención inmediata.');
       print('📋 Revisar configuración del backend.');
       print('\n❌ ESTADO: REQUIERE ATENCIÓN');
     }

@@ -191,7 +191,7 @@ class IntegrationTest {
       print('\n🎉 ¡Todas las pruebas pasaron exitosamente!');
       print('🔗 El sistema está listo para integración completa.');
     } else {
-      print('\n⚠️ Hay ${failed} prueba(s) que requieren atención.');
+      print('\n⚠️ Hay $failed prueba(s) que requieren atención.');
       print('🔧 Revisar la configuración antes de proceder.');
     }
     

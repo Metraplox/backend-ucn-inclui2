@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/courseWithAdjustment_model.dart';
-import 'package:incluye_app/models/course_model.dart';
 import 'package:incluye_app/screens/students/student_subject_list.dart';
 import 'package:incluye_app/services/auth_service.dart';
 import 'package:incluye_app/services/course_service.dart';
-import 'package:incluye_app/services/student_service.dart';
 
 class CoursesListScreen extends StatefulWidget {
   final String? idTeacher;

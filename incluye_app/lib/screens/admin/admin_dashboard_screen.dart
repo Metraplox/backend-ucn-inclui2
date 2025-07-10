@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:incluye_app/screens/diddec/simple_diddec_screen.dart';
+import 'package:incluye_app/screens/diddec/diddec_dashboard_screen.dart';
 import 'package:incluye_app/screens/users/user_management_screen.dart';
 import 'package:incluye_app/screens/students/student_list_screen.dart';
 import 'package:incluye_app/screens/notifications/notifications_screen.dart';
@@ -113,7 +113,7 @@ class AdminDashboardScreen extends StatelessWidget {
               Colors.teal,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SimpleDiddecScreen()),
+                MaterialPageRoute(builder: (context) => const DiddecDashboardScreen()),
               ),
             ),
             

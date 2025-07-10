@@ -4,7 +4,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class TeacherStatsScreen extends StatefulWidget {
   final TeacherStats teacher;
-  const TeacherStatsScreen({Key? key, required this.teacher}) : super(key: key);
+  const TeacherStatsScreen({super.key, required this.teacher});
 
   @override
   State<TeacherStatsScreen> createState() => _TeacherStatsScreenState();

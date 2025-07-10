@@ -1,8 +1,6 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:incluye_app/models/teacherStats_model.dart';
 import 'package:incluye_app/screens/teachers/teacher_stats.dart';
-import 'package:incluye_app/services/api_service.dart';
 import 'package:incluye_app/services/career_service.dart';
 
 class TeachersbyCareerScreen extends StatefulWidget {

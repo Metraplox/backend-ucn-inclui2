@@ -205,7 +205,7 @@ class AdjustmentService {
     if (token == null) throw Exception('Token nulo');
     final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
     final response = await dio.patch(
-      '/adjustments/${adjustmentId}/read',
+      '/adjustments/$adjustmentId/read',
       queryParameters: {'adjustmentIndex': index},
       data: comments != null ? {'comments': comments} : null,
       options: Options(
@@ -255,7 +255,7 @@ class AdjustmentService {
       if (token == null) throw Exception('Token nulo');
       final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
       final response = await dio.get(
-        '/teachers/adjustments/my-courses/${IdSubject}',
+        '/teachers/adjustments/my-courses/$IdSubject',
         options: Options(
           headers: {
             'Accept': 'application/json',
@@ -285,7 +285,7 @@ class AdjustmentService {
         throw Exception('Token nulo');
       }
       final response = await ApiService.dio.get(
-        '/adjustments/student/${idStudent}',
+        '/adjustments/student/$idStudent',
       );
       if (response.statusCode == 200) {
         final responseData = response.data;

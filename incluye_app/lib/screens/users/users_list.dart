@@ -190,7 +190,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
                                   icon: const Icon(Icons.clear, size: 20),

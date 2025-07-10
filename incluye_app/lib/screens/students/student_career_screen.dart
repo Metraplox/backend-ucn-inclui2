@@ -24,7 +24,7 @@ class _StudentCareerListScreenState extends State<StudentCareerListScreen> {
   List<Student> _students = [];
   List<Student> _filteredStudents = [];
   bool _isLoading = true;
-  Map<String, bool> _adjustmentChecked = {};
+  final Map<String, bool> _adjustmentChecked = {};
   bool _checkLoading = true;
   // Controlador para el campo de búsqueda
   final TextEditingController _searchController = TextEditingController();

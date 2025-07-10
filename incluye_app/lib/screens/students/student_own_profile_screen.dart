@@ -99,8 +99,9 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
   }
 
   String _formatDateString(String? rawIsoDateString) {
-    if (rawIsoDateString == null || rawIsoDateString.isEmpty)
+    if (rawIsoDateString == null || rawIsoDateString.isEmpty) {
       return 'No disponible';
+    }
     try {
       final date = DateTime.parse(rawIsoDateString);
       return DateFormat('dd/MM/yyyy').format(date);
@@ -401,7 +402,7 @@ class _StudentOwnProfileScreenState extends State<StudentOwnProfileScreen> {
                                 item['adjustment'] as StudentAdjustment;
                             final ca = item['currentAdjustment'] as Adjustment;
                             final isActive =
-                                (ca.estado?.toLowerCase() == 'activo');
+                                (ca.estado.toLowerCase() == 'activo');
 
                             return ListTile(
                               subtitle: Column(

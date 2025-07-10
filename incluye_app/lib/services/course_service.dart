@@ -75,7 +75,7 @@ class CourseService {
       if (token == null) throw Exception('Token nulo');
       final dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
       final response = await dio.get(
-        '/courses/${IdSubject}/students-with-adjustments',
+        '/courses/$IdSubject/students-with-adjustments',
         options: Options(
           headers: {
             'Accept': 'application/json',

@@ -1,10 +1,8 @@
 // services/career_service.dart
 import 'package:dio/dio.dart';
 import 'package:incluye_app/models/career_model.dart';
-import 'package:incluye_app/models/student_model.dart';
-import 'package:incluye_app/services/auth_service.dart';
-import 'package:incluye_app/services/student_service.dart';
 import 'api_service.dart'; // Usaremos la instancia de Dio de ApiService
+import 'api_response_normalizer.dart';
 
 class CareerService {
   static Future<List<Career>> getAllCareers() async {
@@ -18,42 +16,17 @@ class CareerService {
 
       if (response.statusCode == 200) {
         final responseBody = response.data;
-        // Asumimos que el backend envuelve la lista de carreras en { success: ..., data: [CAREER_LIST] }
-        // Si no es así y devuelve la lista directamente, ajusta esto.
-        if (responseBody is Map &&
-            responseBody.containsKey('success') &&
-            responseBody['success'] == true &&
-            responseBody.containsKey('data')) {
-          final innerData = responseBody['data'];
-          if (innerData is Map &&
-              innerData.containsKey('success') &&
-              innerData['success'] == true &&
-              innerData.containsKey('data') &&
-              innerData['data'] is List) {
-            final List<dynamic> careerListJson =
-                innerData['data'] as List<dynamic>;
-            print(
-              "CareerService: Lista de carreras obtenida y desanidada exitosamente. Cantidad: ${careerListJson.length}",
-            );
-            return careerListJson
-                .map((json) => Career.fromJson(json as Map<String, dynamic>))
-                .toList();
-          } else {
-            return [];
-          }
-        }
-        // Fallback si la API devuelve la lista directamente (sin el wrapper 'success' y 'data')
-        else if (responseBody is List) {
-          print(
-            "CareerService: Lista de carreras obtenida directamente. Cantidad: ${responseBody.length}",
-          );
-          return responseBody
+        
+        // ✅ FIX: Usar normalizador para manejar estructura anidada
+        final normalizedData = ApiResponseNormalizer.extractDataGeneric(responseBody);
+        
+        if (normalizedData is List) {
+          print("CareerService: Lista de carreras obtenida exitosamente. Cantidad: ${normalizedData.length}");
+          return normalizedData
               .map((json) => Career.fromJson(json as Map<String, dynamic>))
               .toList();
         } else {
-          print(
-            "CareerService: Error - La respuesta de /careers no tiene la estructura esperada. Data: $responseBody",
-          );
+          print("CareerService: Estructura de respuesta inesperada: $normalizedData");
           return [];
         }
       } else {
@@ -157,7 +130,6 @@ class CareerService {
             },
           ),
         );
-        final responseData = response.data;
         final List<dynamic> teacherList = response.data['data']['data'];
 
         return teacherList;

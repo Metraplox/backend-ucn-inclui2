@@ -141,9 +141,10 @@ class Adjustment {
   }
 
   bool get isActive {
-    if (expirationDate == null)
+    if (expirationDate == null) {
       return status?.toUpperCase() == 'ACTIVO' ||
           status?.toUpperCase() == 'ACTIVE';
+    }
 
     try {
       final fechaVencimiento = DateTime.parse(expirationDate!);

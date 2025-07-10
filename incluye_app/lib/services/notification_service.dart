@@ -119,21 +119,19 @@ class NotificationService {
   static Future<int> checkUnreadNotification() async {
     try {
       final token = ApiService.getToken();
-      if (token != null) {
-        final response = await ApiService.dio.get(
-          '/notifications/unread-count',
-          options: Options(
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          ),
-        );
-        final unreadNotif = response.data['data']['data']['count'];
-        return unreadNotif;
-      }
-      return 0;
+      final response = await ApiService.dio.get(
+        '/notifications/unread-count',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      final unreadNotif = response.data['data']['data']['count'];
+      return unreadNotif;
+          return 0;
     } catch (e) {
       throw Exception("NO RECORDAD");
     }
@@ -142,22 +140,20 @@ class NotificationService {
   static Future<List<Notifications>> getAllNotifications() async {
     try {
       final token = ApiService.getToken();
-      if (token != null) {
-        final response = await ApiService.dio.get(
-          '/notifications',
-          options: Options(
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          ),
-        );
-        final List<dynamic> data =
-            response.data['data']['data'] as List<dynamic>;
-        return data.map((json) => Notifications.fromJson(json)).toList();
-      }
-      return [];
+      final response = await ApiService.dio.get(
+        '/notifications',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      final List<dynamic> data =
+          response.data['data']['data'] as List<dynamic>;
+      return data.map((json) => Notifications.fromJson(json)).toList();
+          return [];
     } catch (e) {
       throw Exception('Error: $e');
     }
@@ -169,27 +165,25 @@ class NotificationService {
   ) async {
     try {
       final token = ApiService.getToken();
-      if (token != null) {
-        final response = await ApiService.dio.patch(
-          '/notifications/${notificationId}/read',
-          options: Options(
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
+      final response = await ApiService.dio.patch(
+        '/notifications/${notificationId}/read',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Marcado como leído exitoso.'),
+            duration: Duration(seconds: 1),
           ),
         );
-        if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Marcado como leído exitoso.'),
-              duration: Duration(seconds: 1),
-            ),
-          );
-        }
       }
-    } catch (e) {
+        } catch (e) {
       throw Exception('Error: $e');
     }
   }
@@ -197,28 +191,26 @@ class NotificationService {
   static Future<int> getNotificationByType() async {
     try {
       final token = ApiService.getToken();
-      if (token != null) {
-        final response = await ApiService.dio.get(
-          '/notifications',
-          options: Options(
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          ),
-        );
-        final List<dynamic> data =
-            response.data['data']['data'] as List<dynamic>;
-        final allNotif =
-            data.map((json) => Notifications.fromJson(json)).toList();
-        String adjustmentType = "NotificationType.ADJUSTMENT_APPROVAL_NEEDED";
-        List<Notifications> notifData =
-            allNotif.where((n) => n.type.toString() == adjustmentType).toList();
-        final totalAdjustmentsData = notifData.length;
-        return totalAdjustmentsData;
-      }
-      return 0;
+      final response = await ApiService.dio.get(
+        '/notifications',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      final List<dynamic> data =
+          response.data['data']['data'] as List<dynamic>;
+      final allNotif =
+          data.map((json) => Notifications.fromJson(json)).toList();
+      String adjustmentType = "NotificationType.ADJUSTMENT_APPROVAL_NEEDED";
+      List<Notifications> notifData =
+          allNotif.where((n) => n.type.toString() == adjustmentType).toList();
+      final totalAdjustmentsData = notifData.length;
+      return totalAdjustmentsData;
+          return 0;
     } catch (e) {
       throw Exception('Error: $e');
     }
@@ -335,7 +327,7 @@ class NotificationService {
     try {
       final createDto = {
         "userId": course.profesor, // ID del docente
-        "title": "Actualización de Ajuste para ${studentName}",
+        "title": "Actualización de Ajuste para $studentName",
         "message": "Se ha ${adjustmentId.isEmpty ? 'creado un nuevo' : 'modificado el'} ajuste de tipo '$adjustmentType' para el estudiante $studentName en tu curso ${course.nombre} (${course.nrc}).\nDescripción: $adjustmentDescription",
         "type": "ADJUSTMENT_UPDATED", // Usamos un tipo genérico de notificación
         "semester": course.semestre ?? "2025-1", // O el semestre actual

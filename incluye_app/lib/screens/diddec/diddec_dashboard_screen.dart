@@ -30,19 +30,27 @@ class _DiddecDashboardScreenState extends State<DiddecDashboardScreen> {
     });
 
     try {
-      final results = await Future.wait([
-        DiddecService.getGeneralStatistics(_currentSemester),
-        DiddecService.getSemesterReport(_currentSemester),
-        DiddecService.getAdjustmentComplianceByDepartment(_currentSemester),
-      ]);
+      // Cargar datos de forma secuencial para mejor debugging
+      print('Cargando estadísticas para semestre: $_currentSemester');
+      final statistics = await DiddecService.getGeneralStatistics(_currentSemester);
+      print('Estadísticas cargadas: $statistics');
+
+      print('Cargando reporte del semestre...');
+      final semesterReport = await DiddecService.getSemesterReport(_currentSemester);
+      print('Reporte del semestre cargado');
+
+      print('Cargando cumplimiento por departamento...');
+      final compliance = await DiddecService.getAdjustmentComplianceByDepartment(_currentSemester);
+      print('Cumplimiento cargado: ${compliance.length} departamentos');
 
       setState(() {
-        _statistics = results[0] as Map<String, dynamic>;
-        _semesterReport = results[1] as Map<String, dynamic>;
-        _compliance = results[2] as List<dynamic>;
+        _statistics = statistics;
+        _semesterReport = semesterReport;
+        _compliance = compliance;
         _isLoading = false;
       });
     } catch (e) {
+      print('Error al cargar datos del dashboard: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;

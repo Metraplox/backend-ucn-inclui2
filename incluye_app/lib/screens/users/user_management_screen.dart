@@ -75,8 +75,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       isHead: false,
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateUserDialog(),
-        child: const Icon(Icons.add),
         tooltip: 'Crear Usuario',
+        child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
