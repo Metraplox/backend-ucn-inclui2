@@ -93,8 +93,8 @@ export class SemesterSyncController {
       
       const duration = Date.now() - startTime;
       
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         semester,
         duration: `${duration}ms`,
         results: {
@@ -199,8 +199,8 @@ export class SemesterSyncController {
       const result = await this.syncService.syncAndPersistNeeStudents(semester);
       const duration = Date.now() - startTime;
 
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         semester,
         studentsCount: result.count,
         duration: `${duration}ms`,
@@ -229,8 +229,8 @@ export class SemesterSyncController {
       const result = await this.syncService.syncAndPersistCourses(semester);
       const duration = Date.now() - startTime;
 
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         semester,
         coursesCount: result.count,
         duration: `${duration}ms`,
@@ -325,8 +325,8 @@ export class SemesterSyncController {
     this.logger.log('📊 Consultando estado del scheduler semestral');
     try {
       const status = this.semesterSchedulerService.getSchedulerStatus();
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         data: status,
         timestamp: new Date().toISOString()
       };
@@ -444,8 +444,8 @@ export class SemesterSyncController {
     try {
       const status = this.semesterSchedulerService.getSchedulerStatus();
       
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         data: {
           nextSemesterSync: status.nextSemesterSync,
           nextIntegrityCheck: status.nextIntegrityCheck,

@@ -1,12 +1,264 @@
-# 🚀 UCN INCLUI2 - Backend API
+# 🎓 UCN Inclui2 - Backend API
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-10.0+-red.svg)](https://nestjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.0+-green.svg)](https://www.mongodb.com/)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](#)
+## 📋 **Información**
 
-> **🎯 Sistema de gestión para estudiantes con Necesidades Educativas Especiales (NEE) de la Universidad Católica del Norte**
+**Framework:** NestJS + TypeScript  
+**Base de Datos:** MongoDB  
+**Autenticación:** JWT + Google OAuth  
+**Estado:** ✅ Producción (Julio 2025)
+
+---
+
+## 🚀 **Setup Rápido**
+
+### 📋 **Prerequisitos**
+- Node.js 18+
+- MongoDB 4.4+
+- npm/yarn
+
+### ⚡ **Instalación**
+```bash
+npm install
+cp .env.example .env
+# Configurar variables de entorno
+npm run start:dev
+```
+
+### 🐳 **Docker (Alternativo)**
+```bash
+docker-compose up -d
+```
+
+---
+
+## ⚠️ **IMPORTANTE: Cambios Recientes**
+
+### 🔄 **Refactoring Estructura de Respuesta (Julio 2025)**
+Se corrigió el problema de doble anidación en respuestas de la API.
+
+**📖 Documentación del refactoring:** [`docs/refactoring/`](./docs/refactoring/)
+
+### ✅ **Verificación**
+```bash
+node analyze_all_problematic_files.js
+# Resultado esperado: ✅ No se encontraron patrones problemáticos
+```
+
+---
+
+## 🏗️ **Arquitectura**
+
+```
+src/
+├── auth/              # Autenticación JWT + OAuth
+├── common/            # Interceptors, guards, decorators
+│   └── interceptors/  # 🔴 ResponseInterceptor (crítico)
+├── diddec/           # Módulo principal DIDDEC
+├── hawaii/           # Integración sistema Hawaii UCN
+├── notifications/    # Sistema de notificaciones
+├── students/         # Gestión estudiantes NEE
+└── scheduler/        # Tareas automatizadas
+```
+
+---
+
+## 🔗 **APIs Principales**
+
+### 📊 **DIDDEC**
+- `GET /api/diddec/statistics/:semester` - Estadísticas
+- `POST /api/diddec/export-report` - Reportes
+
+### 👨‍🎓 **Estudiantes**
+- `GET /api/students/profile/:id` - Perfil estudiante
+- `GET /api/students/nee` - Estudiantes con NEE
+
+### 🔔 **Notificaciones**
+- `GET /api/notifications` - Lista notificaciones
+- `POST /api/notifications/mark-read` - Marcar leídas
+
+**📖 Documentación completa:** [`docs/ALL_ENDPOINTS_SWAGGER.md`](./docs/ALL_ENDPOINTS_SWAGGER.md)
+
+---
+
+## 🧪 **Testing**
+
+```bash
+npm run test           # Tests unitarios
+npm run test:e2e      # Tests integración
+npm run test:cov      # Coverage
+npm run lint          # Linting
+```
+
+---
+
+## 📚 **Documentación**
+
+### 🔧 **Para Desarrolladores**
+- [`docs/02-development/`](./docs/02-development/) - Guías de desarrollo
+- [`docs/refactoring/`](./docs/refactoring/) - Refactoring 2025
+- [`docs/03-testing/`](./docs/03-testing/) - Testing
+
+### 📖 **APIs y Arquitectura**
+- [`docs/ALL_ENDPOINTS_SWAGGER.md`](./docs/ALL_ENDPOINTS_SWAGGER.md) - Lista completa de endpoints
+- [`docs/01-architecture/`](./docs/01-architecture/) - Documentación técnica
+- [Swagger](http://localhost:3000/api) - Documentación interactiva
+
+### 🚀 **Deployment**
+- [`docs/04-deployment/`](./docs/04-deployment/) - Guías de despliegue
+- [`docker/`](./docker/) - Configuración Docker
+
+---
+
+## 🤝 **Contribución**
+
+1. **Leer:** [`docs/02-development/`](./docs/02-development/)
+2. **Branch:** `feature/nombre-feature` desde `main`
+3. **Desarrollar:** Siguiendo estándares
+4. **Verificar:** `npm run test && node analyze_all_problematic_files.js`
+5. **PR:** Con template proporcionado
+
+---
+
+## 📞 **Soporte**
+
+- **Issues:** GitHub Issues para bugs/features
+- **Docs:** Revisar [`docs/`](./docs/) primero
+- **Tests:** Ejecutar antes de consultar
+
+---
+
+**Universidad Católica del Norte - DIDDEC**  
+**Mantenido con estándares profesionales** � UCN Inclui2 - Backend API
+
+## 📋 **Información**
+
+**Framework:** NestJS + TypeScript  
+**Base de Datos:** MongoDB  
+**Autenticación:** JWT + Google OAuth  
+**Estado:** ✅ Producción (Julio 2025)
+
+---
+
+## 🚀 **Setup Rápido**
+
+### 📋 **Prerequisitos**
+- Node.js 18+
+- MongoDB 4.4+
+- npm/yarn
+
+### ⚡ **Instalación**
+```bash
+npm install
+cp .env.example .env
+# Configurar variables de entorno
+npm run start:dev
+```
+
+### 🐳 **Docker (Alternativo)**
+```bash
+docker-compose up -d
+```
+
+---
+
+## ⚠️ **IMPORTANTE: Cambios Recientes**
+
+### 🔄 **Refactoring Estructura de Respuesta (Julio 2025)**
+Se corrigió el problema de doble anidación en respuestas de la API.
+
+**OBLIGATORIO LEER:** 📖 [`docs/development/GUIA_DESARROLLADORES_BACKEND.md`](./docs/development/GUIA_DESARROLLADORES_BACKEND.md)
+
+### ✅ **Verificación**
+```bash
+node analyze_all_problematic_files.js
+# Resultado esperado: ✅ No se encontraron patrones problemáticos
+```
+
+---
+
+## 🏗️ **Arquitectura**
+
+```
+src/
+├── auth/              # Autenticación JWT + OAuth
+├── common/            # Interceptors, guards, decorators
+│   └── interceptors/  # 🔴 ResponseInterceptor (crítico)
+├── diddec/           # Módulo principal DIDDEC
+├── hawaii/           # Integración sistema Hawaii UCN
+├── notifications/    # Sistema de notificaciones
+├── students/         # Gestión estudiantes NEE
+└── scheduler/        # Tareas automatizadas
+```
+
+---
+
+## 🔗 **APIs Principales**
+
+### 📊 **DIDDEC**
+- `GET /api/diddec/statistics/:semester` - Estadísticas
+- `POST /api/diddec/export-report` - Reportes
+
+### 👨‍🎓 **Estudiantes**
+- `GET /api/students/profile/:id` - Perfil estudiante
+- `GET /api/students/nee` - Estudiantes con NEE
+
+### 🔔 **Notificaciones**
+- `GET /api/notifications` - Lista notificaciones
+- `POST /api/notifications/mark-read` - Marcar leídas
+
+**📖 Documentación completa:** [`docs/api/`](./docs/api/)
+
+---
+
+## 🧪 **Testing**
+
+```bash
+npm run test           # Tests unitarios
+npm run test:e2e      # Tests integración
+npm run test:cov      # Coverage
+npm run lint          # Linting
+```
+
+---
+
+## 📚 **Documentación**
+
+### 🔧 **Para Desarrolladores**
+- [`docs/development/GUIA_DESARROLLADORES_BACKEND.md`](./docs/development/GUIA_DESARROLLADORES_BACKEND.md) - ⚠️ **Lectura obligatoria**
+- [`docs/development/SETUP.md`](./docs/development/SETUP.md) - Configuración detallada
+- [`docs/development/TESTING.md`](./docs/development/TESTING.md) - Guía de testing
+
+### 📖 **Técnica**
+- [`docs/refactoring/`](./docs/refactoring/) - Detalles del refactoring 2025
+- [`docs/api/`](./docs/api/) - Documentación completa de APIs
+- [Swagger](http://localhost:3000/api) - Documentación interactiva
+
+### 🔄 **Deployment**
+- [`docs/deployment/`](./docs/deployment/) - Guías de despliegue
+- [`docker/`](./docker/) - Configuración Docker
+
+---
+
+## 🤝 **Contribución**
+
+1. **Leer:** [`docs/development/GUIA_DESARROLLADORES_BACKEND.md`](./docs/development/GUIA_DESARROLLADORES_BACKEND.md)
+2. **Branch:** `feature/nombre-feature` desde `main`
+3. **Desarrollar:** Siguiendo estándares
+4. **Verificar:** `npm run test && node analyze_all_problematic_files.js`
+5. **PR:** Con template proporcionado
+
+---
+
+## 📞 **Soporte**
+
+- **Issues:** GitHub Issues para bugs/features
+- **Docs:** Revisar [`docs/`](./docs/) primero
+- **Tests:** Ejecutar antes de consultar
+
+---
+
+**Universidad Católica del Norte - DIDDEC**  
+**Mantenido con estándares profesionales**
 
 ## 📋 Estado del Proyecto
 

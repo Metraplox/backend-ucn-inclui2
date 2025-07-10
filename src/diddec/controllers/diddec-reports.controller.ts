@@ -87,16 +87,22 @@ export class DiddecReportsController {
               type: 'string', 
               example: '/diddec/reports/download/reporte_estudiantes_nee_2025-1_20250619_143021.xlsx',
               description: 'URL relativa para descargar el archivo'
+            },
+            message: {
+              type: 'string',
+              example: 'Report generated successfully',
+              description: 'Mensaje de confirmación'
             }
           }
         }
       },
       example: {
         success: true,
-        message: 'Report generated successfully',
+        statusCode: 200,
         data: {
           filename: 'reporte_estudiantes_nee_2025-1_20250619_143021.xlsx',
-          downloadUrl: '/diddec/reports/download/reporte_estudiantes_nee_2025-1_20250619_143021.xlsx'
+          downloadUrl: '/diddec/reports/download/reporte_estudiantes_nee_2025-1_20250619_143021.xlsx',
+          message: 'Report generated successfully'
         }
       }
     }
@@ -138,13 +144,11 @@ export class DiddecReportsController {
   async exportReport(@Body() exportReportDto: ExportReportDto) {
     const result = await this.exportService.exportReport(exportReportDto);
 
+    // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
     return {
-      success: true,
+      filename: result.filename,
+      downloadUrl: `/diddec/reports/download/${path.basename(result.filePath)}`,
       message: 'Report generated successfully',
-      data: {
-        filename: result.filename,
-        downloadUrl: `/diddec/reports/download/${path.basename(result.filePath)}`,
-      },
     };
   }
 

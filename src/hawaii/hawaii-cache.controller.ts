@@ -39,8 +39,8 @@ export class HawaiiCacheController {
     this.logger.log('📊 Obteniendo estadísticas de caché Hawaii');
     const stats = await this.hawaiiCacheService.getCacheStats();
     
+    // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
     return {
-      success: true,
       message: 'Estadísticas de caché obtenidas exitosamente',
       stats,
       timestamp: new Date().toISOString()
@@ -81,8 +81,8 @@ export class HawaiiCacheController {
     try {
       const result = await this.hawaiiCacheService.preloadSemesterData(semester);
       
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         message: `Datos del semestre ${semester} pre-cargados exitosamente`,
         data: result,
         timestamp: new Date().toISOString()
@@ -111,8 +111,8 @@ export class HawaiiCacheController {
     try {
       await this.hawaiiCacheService.forceRefresh(body.type, body.semester);
       
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         message: `Caché ${body.type} actualizado exitosamente`,
         timestamp: new Date().toISOString()
       };
@@ -146,8 +146,8 @@ export class HawaiiCacheController {
     try {
       const result = await this.hawaiiCacheService.cleanupCache();
       
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         message: 'Limpieza de caché completada exitosamente',
         cleanup: result,
         timestamp: new Date().toISOString()
@@ -194,8 +194,9 @@ export class HawaiiCacheController {
       } else if (type === 'inscripciones' && semester) {
         cacheKey = `inscripcion-${semester}`;
       } else {
+        // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
         return {
-          success: false,
+          isSuccessful: false,
           message: 'Parámetros inválidos. Semester requerido para cursos e inscripciones',
           cached: false,
           timestamp: new Date().toISOString()
@@ -204,8 +205,8 @@ export class HawaiiCacheController {
       
       const stats = await this.hawaiiCacheService.getCacheStats();
       
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: true,
         message: `Estado de caché para ${type} obtenido exitosamente`,
         type,
         semester,
@@ -276,8 +277,9 @@ export class HawaiiCacheController {
       
       this.logger.log(`✅ Precalentamiento completado en ${duration}ms: ${successCount}/${body.semesters.length} semestres exitosos`);
       
+      // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
       return {
-        success: successCount > 0,
+        isSuccessful: successCount > 0,
         message: `Precalentamiento completado: ${successCount}/${body.semesters.length} semestres exitosos`,
         duration,
         results,

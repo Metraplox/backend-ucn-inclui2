@@ -476,9 +476,10 @@ async create(
   })
   async markAllAsRead(
     @GetUser('_id') userId: string,
-  ): Promise<{ success: boolean }> {
+  ): Promise<{ markedAsRead: boolean }> {
     await this.notificationsService.markAllAsRead(userId);
-    return { success: true };
+    // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
+    return { markedAsRead: true };
   }
 
   @Post('config')
@@ -596,10 +597,11 @@ async create(
   })
   async configureNotifications(
     @Body() config: any,
-  ): Promise<{ success: boolean }> {
+  ): Promise<{ configured: boolean }> {
     // Aquí se implementaría la lógica para configurar notificaciones automáticas
     // Por ahora solo devolvemos éxito
-    return { success: true };
+    // ✅ FIX: Devolver solo los datos, ResponseInterceptor maneja el wrapping
+    return { configured: true };
   }
 
   @Post('bulk')
