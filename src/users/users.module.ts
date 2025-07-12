@@ -10,6 +10,7 @@ import { AdjustmentsModule } from '../adjustments/adjustments.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { DepartmentsModule } from '../departments/departments.module';
 import { CareersModule } from '../careers/careers.module';
+import { DatabaseSeederService } from '../database/database-seeder.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { CareersModule } from '../careers/careers.module';
     forwardRef(() => CareersModule),
   ],
   controllers: [UsersController, DIDDECController],
-  providers: [UsersService, UserResponsibilitiesService],
+  providers: [UsersService, UserResponsibilitiesService, DatabaseSeederService],
   exports: [UsersService, UserResponsibilitiesService], // Exportar ambos servicios
 })
 export class UsersModule {}

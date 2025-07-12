@@ -215,6 +215,7 @@ try {
     _id: ObjectId('652000000000000000000007'),
     email: 'estudiante1@ucn.cl',
     nombreCompleto: 'Juan Pérez Estudiante',
+    password_hash: '$2b$10$JlO830kFfP/PAcWiqr6keOq2kqABvroccwvLTdz4SWPec13NSS0ta',
     roles: ['ESTUDIANTE'],
     isActive: true,
     isProfileComplete: true,

@@ -16,7 +16,7 @@ async function generateFinalEndpointsReport() {
   
   try {
     console.log('🔐 Autenticando para generar reporte...');
-    const loginResponse = await axios.post('http://localhost:3000/auth/login', {
+    const loginResponse = await axios.post('http://localhost:3001/auth/login', {
       email: 'coordinadora@ucn.cl',
       password: 'Test123!'
     });
@@ -161,7 +161,7 @@ async function generateFinalEndpointsReport() {
 async function testEndpoint(method, url, headers, description) {
   try {
     let response;
-    const fullUrl = `http://localhost:3000${url}`;
+    const fullUrl = `http://localhost:3001${url}`;
     
     if (method === 'GET') {
       response = await axios.get(fullUrl, { headers });

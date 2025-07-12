@@ -22,14 +22,14 @@ export class HawaiiService {
     };
   }
 
-  async getEstudiantes(): Promise<{ data: HawaiiStudentDto[] }> {
+  async getEstudiantes(): Promise<HawaiiStudentDto[]> {
     try {
       const response: AxiosResponse<HawaiiStudentDto[]> = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/estudiantes`, {
           headers: this.getHeaders(),
         }),
       );
-      return { data: response.data };
+      return response.data;
     } catch (error) {
       throw new HttpException(
         'Error al obtener estudiantes desde Hawaii API',
@@ -38,14 +38,14 @@ export class HawaiiService {
     }
   }
 
-  async getOferta(semester: string): Promise<{ data: HawaiiCourseDto[] }> {
+  async getOferta(semester: string): Promise<HawaiiCourseDto[]> {
     try {
       const response: AxiosResponse<HawaiiCourseDto[]> = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/oferta?semestre=${semester}`, {
           headers: this.getHeaders(),
         }),
       );
-      return { data: response.data };
+      return response.data;
     } catch (error) {
       throw new HttpException(
         'Error al obtener oferta académica desde Hawaii API',
@@ -56,7 +56,7 @@ export class HawaiiService {
 
   async getInscripcion(
     semester: string,
-  ): Promise<{ data: HawaiiEnrollmentDto[] }> {
+  ): Promise<HawaiiEnrollmentDto[]> {
     try {
       const response: AxiosResponse<HawaiiEnrollmentDto[]> =
         await firstValueFrom(
@@ -67,7 +67,7 @@ export class HawaiiService {
             },
           ),
         );
-      return { data: response.data };
+      return response.data;
     } catch (error) {
       throw new HttpException(
         'Error al obtener inscripciones desde Hawaii API',

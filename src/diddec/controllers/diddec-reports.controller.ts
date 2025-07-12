@@ -164,14 +164,9 @@ export class DiddecReportsController {
   })
   async exportReport(@Body() exportReportDto: ExportReportDto) {
     const result = await this.exportService.exportReport(exportReportDto);
-
     return {
-      success: true,
-      message: 'Report generated successfully',
-      data: {
-        filename: result.filename,
-        downloadUrl: `/diddec/reports/download/${path.basename(result.filePath)}`,
-      },
+      filename: result.filename,
+      downloadUrl: `/diddec/reports/download/${path.basename(result.filePath)}`,
     };
   }
 

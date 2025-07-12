@@ -1,6 +1,8 @@
 # 📋 GUÍA DE TESTING DE ENDPOINTS UCN INCLUI2
 
 **Fecha:** 19-06-2025  
+**Actualización:** 08-07-2025 - Validación y corrección profesional de la relación userId <-> estudiante implementada. Script: scripts/validate-student-user-link.js
+
 **Scripts desarrollados:** 3 herramientas profesionales de testing
 
 ## 🎯 RESUMEN EJECUTIVO
@@ -137,4 +139,4 @@ node scripts/generate-final-endpoints-report.js
 
 Los scripts desarrollados proporcionan una **validación realista y eficiente** del estado de los endpoints, eliminando falsos positivos y enfocándose en problemas reales. El sistema está **90%+ funcional** con solo **1 problema crítico** identificado.
 
-**Sistema completamente validado y listo para desarrollo continuo.** 
+**Sistema completamente validado y listo para desarrollo continuo.**

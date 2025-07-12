@@ -357,11 +357,7 @@ export class SemesterSyncController {
     this.logger.log('📊 Consultando estado del scheduler semestral');
     try {
       const status = this.semesterSchedulerService.getSchedulerStatus();
-      return {
-        success: true,
-        data: status,
-        timestamp: new Date().toISOString(),
-      };
+      return status;
     } catch (error) {
       this.logger.error('❌ Error obteniendo estado del scheduler:', error);
       throw error;
@@ -396,14 +392,7 @@ export class SemesterSyncController {
         `✅ Sincronización manual completada: ${result.success ? 'exitosa' : 'con errores'}`,
       );
 
-      return {
-        success: result.success,
-        message: result.success
-          ? 'Sincronización completada exitosamente'
-          : 'Error en sincronización',
-        data: result,
-        timestamp: new Date().toISOString(),
-      };
+      return result;
     } catch (error) {
       this.logger.error('❌ Error en sincronización manual:', error);
       throw error;
@@ -470,16 +459,7 @@ export class SemesterSyncController {
 
       const allChecksPassed = checks.every((check) => check.passed);
 
-      return {
-        success: allChecksPassed,
-        message: allChecksPassed
-          ? 'Todas las validaciones pasaron'
-          : 'Algunas validaciones fallaron',
-        semester,
-        checks,
-        ready: allChecksPassed,
-        timestamp: new Date().toISOString(),
-      };
+      return { semester, checks, ready: allChecksPassed };
     } catch (error) {
       this.logger.error('❌ Error en validación de precondiciones:', error);
       throw error;
@@ -498,19 +478,12 @@ export class SemesterSyncController {
   })
   getNextExecutions() {
     this.logger.log('📅 Consultando próximas ejecuciones programadas');
-
     try {
       const status = this.semesterSchedulerService.getSchedulerStatus();
-
       return {
-        success: true,
-        data: {
-          nextSemesterSync: status.nextSemesterSync,
-          nextIntegrityCheck: status.nextIntegrityCheck,
-          schedulerActive: status.initialized,
-        },
-        message: 'Programación obtenida exitosamente',
-        timestamp: new Date().toISOString(),
+        nextSemesterSync: status.nextSemesterSync,
+        nextIntegrityCheck: status.nextIntegrityCheck,
+        schedulerActive: status.initialized,
       };
     } catch (error) {
       this.logger.error('❌ Error obteniendo programación:', error);

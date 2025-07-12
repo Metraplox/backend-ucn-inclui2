@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   app:
     build:
@@ -12,14 +11,15 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=mongodb://mongodb_prod:27017/ucn_inclui2_prod
-      - MONGODB_URI=mongodb://mongodb_prod:27017/ucn_inclui2_prod
+      - DATABASE_URL=mongodb://mongodb_prod:27017/ucn_inclui2
+      - MONGODB_URI=mongodb://mongodb_prod:27017/ucn_inclui2
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules # Evita que node_modules local sobreescriba el del contenedor
       - /usr/src/app/dist # Evita que dist local sobreescriba el del contenedor
     depends_on:
       - mongodb_prod
+    restart: always
     # command: npm run start:dev # Descomenta para desarrollo con hot-reloading
 
   mongodb_prod:
@@ -33,6 +33,7 @@ services:
       - mongo_data:/data/db
       - ./mongodb-init:/docker-entrypoint-initdb.d
     command: mongod --noauth
+    restart: always
 
 networks:
   ucn_network:

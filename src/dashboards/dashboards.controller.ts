@@ -39,22 +39,18 @@ export class DashboardsController {
   async getDocenteDashboard(@CurrentUser() user: any) {
     // Retornar datos específicos para docentes sin acceso completo a students
     return {
-      success: true,
-      statusCode: 200,
-      data: {
-        userInfo: {
-          email: user.email,
-          role: user.roles[0],
-          nombreCompleto: user.nombreCompleto,
-        },
-        stats: {
-          message: 'Dashboard de docente funcional',
-          studentsAssigned: 0, // En una implementación real, obtener estudiantes asignados
-          coursesTeaching: 0,
-        },
-        recentActivity: [],
-        notifications: [],
+      userInfo: {
+        email: user.email,
+        role: user.roles[0],
+        nombreCompleto: user.nombreCompleto,
       },
+      stats: {
+        message: 'Dashboard de docente funcional',
+        studentsAssigned: 0, // En una implementación real, obtener estudiantes asignados
+        coursesTeaching: 0,
+      },
+      recentActivity: [],
+      notifications: [],
     };
   }
 
@@ -73,23 +69,18 @@ export class DashboardsController {
   })
   async getJefeCarreraDashboard(@CurrentUser() user: any) {
     return {
-      success: true,
-      statusCode: 200,
-      data: {
-        userInfo: {
-          email: user.email,
-          role: user.roles[0],
-          nombreCompleto: user.nombreCompleto,
-        },
-        stats: {
-          message: 'Dashboard de jefe de carrera funcional',
-          totalStudentsInCareer: 0,
-          studentsWithNEE: 0,
-          pendingAdjustments: 0,
-        },
-        recentActivity: [],
-        notifications: [],
+      userInfo: {
+        email: user.email,
+        role: user.roles[0],
+        nombreCompleto: user.nombreCompleto,
       },
+      stats: {
+        message: 'Dashboard de jefe de carrera funcional',
+        studentsAssigned: 0,
+        coursesTeaching: 0,
+      },
+      recentActivity: [],
+      notifications: [],
     };
   }
 

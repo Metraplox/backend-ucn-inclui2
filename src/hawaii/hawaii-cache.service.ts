@@ -65,8 +65,7 @@ export class HawaiiCacheService {
 
       // 3. Descargar datos frescos de Hawaii API
       this.logger.log('🔄 Descargando estudiantes frescos desde Hawaii API...');
-      const response = await this.hawaiiService.getEstudiantes();
-      const students = response.data;
+      const students = await this.hawaiiService.getEstudiantes();
 
       // 4. Guardar en cachés
       await this.saveToDisk(cacheFile, students);
@@ -128,8 +127,7 @@ export class HawaiiCacheService {
       this.logger.log(
         `🔄 Descargando cursos ${semestre} frescos desde Hawaii API...`,
       );
-      const response = await this.hawaiiService.getOferta(semestre);
-      const courses = response.data;
+      const courses = await this.hawaiiService.getOferta(semestre);
 
       // 4. Guardar en cachés
       await this.saveToDisk(cacheFile, courses, semestre);
@@ -199,8 +197,7 @@ export class HawaiiCacheService {
       this.logger.log(
         `🔄 Descargando inscripciones ${semestre} frescas desde Hawaii API...`,
       );
-      const response = await this.hawaiiService.getInscripcion(semestre);
-      const enrollments = response.data;
+      const enrollments = await this.hawaiiService.getInscripcion(semestre);
 
       // 4. Guardar en cachés
       await this.saveToDisk(cacheFile, enrollments, semestre);

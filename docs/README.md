@@ -1,199 +1,67 @@
-# 📚 Documentación UCN INCLUI2
+Última actualización: 11/07/2025
 
-> **🎯 Estado:** 🟢 **FASE 2 DE DESARROLLO ACTIVA**
-> **📅 Última actualización:** 03 de Julio 2025
-> **🗺️ Guía Principal:** **[Hoja de Ruta de Desarrollo - Fase 2](05-roadmap/project-management/11_ROADMAP_FASE_2_PLANNING.md)**
+# 🎯 ESTADO ACTUAL DEL SISTEMA UCN INCLUI2
 
----
+## ✅ Backend y Base de Datos
+- **Backend**: Funcionando en http://localhost:3001
+- **MongoDB**: Contenedor activo con restart policy
+- **Conexión**: Backend conectado exitosamente a la BD
+- **Salud**: Endpoint `/health` respondiendo correctamente
 
-## 🚀 ¡BIENVENIDOS AL DESARROLLO DE LA FASE 2!
+## 👥 Usuarios para Login
+Los siguientes usuarios están cargados en la base de datos:
 
-El proyecto ha entrado en una nueva fase de desarrollo para implementar funcionalidades de negocio avanzadas. La documentación ha sido reorganizada para facilitar el acceso a la información relevante.
+| Email | Rol | Contraseña |
+|-------|-----|------------|
+| coordinadora@ucn.cl | COORDINADORA | inclui2025 |
+| educadora@ucn.cl | EDUCADORA_SOCIAL | inclui2025 |
+| jefe.carrera@ucn.cl | JEFE_CARRERA | inclui2025 |
+| jefe.departamento@ucn.cl | JEFE_DEPARTAMENTO | inclui2025 |
+| docente@ucn.cl | DOCENTE | inclui2025 |
+| diddec@ucn.cl | DIDDEC_STAFF | inclui2025 |
+| estudiante@alumnos.ucn.cl | ESTUDIANTE | inclui2025 |
 
-**La nueva hoja de ruta es el documento central que guía todo el trabajo de desarrollo. Por favor, consúltalo antes de empezar.**
-
----
-
-## 📋 GUÍAS RÁPIDAS Y ESTRUCTURA
-
-### 🗺️ **Planificación y Gestión**
-- **[📍 Hoja de Ruta Activa](05-roadmap/project-management/11_ROADMAP_FASE_2_PLANNING.md)** - ¡EMPEZAR AQUÍ!
-- **[🔄 Changelog del Proyecto](05-roadmap/project-management/changelog.md)** - Historial de cambios.
-- **[Sprint 2 - Resumen](05-roadmap/project-management/10_SPRINT_2_RESUMEN_EJECUTIVO_03072025.md)** - Últimos logros.
-
-### 🏗️ **Arquitectura y Guías Técnicas**
-- **[🏁 Getting Started](00-getting-started/)** - Configuración inicial del proyecto.
-- **[🏛️ Arquitectura del Sistema](01-architecture/)** - Diseño de la API y base de datos.
-- **[🧪 Guías de Testing](03-testing/)** - Cómo probar y validar el código.
-- **[🚀 Guías de Deployment](04-deployment/)** - Cómo desplegar el proyecto.
-- **[📱 Documentación Frontend](frontend/)** - Guías específicas de Flutter.
-
-### 📦 **Recursos Archivados**
-- **[🗄️ Archivo](archive/)** - Documentos de fases anteriores o reportes obsoletos.
-
----
-
-## 🎯 FOCO ACTUAL: FASE 1 DEL ROADMAP
-
-Actualmente estamos trabajando en las tareas definidas en la **Fase 1** de la hoja de ruta:
-
-1.  **Refactorización Técnica del Frontend:**
-    - Implementación del Patrón Repositorio.
-    - Adopción de Provider para estado global.
-    - Centralización de constantes.
-2.  **Módulo de Gestión de Plazos (Backend y Frontend):**
-    - Creación del `SemesterConfig`.
-    - Desarrollo de la UI de gestión.
-
-Cualquier duda sobre las tareas actuales o futuras debe ser resuelta consultando la **[Hoja de Ruta Activa](05-roadmap/project-management/11_ROADMAP_FASE_2_PLANNING.md)**.
-
----
-
-## 🚀 DEPLOYMENT Y PRODUCCIÓN
-
-### 🐳 **Configuración de Deployment**
-- **[🚀 Deployment Guide](04-deployment/DEPLOYMENT_README.md)** - Guía de despliegue
-- **[📊 Deployment Status](04-deployment/DEPLOYMENT_STATUS.md)** - Estado actual
-- **[🔒 Code Protection](04-deployment/code-protection.md)** - Seguridad
-
-### 🛠️ **Herramientas DevOps**
-- **[🐋 Docker Configuration](04-deployment/docker-guide.md)** - Configuración Docker
-- **[🔧 Production Setup](04-deployment/production-setup.md)** - Setup producción
-
----
-
-## 📱 DISEÑO FRONTEND
-
-### 🎨 **Guías de Diseño Frontend**
-- **[📋 Análisis Requisitos](06-frontend-design/01_ANALISIS_REQUISITOS_CLIENTE.md)** - Requisitos del cliente
-- **[🔗 Integración Backend](06-frontend-design/02_INTEGRACION_BACKEND_EXISTENTE.md)** - Cómo integrar
-- **[🆚 Frontend Actual vs Diseñado](06-frontend-design/03_ANALISIS_FRONTEND_ACTUAL_VS_DISEÑADO.md)** - Comparación
-
-### 📱 **Flutter Refactoring**
-- **[📋 Resumen Ejecutivo](07-flutter-refactoring/00_EJECUTIVO_RESUMEN.md)** - Visión general Flutter
-- **[🛠️ Guía Implementación](07-flutter-refactoring/02_GUIA_IMPLEMENTACION.md)** - Implementación Flutter
-- **[🏗️ Arquitectura Flutter](07-flutter-refactoring/03_ARQUITECTURA_FLUTTER.md)** - Arquitectura completa
-
----
-
-## 📊 DATOS Y RECURSOS
-
-### 📄 **Documentos de Referencia**
-- **[📊 Endpoints Report JSON](ENDPOINTS_FINAL_REPORT.json)** - Reporte técnico
-- **[📋 Assets y Recursos](assets/)** - Documentos y recursos
-- **[📈 Swagger Updates](SWAGGER_UPDATE_REPORT.md)** - Actualizaciones API
-
-### 🗂️ **Historial del Proyecto**
-- **[📜 Changelog](05-history/changelog.md)** - Historial de cambios
-- **[🔧 Issues Resolved](05-history/issues-resolved.md)** - Problemas resueltos
-- **[📚 Project History](05-history/)** - Historia completa
-
----
-
-## 🎯 QUICK START PARA FRONTEND
-
-### 1️⃣ **Setup Básico**
+## 🚀 Frontend Flutter
+Para iniciar el frontend:
 ```bash
-# 1. Verificar backend funcionando
-curl http://localhost:3000/health
-
-# 2. Acceder a documentación
-open http://localhost:3000/api
-
-# 3. Probar autenticación
-POST http://localhost:3000/auth/login
+cd "c:\Users\fabi_\Desktop\U\Proyecto Plataformas V2\V1\frontend-unified\backend-ucn-inclui2\incluye_app"
+flutter run -d web-server --web-port 8080
 ```
 
-### 2️⃣ **Datos de Prueba**
-```javascript
-// Usuario de prueba
-{
-  "email": "student@alumnos.ucn.cl",
-  "password": "password123"
-}
+## 📝 Próximos pasos
+1. Iniciar frontend Flutter
+2. Probar login con los usuarios cargados
+3. Verificar que todas las funcionalidades estén operativas
 
-// Respuesta esperada
-{
-  "access_token": "jwt-token...",
-  "user": { ... }
-}
+## 🔧 Scripts útiles
+- `load-initial-data.bat`: Cargar datos iniciales completos
+- `docker-compose up -d`: Iniciar backend y BD
+- `docker-compose down -v`: Detener y limpiar volúmenes
+
+---
+
+# Guía de despliegue y robustez de backend
+
+## Problema frecuente: Error de conexión inicial a MongoDB
+
+En algunos entornos Docker, el backend puede intentar conectarse a la base de datos antes de que el contenedor de MongoDB esté completamente listo, generando errores como:
+
+```
+MongooseServerSelectionError: getaddrinfo ENOTFOUND mongodb_prod
 ```
 
-### 3️⃣ **Endpoints Críticos**
-- `POST /auth/login` - Autenticación
-- `GET /students/profile` - Perfil estudiante
-- `GET /careers` - Lista de carreras
-- `GET /adjustments` - Ajustes académicos
+## Solución recomendada
+
+- Se ha configurado `restart: always` en ambos servicios (`app` y `mongodb_prod`) en `docker-compose.yml`.
+- Si el backend falla al iniciar por conexión, Docker lo reiniciará automáticamente hasta que la base de datos esté disponible.
+- No es necesario intervención manual: el sistema se recupera solo tras unos segundos.
+
+## Buenas prácticas adicionales
+
+- Si el error persiste más de 2 minutos, revisar logs de MongoDB y backend.
+- Asegúrate de no tener puertos 27017 ocupados por otra instancia local de MongoDB.
+- Para desarrollo, puedes usar `command: npm run start:dev` en el servicio `app` para hot-reload.
 
 ---
 
-## 🔔 NOTIFICACIONES EN TIEMPO REAL
-
-### 📡 **WebSocket Integration**
-```typescript
-import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:3000', {
-  auth: { token: 'jwt-token' }
-});
-
-socket.on('notification', (data) => {
-  console.log('Nueva notificación:', data);
-});
-```
-
----
-
-## 📞 SOPORTE Y CONTACTO
-
-### 🆘 **Recursos de Ayuda**
-- **Swagger UI:** http://localhost:3000/api
-- **Health Check:** http://localhost:3000/health
-- **Testing Scripts:** `npm run test:endpoints`
-
-### 🔍 **Debugging**
-- **Logs en tiempo real:** `npm run logs`
-- **Verificar BD:** `npm run test:database`
-- **Estado del sistema:** `npm run test:health`
-
----
-
-## 🏆 MÉTRICAS DE COMPLETITUD
-
-### ✅ **100% COMPLETADO**
-- **146 endpoints** implementados ✅
-- **11 módulos** completamente desarrollados ✅
-- **5 roles** configurados y probados ✅
-- **Documentación** completa y actualizada ✅
-- **Testing** exhaustivo realizado ✅
-- **Base de datos** poblada y funcional ✅
-
-### 🎯 **LISTO PARA FRONTEND**
-- **API completamente funcional** ✅
-- **Autenticación robusta** ✅
-- **Documentación exhaustiva** ✅
-- **Ejemplos de código** ✅
-- **Scripts de testing** ✅
-- **Datos de prueba** ✅
-
----
-
-## 🎉 RESUMEN FINAL
-
-**EL BACKEND UCN INCLUI2 ESTÁ COMPLETAMENTE FINALIZADO.**
-
-Los desarrolladores frontend pueden comenzar inmediatamente con la certeza de tener un backend robusto, bien documentado y completamente funcional.
-
-### 📋 **TODO LISTO:**
-- ✅ API 100% funcional
-- ✅ Documentación completa
-- ✅ Testing validado
-- ✅ Base de datos operativa
-- ✅ Seguridad implementada
-- ✅ Performance optimizada
-
----
-
-**📅 Documentación actualizada:** 19 de Junio 2025  
-**🎯 Estado:** ✅ **PRODUCTION READY - LISTO PARA FRONTEND**  
-**👥 Para:** Equipo de desarrollo Frontend UCN INCLUI2 
+Consulta siempre este archivo y `requisitos.txt` ante cualquier duda de despliegue o robustez.

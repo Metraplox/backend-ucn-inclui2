@@ -2,8 +2,8 @@
 const axios = require('axios');
 const { MongoClient } = require('mongodb');
 
-const API_BASE = 'http://localhost:3000';
-const DB_URI = 'mongodb://localhost:27017/ucn_inclui2_prod';
+const API_BASE = 'http://localhost:3001';
+const DB_URI = 'mongodb://localhost:27017/ucn_inclui2';
 
 // Usuarios reales para testing de producción
 const PRODUCTION_USERS = {
@@ -100,7 +100,7 @@ class ProductionValidator {
     try {
       const client = new MongoClient(DB_URI);
       await client.connect();
-      const db = client.db('ucn_inclui2_prod');
+      const db = client.db('ucn_inclui2');
       
       // Verificar colecciones críticas
       const collections = await db.listCollections().toArray();
@@ -138,7 +138,7 @@ class ProductionValidator {
 
     // 1.3 Variables de entorno críticas
     const envVars = [
-      'JWT_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL', 
+      'JWT_SECRET', 'JWT_REFRESH_SECRET', 'MONGODB_URI', 
       'HAWAII_BASE_URL', 'CURRENT_SEMESTER'
     ];
     
@@ -246,7 +246,7 @@ class ProductionValidator {
     
     const client = new MongoClient(DB_URI);
     await client.connect();
-    const db = client.db('ucn_inclui2_prod');
+    const db = client.db('ucn_inclui2');
 
     // 3.1 Consistencia de referencias
     const students = await db.collection('students').find({}).toArray();
@@ -598,7 +598,7 @@ class ProductionValidator {
     if (this.testStudentId || this.testAdjustmentId) {
       const client = new MongoClient(DB_URI);
       await client.connect();
-      const db = client.db('ucn_inclui2_prod');
+      const db = client.db('ucn_inclui2');
 
       if (this.testStudentId) {
         await db.collection('students').deleteOne({ _id: this.testStudentId });

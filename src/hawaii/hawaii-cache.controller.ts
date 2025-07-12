@@ -116,15 +116,9 @@ export class HawaiiCacheController {
     this.logger.log(`🚀 Pre-cargando datos para semestre ${semester}`);
 
     try {
-      const result =
-        await this.hawaiiCacheService.preloadSemesterData(semester);
+      const result = await this.hawaiiCacheService.preloadSemesterData(semester);
 
-      return {
-        success: true,
-        message: `Datos del semestre ${semester} pre-cargados exitosamente`,
-        data: result,
-        timestamp: new Date().toISOString(),
-      };
+      return result;
     } catch (error) {
       this.logger.error('❌ Error en pre-carga de datos:', error);
       throw error;
