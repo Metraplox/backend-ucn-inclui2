@@ -18,7 +18,7 @@ class TestCredentials {
   static const String diddecPassword = defaultPassword;
 
   // Credenciales de estudiante
-  static const String studentEmail = 'estudiante@alumnos.ucn.cl';
+  static const String studentEmail = 'estudiante1@ucn.cl';
   static const String studentPassword = defaultPassword;
 
   // Credenciales de docente

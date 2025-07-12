@@ -196,7 +196,9 @@ class AdjustmentService {
           },
         ),
       );
-      final List<dynamic> data = response.data['data']['data'] ?? [];
+      final List<dynamic> data = response.data is List 
+        ? response.data 
+        : (response.data['data'] ?? []);
       return data.map((json) => StudentAdjustment.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Error al obtener cursos.$e');
@@ -244,8 +246,10 @@ class AdjustmentService {
         '/adjustments/student/$idStudent',
       );
       if (response.statusCode == 200) {
-        final responseData = response.data;
-        final List<dynamic> dataList = responseData['data']['data'];
+        // El endpoint retorna directamente un array de ajustes
+        final List<dynamic> dataList = response.data is List 
+          ? response.data 
+          : (response.data['data'] ?? []);
         return dataList
             .map((json) => StudentAdjustment.fromJson(json))
             .toList();
@@ -266,8 +270,9 @@ class AdjustmentService {
 
       final response = await ApiService.dio.get('/adjustments');
       if (response.statusCode == 200) {
-        final List<dynamic> list =
-            response.data['data']['data'] as List<dynamic>;
+        final List<dynamic> list = response.data is List 
+          ? response.data 
+          : (response.data['data'] ?? []);
         return list
             .map((json) => Adjustment.fromJson(json as Map<String, dynamic>))
             .toList();
@@ -275,6 +280,34 @@ class AdjustmentService {
       return [];
     } catch (e) {
       ApiService.handleApiError('getAllAdjustments', e);
+      return [];
+    }
+  }
+
+  // Método para obtener ajustes del estudiante logueado actual
+  static Future<List<StudentAdjustment>> getCurrentStudentAdjustments() async {
+    try {
+      final token = await ApiService.getToken();
+      if (token == null) {
+        throw Exception('Token nulo');
+      }
+      
+      // Usar un endpoint especial para el usuario actual sin necesidad de ID
+      final response = await ApiService.dio.get('/adjustments/my-adjustments');
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> dataList = response.data is List 
+          ? response.data 
+          : (response.data['data'] ?? []);
+        return dataList
+            .map((json) => StudentAdjustment.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('Error al obtener los ajustes del usuario actual');
+      }
+    } catch (e) {
+      log.e('Error en getCurrentStudentAdjustments: $e');
+      // Como fallback, retornar lista vacía en lugar de lanzar error
       return [];
     }
   }
