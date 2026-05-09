@@ -5,8 +5,8 @@ API REST construida con **NestJS** para gestionar estudiantes y sus ajustes razo
 ## Objetivo del proyecto
 
 Este backend centraliza la información de:
-- estudiantes
-- ajustes razonables académicos asociados a cada estudiante
+- Estudiantes
+- Ajustes razonables académicos asociados a cada estudiante
 
 La API usa MongoDB, validación con DTOs y documentación Swagger.
 
@@ -98,11 +98,11 @@ Con la aplicación en ejecución:
 
 ### Students
 
-- `POST /students` crear estudiante
-- `GET /students` listar estudiantes
-- `GET /students/:id` obtener estudiante por id
-- `PATCH /students/:id` actualizar estudiante
-- `DELETE /students/:id` eliminar estudiante
+- `POST /students` Crear estudiante
+- `GET /students` Listar estudiantes
+- `GET /students/:id` Obtener estudiante por id
+- `PATCH /students/:id` Actualizar estudiante
+- `DELETE /students/:id` Eliminar estudiante
 
 Campos principales de estudiante:
 - `rut` (único)
@@ -112,11 +112,11 @@ Campos principales de estudiante:
 
 ### Adjustments
 
-- `POST /adjustments` crear ajuste
-- `GET /adjustments` listar ajustes
-- `GET /adjustments/:id` obtener ajuste por id
-- `PATCH /adjustments/:id` actualizar ajuste
-- `DELETE /adjustments/:id` eliminar ajuste
+- `POST /adjustments` Crear ajuste
+- `GET /adjustments` Listar ajustes
+- `GET /adjustments/:id` Obtener ajuste por id
+- `PATCH /adjustments/:id` Actualizar ajuste
+- `DELETE /adjustments/:id` Eliminar ajuste
 
 Campos principales de ajuste:
 - `studentRut`
