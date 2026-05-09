@@ -19,11 +19,13 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document); // Endpoint para la UI: /api
 
   // Habilitar ValidationPipe globalmente
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // Elimina propiedades no definidas en el DTO
-    forbidNonWhitelisted: true, // Lanza error si hay propiedades no permitidas
-    transform: true, // Transforma el payload al tipo del DTO
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Elimina propiedades no definidas en el DTO
+      forbidNonWhitelisted: true, // Lanza error si hay propiedades no permitidas
+      transform: true, // Transforma el payload al tipo del DTO
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
 }
