@@ -7,10 +7,7 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class AdjustmentsService {
-  constructor(
-    @InjectModel(Adjustment.name)
-    private adjustmentModel: Model<AdjustmentDocument>,
-  ) {}
+constructor(@InjectModel(Adjustment.name) private adjustmentModel: Model<AdjustmentDocument>) {}
 
   async create(createAdjustmentDto: CreateAdjustmentDto): Promise<Adjustment> {
     const createdAdjustment = new this.adjustmentModel(createAdjustmentDto);
@@ -25,13 +22,8 @@ export class AdjustmentsService {
     return this.adjustmentModel.findById(id).exec();
   }
 
-  async update(
-    id: string,
-    updateAdjustmentDto: UpdateAdjustmentDto,
-  ): Promise<Adjustment | null> {
-    return this.adjustmentModel
-      .findByIdAndUpdate(id, updateAdjustmentDto, { new: true })
-      .exec();
+  async update(id: string, updateAdjustmentDto: UpdateAdjustmentDto): Promise<Adjustment | null> {
+    return this.adjustmentModel.findByIdAndUpdate(id, updateAdjustmentDto, { new: true }).exec();
   }
 
   async remove(id: string): Promise<{ deletedCount?: number }> {

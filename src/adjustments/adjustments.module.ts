@@ -7,7 +7,7 @@ import { Adjustment, AdjustmentSchema } from './schemas/adjustment.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: Adjustment.name, schema: AdjustmentSchema },
+      { name: Adjustment.name, schema: AdjustmentSchema }
     ]),
   ],
   controllers: [AdjustmentsController],

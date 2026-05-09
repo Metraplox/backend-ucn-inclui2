@@ -9,9 +9,7 @@ export class CreateStudentDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[0-9]{7,8}-[0-9kK]$/, {
-    message: 'RUT must be in format 12345678-9 or 1234567-k',
-  })
+  @Matches(/^[0-9]{7,8}-[0-9kK]$/, { message: 'RUT must be in format 12345678-9 or 1234567-k' })
   readonly rut: string;
 
   @ApiProperty({ description: 'Nombre del estudiante', example: 'Juan' })
@@ -24,10 +22,7 @@ export class CreateStudentDto {
   @IsNotEmpty()
   readonly lastName: string;
 
-  @ApiProperty({
-    description: 'Correo electrónico único del estudiante',
-    example: 'juan.perez@example.com',
-  })
+  @ApiProperty({ description: 'Correo electrónico único del estudiante', example: 'juan.perez@example.com' })
   @IsEmail()
   @IsNotEmpty()
   readonly email: string;
